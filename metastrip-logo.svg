@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ms-grad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="ms-fade" x1="30" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa" />
+      <stop offset="35%" stop-color="#a78bfa" />
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="#09090b" />
+  <rect x="30" y="38" width="60" height="6" rx="3" fill="url(#ms-grad)" />
+  <rect x="30" y="57" width="60" height="6" rx="3" fill="url(#ms-fade)" />
+  <rect x="30" y="76" width="60" height="6" rx="3" fill="url(#ms-grad)" />
+</svg>

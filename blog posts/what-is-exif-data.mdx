@@ -1,0 +1,74 @@
+---
+title: "What Is EXIF Data? A Plain-English Explanation"
+slug: "what-is-exif-data"
+excerpt: "EXIF data is stored in every digital photo. Here's what it contains, where it lives, and why you should care about it."
+category: "guides"
+date: "2026-01-22"
+readTime: "5 min read"
+featured: false
+tags: ["EXIF", "beginner", "explainer", "photos"]
+---
+
+EXIF stands for Exchangeable Image File Format. It's a standard for storing information inside digital image files — and every photo you take with a smartphone or digital camera contains it.
+
+This guide explains what EXIF data is, what it contains, and why you should know about it, in plain language without unnecessary jargon.
+
+## The basics
+
+When you take a photo, your camera or phone doesn't just capture the image. It also records a set of information about the photo and embeds it directly into the image file. This information is the EXIF data.
+
+You can't see EXIF data by looking at the photo. It's stored in a structured format within the file itself — think of it as hidden text attached to the image that requires specific tools to read. But reading it is trivially easy: right-clicking a file on Windows and checking Properties, using the Get Info option on Mac, or using any number of free online tools will display the full EXIF contents.
+
+The EXIF standard was originally published in 1995 by the Japan Electronic Industries Development Association. It was designed to help photographers organize and catalogue their work. At the time, sharing photos online wasn't really a thing, so the privacy implications of embedding personal data in every image weren't a major consideration.
+
+Three decades later, we carry high-resolution cameras in our pockets, share photos constantly, and the EXIF standard hasn't fundamentally changed. The same metadata that was designed for professional photo cataloguing now creates privacy risks for billions of casual smartphone users.
+
+## What's stored in EXIF data
+
+A typical smartphone photo contains between 30 and 80 EXIF fields. They fall into several categories:
+
+**Location data.** If your phone's location services are enabled for the camera app, every photo records GPS coordinates — latitude, longitude, altitude, and sometimes speed and direction. The accuracy is typically within 3-5 meters. This is the most privacy-sensitive category of EXIF data, because it reveals exactly where you were standing when you took the photo.
+
+**Camera and device information.** The make and model of your device (e.g., "Apple iPhone 15 Pro Max" or "Samsung Galaxy S24 Ultra"), lens specifications, and sometimes the device serial number. This information identifies your specific device and creates a fingerprint that links all your photos together.
+
+**Capture settings.** The technical parameters of the photograph: shutter speed, aperture (f-stop), ISO sensitivity, focal length, white balance, flash status, and metering mode. These are the fields that photographers actually use for cataloguing. For most casual users, they're not privacy-sensitive.
+
+**Timestamps.** The date and time the photo was taken, the date and time it was digitized, and the date and time the file was last modified. Timestamps often include timezone offsets, which reveal your approximate geographic region even without GPS data.
+
+**Software information.** If the photo has been processed or edited, the software used is recorded. This might show your phone's operating system version, the editing app you used, or the version of Lightroom that processed the file.
+
+**Author and copyright.** Your name (if set in your device or software settings), copyright notices, and creator credits. Many photographers configure these fields intentionally, but casual users are often surprised to find their name embedded in every photo they take.
+
+**Thumbnail.** JPEG files often contain a small embedded preview image — a thumbnail. This thumbnail is generated when the photo is first taken. If you later crop or edit the photo, the original uncropped thumbnail may still be embedded in the file, potentially revealing content you intended to remove.
+
+## Where EXIF data lives in the file
+
+EXIF data is stored at the beginning of a JPEG file, before the actual image data. It occupies a dedicated section of the file structure and typically accounts for a few kilobytes to a few tens of kilobytes of the total file size.
+
+For JPEG files, EXIF data is stored in the APP1 marker segment. PNG files use text chunks (tEXt, iTXt, zTXt) for metadata. WebP files can contain EXIF data in a dedicated chunk. Each format handles metadata differently, but the principle is the same: information about the image is stored alongside the image itself.
+
+In addition to EXIF, photos may also contain IPTC (International Press Telecommunications Council) metadata — used primarily by news agencies and stock photography services for captions, credits, and keywords — and XMP (Extensible Metadata Platform) data, Adobe's extensible metadata framework. A single photo can contain all three types simultaneously.
+
+## Why you should care
+
+If you share photos by email, post them on forums or community sites, upload them to cloud storage, or send them through messaging apps as original files, the EXIF data usually travels with the photo. Anyone who receives the file can read every field.
+
+The GPS coordinates are the most immediately concerning. A photo taken at home and shared online reveals your home address. A photo taken at work reveals your workplace. A series of photos taken over time reveals your daily routine.
+
+The device serial number creates a persistent identifier. If you post a photo anonymously and also post a photo publicly — both from the same device — the serial number can link them. Your anonymous post is no longer anonymous.
+
+The timestamps and timezone data reveal when and roughly where you are, even without GPS. A photo taken at 2:15 PM with a +11:00 timezone offset places you in eastern Australia at that specific time.
+
+Some social media platforms strip EXIF data on upload, but many sharing methods don't. The safest assumption is that any photo you share retains its full EXIF data unless you've specifically verified otherwise.
+
+## How to check and remove EXIF data
+
+On Windows, right-click an image file, select Properties, and look at the Details tab. You'll see a subset of the EXIF fields. There's a "Remove Properties and Personal Information" link at the bottom that lets you strip some fields.
+
+On macOS, select the file in Finder, press Command+I, and look at the "More Info" section. For complete EXIF details, you'll need a third-party tool or the Preview app's inspector.
+
+On your phone, iOS and Android both allow you to view and share photos without location data through their built-in photo apps, but the options aren't always obvious or comprehensive.
+
+For a complete view of every metadata field in a photo — and the ability to strip all of it before sharing — you can use MetaStrip. Drop a photo, see every field, strip what you want, and download the clean file. It runs in your browser, takes a few seconds, and your photo never leaves your device.
+
+The first time you check a photo from your phone and see your home coordinates displayed in the GPS fields, you'll understand why EXIF awareness matters. It's the kind of thing you can't unsee.
