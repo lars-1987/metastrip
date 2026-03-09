@@ -92,12 +92,12 @@ function PrivacyPolicyContent() {
         </p>
         <p className="mb-3">
           <span className="text-white/65 font-semibold">Analytics data:</span>{" "}
-          We use Plausible Analytics, a privacy-focused analytics service that
-          does not use cookies and does not collect personal data. Plausible
-          collects aggregate page view counts, referral sources, browser type,
-          and country-level location. This data cannot identify individual users.
-          Plausible is compliant with GDPR, CCPA, and PECR without requiring
-          cookie consent.
+          We use PostHog for product analytics, configured to use localStorage
+          instead of cookies and to respect the Do Not Track browser setting.
+          PostHog collects page views, click interactions, referral sources,
+          browser type, and country-level location. No personal profiles are
+          created for anonymous visitors. This data cannot identify individual
+          users.
         </p>
         <p className="mb-3">
           <span className="text-white/65 font-semibold">
@@ -159,8 +159,8 @@ function PrivacyPolicyContent() {
           leaves your browser.
         </p>
         <p>
-          Our analytics provider (Plausible) does not use cookies and does not
-          require a cookie consent banner.
+          Our analytics provider (PostHog) is configured to use localStorage
+          instead of cookies and respects the Do Not Track browser setting.
         </p>
       </LegalSection>
 
@@ -180,16 +180,16 @@ function PrivacyPolicyContent() {
         </p>
         <p className="mb-2">
           <span className="text-white/65 font-semibold">
-            Plausible Analytics
+            PostHog
           </span>{" "}
-          provides privacy-focused website analytics. See{" "}
+          provides product analytics. See{" "}
           <Link
-            href="https://plausible.io/data-policy"
+            href="https://posthog.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
-            plausible.io/data-policy
+            posthog.com/privacy
           </Link>
           .
         </p>
@@ -219,8 +219,8 @@ function PrivacyPolicyContent() {
           policy and applicable financial regulations.
         </p>
         <p>
-          Plausible Analytics retains aggregate, non-identifying analytics data.
-          No individual user data is retained.
+          PostHog retains aggregate analytics data. No personal profiles are
+          created for anonymous visitors.
         </p>
       </LegalSection>
 

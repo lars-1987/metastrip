@@ -22,7 +22,7 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
     icon: "Ghost",
     title: "No accounts, no tracking, no profiles",
     body: "We don't ask for your name, email, or any identifying information to use the free tool. Batch passes are purchased through Stripe using only an email for the receipt. We don't build user profiles or track individual behavior.",
-    tech: "Plausible Analytics — cookieless, GDPR-compliant",
+    tech: "PostHog Analytics — cookieless, Do Not Track respected",
   },
   {
     icon: "Prohibit",
