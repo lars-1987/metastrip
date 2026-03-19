@@ -15,7 +15,7 @@ export default function BottomCTA({ batchCta }: BottomCTAProps) {
       }}
     >
       <h2 className="text-[26px] font-bold text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2.5">
-        Ready to strip metadata?
+        Ready to strip metadata? It&apos;s free.
       </h2>
 
       <p className="text-sm text-white/40 font-[family-name:var(--font-outfit)] mb-6 leading-relaxed">

@@ -220,9 +220,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "Image Batch \u2014 $2.99",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Up to 50 images with selective removal and audit report",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Remove Metadata from Photos Online \u2014 Free, No Upload | MetaStrip",
@@ -370,9 +370,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "Document Batch \u2014 $4.99",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Up to 25 documents with selective removal and audit report",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Remove Author from PDF Online \u2014 Free, Private | MetaStrip",
@@ -544,9 +544,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "Image Batch \u2014 $2.99",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Up to 50 images with selective removal and audit report",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Strip EXIF Data Online \u2014 Free EXIF Remover | MetaStrip",
@@ -712,9 +712,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "Image Batch \u2014 $2.99",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Strip AI tags from up to 50 images with audit report",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Remove AI Metadata from Images \u2014 Strip C2PA & XMP | MetaStrip",
@@ -864,9 +864,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "Document Batch \u2014 $4.99",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Up to 25 documents with selective removal and audit report",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Strip Metadata from Word Documents \u2014 Free DOCX Cleaner | MetaStrip",
@@ -1010,9 +1010,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "Image Batch \u2014 $2.99",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Strip GPS from up to 50 photos with full audit report",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Remove GPS Location from Photos \u2014 Free & Private | MetaStrip",
@@ -1209,9 +1209,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       },
     ],
     batchCta: {
-      text: "View All Batch Passes",
+      text: "Strip Files Free \u2192",
       subtext:
-        "Image batch from $2.99 \u00b7 Document batch from $4.99",
+        "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
       "Remove Metadata Before Sharing Online \u2014 Free Tool | MetaStrip",
