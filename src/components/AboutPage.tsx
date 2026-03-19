@@ -21,14 +21,14 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
   {
     icon: "Ghost",
     title: "No accounts, no tracking, no profiles",
-    body: "We don't ask for your name, email, or any identifying information to use the free tool. Batch passes are purchased through Stripe using only an email for the receipt. We don't build user profiles or track individual behavior.",
+    body: "We don't ask for your name, email, or any identifying information. There are no accounts, no sign-ups, and no tracking. We don't build user profiles or track individual behavior.",
     tech: "PostHog Analytics — cookieless, Do Not Track respected",
   },
   {
     icon: "Prohibit",
     title: "No ads, no data selling, ever",
-    body: "MetaStrip is funded by batch pass purchases, not advertising. We will never sell data, show ads, or monetize through any mechanism that compromises user privacy. A privacy tool that violates privacy is worthless.",
-    tech: "$2.99 image passes, $4.99 document passes",
+    body: "MetaStrip is funded by voluntary tips, not advertising. We will never sell data, show ads, or monetize through any mechanism that compromises user privacy. A privacy tool that violates privacy is worthless.",
+    tech: "Free forever, supported by community tips via Ko-fi",
   },
   {
     icon: "MagnifyingGlass",
@@ -157,35 +157,35 @@ export function AboutPage() {
           </div>
           <div className="text-[15px] text-white/45 font-[family-name:var(--font-outfit)] leading-[1.85]">
             <p className="mb-3.5">
-              I needed to strip metadata from a batch of photos before uploading
-              them to a marketplace. So I did what everyone does — I Googled
-              &quot;remove metadata from photos online.&quot;
+              It started the way most side projects do — I had a problem and
+              nothing solved it properly. I needed to strip metadata from a
+              batch of files and went looking for a tool. What I found was
+              bleak: half-abandoned web apps plastered with ads, sketchy
+              services that wanted me to upload my files to their servers, or
+              CLI tools that worked fine but required a terminal and a manual.
             </p>
             <p className="mb-3.5">
-              What I found was a graveyard of ad-infested tools from 2015. Most
-              only handled images. None processed documents. Several required me
-              to upload files to their servers — which completely defeats the
-              purpose when you&apos;re trying to protect privacy. One site had
-              more tracking scripts than a surveillance agency.
+              None of it felt right. A privacy tool shouldn&apos;t require
+              trusting a stranger&apos;s server with your files, and it
+              shouldn&apos;t look like it was last updated when Ubuntu
+              still shipped with Unity.
             </p>
             <p className="mb-3.5">
-              The irony was absurd: privacy tools that violate your privacy.
-              Upload your sensitive files to our server, trust us, and oh — here
-              are 47 ads while you wait.
+              So I built the clean, modern version I actually wanted to use —
+              everything runs in your browser, no uploads, no accounts, no
+              nonsense. Then I looked at it and thought: this works, but
+              it&apos;s boring. The best CLI tools I use every day are the ones
+              that feel alive — the ones with personality.
             </p>
             <p className="mb-3.5">
-              So I built MetaStrip. The core insight was simple: modern browsers
-              are powerful enough to do all the processing client-side.
-              There&apos;s no technical reason to upload files to a server for
-              metadata removal. PDF parsing, Office document manipulation, image
-              EXIF stripping — all of it can happen in JavaScript, in your
-              browser, in milliseconds.
+              So I scrapped the generic landing page and rebuilt the whole thing
+              inside a terminal. If the only good metadata tools were CLI
+              programs, why not make one that lives in the browser? Same power,
+              zero setup, and a bit of fun baked in.
             </p>
             <p>
-              MetaStrip is built in Melbourne by an indie developer with a
-              background in cybersecurity. It&apos;s the tool I wanted to exist —
-              fast, private, modern, and honest about exactly what it does with
-              your data (nothing).
+              Built in Melbourne by a dev who likes privacy, terminals, and not
+              uploading files to random servers.
             </p>
           </div>
         </section>

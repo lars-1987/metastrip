@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { processFile } from "@/lib/processing/coordinator";
 import type {
   FileEntry,
@@ -8,35 +8,31 @@ import type {
   ProcessingResult,
 } from "@/lib/processing/types";
 import { DEFAULT_STRIP_OPTIONS } from "@/lib/processing/types";
-import { FREE_TIER } from "@/lib/constants";
+import { BATCH_LIMIT } from "@/lib/constants";
+import type { MetadataCategory } from "@/lib/processing/types";
 import {
   trackFileAdded,
   trackFileStripped,
-  trackDailyLimitReached,
 } from "@/lib/analytics";
-
-function getDailyKey(): string {
-  const d = new Date();
-  return `metastrip_daily_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function getDailyCount(): number {
-  if (typeof window === "undefined") return 0;
-  const val = localStorage.getItem(getDailyKey());
-  return val ? parseInt(val, 10) : 0;
-}
-
-function incrementDailyCount(): void {
-  if (typeof window === "undefined") return;
-  const key = getDailyKey();
-  const current = getDailyCount();
-  localStorage.setItem(key, String(current + 1));
-}
 
 export interface BatchProgress {
   completed: number;
   total: number;
   currentFileName?: string;
+}
+
+export interface CategoryResult {
+  category: MetadataCategory;
+  fieldsRemoved: number;
+}
+
+export interface ProcessingLogEntry {
+  fileId: string;
+  fileName: string;
+  status: "processing" | "done" | "error";
+  fieldsRemoved?: number;
+  categoryResults?: CategoryResult[];
+  error?: string;
 }
 
 export function useFileProcessor() {
@@ -47,27 +43,43 @@ export function useFileProcessor() {
   const [batchProgress, setBatchProgress] = useState<BatchProgress | null>(
     null
   );
+  const [processingLog, setProcessingLog] = useState<ProcessingLogEntry[]>([]);
 
   const addFiles = useCallback(
-    (newFiles: File[]) => {
-      const entries: FileEntry[] = newFiles.map((file) => ({
+    (newFiles: File[]): { error?: string } => {
+      const currentCount = files.length;
+      const available = BATCH_LIMIT - currentCount;
+
+      if (available <= 0) {
+        return { error: `Batch limit reached (max ${BATCH_LIMIT} files)` };
+      }
+
+      const toAdd = newFiles.slice(0, available);
+
+      const entries: FileEntry[] = toAdd.map((file) => ({
         file,
         id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         status: "pending" as const,
       }));
 
       trackFileAdded({
-        file_type: newFiles.map((f) => f.type).join(","),
-        file_size: newFiles.reduce((sum, f) => sum + f.size, 0),
-        file_count: newFiles.length,
+        file_type: toAdd.map((f) => f.type).join(","),
+        file_size: toAdd.reduce((sum, f) => sum + f.size, 0),
+        file_count: toAdd.length,
       });
 
       setFiles((prev) => [...prev, ...entries]);
       if (entries.length > 0 && !selectedFileId) {
         setSelectedFileId(entries[0].id);
       }
+
+      if (toAdd.length < newFiles.length) {
+        return { error: `Only added ${toAdd.length} of ${newFiles.length} files (max ${BATCH_LIMIT})` };
+      }
+
+      return {};
     },
-    [selectedFileId]
+    [files.length, selectedFileId]
   );
 
   const removeFile = useCallback(
@@ -82,34 +94,24 @@ export function useFileProcessor() {
     setFiles([]);
     setSelectedFileId(null);
     setBatchProgress(null);
+    setProcessingLog([]);
   }, []);
 
-  // Free tier: single file processing with daily limits
   const processSingle = useCallback(
     async (id: string): Promise<{ error?: string }> => {
-      const count = getDailyCount();
-      if (count >= FREE_TIER.maxFilesPerDay) {
-        trackDailyLimitReached();
-        return {
-          error: `Daily limit reached (${FREE_TIER.maxFilesPerDay} files). Get a Batch Pass for more.`,
-        };
-      }
-
       const entry = files.find((f) => f.id === id);
       if (!entry) return { error: "File not found" };
-
-      const maxBytes = FREE_TIER.maxFileSizeMB * 1024 * 1024;
-      if (entry.file.size > maxBytes) {
-        return {
-          error: `File too large (max ${FREE_TIER.maxFileSizeMB}MB)`,
-        };
-      }
 
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id ? { ...f, status: "processing" as const } : f
         )
       );
+
+      setProcessingLog((prev) => [
+        ...prev,
+        { fileId: id, fileName: entry.file.name, status: "processing" },
+      ]);
 
       try {
         const result = await processFile(entry.file);
@@ -122,6 +124,11 @@ export function useFileProcessor() {
                 : f
             )
           );
+          setProcessingLog((prev) =>
+            prev.map((l) =>
+              l.fileId === id ? { ...l, status: "error" as const, error: result.error } : l
+            )
+          );
           return { error: result.error };
         }
 
@@ -130,7 +137,22 @@ export function useFileProcessor() {
             f.id === id ? { ...f, status: "done" as const, result } : f
           )
         );
-        incrementDailyCount();
+
+        const catMap = new Map<MetadataCategory, number>();
+        for (const field of result.report.fieldsRemoved) {
+          catMap.set(field.category, (catMap.get(field.category) ?? 0) + 1);
+        }
+        const categoryResults: CategoryResult[] = Array.from(catMap.entries()).map(
+          ([category, fieldsRemoved]) => ({ category, fieldsRemoved })
+        );
+
+        setProcessingLog((prev) =>
+          prev.map((l) =>
+            l.fileId === id
+              ? { ...l, status: "done" as const, fieldsRemoved: result.report.fieldsRemoved.length, categoryResults }
+              : l
+          )
+        );
 
         trackFileStripped({
           file_type: entry.file.type,
@@ -145,19 +167,24 @@ export function useFileProcessor() {
             f.id === id ? { ...f, status: "error" as const } : f
           )
         );
+        setProcessingLog((prev) =>
+          prev.map((l) =>
+            l.fileId === id ? { ...l, status: "error" as const, error: "Processing failed" } : l
+          )
+        );
         return { error: "Processing failed" };
       }
     },
     [files]
   );
 
-  // Batch mode: process all pending files (no daily limit)
   const processAll = useCallback(
     async (options: StripOptions): Promise<number> => {
       const pending = files.filter((f) => f.status === "pending");
       if (pending.length === 0) return 0;
 
       setBatchProgress({ completed: 0, total: pending.length });
+      setProcessingLog([]);
       let successCount = 0;
       let firstDoneId: string | null = null;
 
@@ -176,6 +203,11 @@ export function useFileProcessor() {
               : f
           )
         );
+
+        setProcessingLog((prev) => [
+          ...prev,
+          { fileId: entry.id, fileName: entry.file.name, status: "processing" },
+        ]);
 
         try {
           const result = await processFile(entry.file, options);
@@ -196,12 +228,44 @@ export function useFileProcessor() {
               f.id === entry.id ? { ...f, status, result } : f
             )
           );
+
+          let categoryResults: CategoryResult[] | undefined;
+          if (!result.error) {
+            const catMap = new Map<MetadataCategory, number>();
+            for (const field of result.report.fieldsRemoved) {
+              catMap.set(field.category, (catMap.get(field.category) ?? 0) + 1);
+            }
+            categoryResults = Array.from(catMap.entries()).map(
+              ([category, fieldsRemoved]) => ({ category, fieldsRemoved })
+            );
+          }
+
+          setProcessingLog((prev) =>
+            prev.map((l) =>
+              l.fileId === entry.id
+                ? {
+                    ...l,
+                    status,
+                    fieldsRemoved: result.error ? undefined : result.report.fieldsRemoved.length,
+                    categoryResults,
+                    error: result.error,
+                  }
+                : l
+            )
+          );
         } catch {
           setFiles((prev) =>
             prev.map((f) =>
               f.id === entry.id
                 ? { ...f, status: "error" as const }
                 : f
+            )
+          );
+          setProcessingLog((prev) =>
+            prev.map((l) =>
+              l.fileId === entry.id
+                ? { ...l, status: "error" as const, error: "Processing failed" }
+                : l
             )
           );
         }
@@ -221,7 +285,6 @@ export function useFileProcessor() {
     [files]
   );
 
-  // Download all completed files as ZIP with audit report
   const downloadZip = useCallback(async () => {
     const completed = files.filter(
       (f) => f.status === "done" && f.result
@@ -253,15 +316,6 @@ export function useFileProcessor() {
     saveAs(blob, `metastrip-batch-${Date.now()}.zip`);
   }, [files]);
 
-  const [remainingToday, setRemainingToday] = useState(
-    FREE_TIER.maxFilesPerDay
-  );
-
-  // Sync with localStorage after mount to avoid hydration mismatch
-  useEffect(() => {
-    setRemainingToday(FREE_TIER.maxFilesPerDay - getDailyCount());
-  }, [files]);
-
   return {
     files,
     selectedFileId,
@@ -275,6 +329,6 @@ export function useFileProcessor() {
     stripOptions,
     setStripOptions,
     batchProgress,
-    remainingToday,
+    processingLog,
   };
 }

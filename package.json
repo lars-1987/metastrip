@@ -1,6 +1,6 @@
 {
   "name": "metastrip",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
-    "@stripe/stripe-js": "^8.9.0",
     "clsx": "^2.1.1",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
@@ -20,7 +19,6 @@
     "posthog-js": "^1.358.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "stripe": "^20.4.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {

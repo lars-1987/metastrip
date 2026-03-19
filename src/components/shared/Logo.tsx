@@ -1,4 +1,4 @@
-function MetaStripIcon({ size = 36 }: { size?: number }) {
+export function MetaStripIcon({ size = 36 }: { size?: number }) {
   return (
     <svg
       width={size}

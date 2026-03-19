@@ -44,6 +44,58 @@ export const CATEGORIES: BlogCategory[] = [
 
 export const ARTICLES: BlogArticle[] = [
   {
+    id: "building-terminal-in-browser",
+    slug: "how-i-built-a-terminal-that-lives-in-the-browser",
+    title: "How I Built a Terminal That Lives in the Browser (And Why It Has Neofetch)",
+    excerpt:
+      "The story of scrapping a perfectly fine landing page to rebuild a metadata removal tool inside a fake terminal \u2014 complete with draggable desktop icons, vim jokes, and a neofetch easter egg.",
+    category: "technical",
+    date: "Mar 20, 2026",
+    readTime: "6 min read",
+    featured: true,
+    tags: ["terminal", "design", "react", "easter-eggs"],
+    coverGradient: "linear-gradient(135deg, #7c3aed 0%, #f472b6 100%)",
+    coverIcon: "Laptop",
+    content: {
+      intro:
+        "Most developer tools have a landing page with a hero section, a feature grid, and a big purple \"Get Started\" button. MetaStrip had one too. It was clean, it was functional, and it was boring. So I threw it away and rebuilt the entire app inside a terminal emulator.\n\nThis is the story of how that happened, what it took to build, and why the photo.jpg on the desktop is actually draggable.",
+      sections: [
+        {
+          heading: "It started with a metadata problem",
+          body: "I needed to strip EXIF data from a batch of photos before uploading them to a marketplace. Every tool I found was either abandoned, ugly, or wanted me to upload my files to someone else\u2019s server \u2014 which kind of defeats the purpose when the whole point is privacy.\n\nThe CLI tools worked fine, but they required installing dependencies and reading man pages. I wanted something that worked in the browser, processed everything client-side, and didn\u2019t look like it was last updated when Ubuntu still shipped with Unity.\n\nSo I built a clean, modern web app. It worked. Files never left the browser. The metadata got stripped. Job done.\n\nThen I stared at it and thought: **this is just another landing page.**",
+        },
+        {
+          heading: "The terminal idea",
+          body: "The best metadata tools have always been CLI programs. ExifTool, mat2, ImageMagick \u2014 they all live in the terminal. The irony of wrapping that functionality in a generic web UI felt wrong. What if the web app **was** a terminal?\n\nNot a real terminal \u2014 a theatrical one. Something that looks and feels like Warp or iTerm2, with tabs, a powerline prompt, and actual interactive commands \u2014 but runs in the browser and processes your files client-side.\n\nThe terminal became the entire UI. The drop zone is a command prompt. The file list renders like `ls -la`. The stripping process animates like a real CLI program running through each metadata category with progress bars. Even the download button lives inside the terminal output.",
+        },
+        {
+          heading: "Building the terminal layer by layer",
+          body: "The terminal is a stack of React components pretending to be a window manager. At the top, macOS-style traffic lights and a draggable title bar. Below that, a tab bar where each tab is its own session \u2014 metastrip, ko-fi, privacy policy, about, and blog all render inside the same terminal window.\n\nThe powerline prompt was one of the most satisfying details. It mimics a real Zsh setup with Powerline symbols: the MetaStrip icon, a directory breadcrumb, and a git branch indicator. The blinking cursor sits at the end, waiting for input. When you drag files in, the prompt updates with the `metastrip` command and your selected flags. When you execute, a typewriter effect types out the full command before the stripping animation begins.\n\nEach file gets its own processing block that looks like a real CLI log \u2014 tree-branch characters, per-category progress bars that fill with a purple-to-cyan gradient, and status labels that flip from \"stripping...\" to \"removed\" as the animation plays through. The actual processing happens instantly (it\u2019s JavaScript in your browser), but the animation creates a satisfying sense of work being done.",
+        },
+        {
+          heading: "The desktop easter eggs",
+          body: "The background behind the terminal isn\u2019t just a gradient \u2014 it\u2019s a desktop. Scattered around the edges are draggable file and folder icons: privacy.txt, .env, node_modules (47 GB, naturally), uploads, README.md, and photo.jpg.\n\nEach one is a real interactive element. Double-click node_modules and a floating window opens showing is-odd, is-even, and is-thirteen with absurd file sizes. Open .env and you\u2019ll find `SECRET_KEY=nice-try-buddy` and `UPLOAD_TO_SERVER=false`. The uploads folder shows files with their exposed metadata highlighted in red \u2014 GPS coordinates, device info, author names \u2014 a subtle reminder of why the tool exists.\n\nThe wildest one: you can drag photo.jpg from the desktop directly into the terminal, and it actually works. The app generates a real JPEG with injected EXIF metadata using a canvas element and piexifjs, creates a File object, and feeds it into the processor. The terminal picks it up, runs the strip animation, and offers a download. A desktop icon became a functional demo.",
+        },
+        {
+          heading: "The interactive terminal commands",
+          body: "Since it looks like a terminal, people are going to type into it. So I made it actually work. The prompt accepts real commands.\n\n`help` lists everything available. `neofetch` displays system info in ASCII art \u2014 your OS, browser, the MetaStrip \"shell\" version, uptime, installed packages (piexifjs, pdf-lib, jszip), and privacy status. `whoami` returns \"anonymous \u2014 as it should be.\" `ls` shows your uploaded files. `clear` clears the terminal. `version` and `status` give you app info.\n\nThen there are the vim jokes. Type `vim` and you get: \"Error: vim detected. This is a safe space. Use a real editor.\" Type `:wq` and it responds: \"You\u2019re not in vim. You\u2019re free. Breathe.\" `:q!` gets you \"There is nothing to quit. You\u2019re already in the best metadata tool ever made.\" `emacs` triggers \"We don\u2019t talk about emacs here.\"\n\n`sudo rm -rf /` returns a dramatic pause followed by \"nice try. all your metadata are belong to us.\" And `exit` tells you \"There is no escape. Only metadata removal.\"",
+        },
+        {
+          heading: "Content pages as terminal tabs",
+          body: "The privacy policy, about page, and blog all render inside terminal tabs, styled like you\u2019re reading man pages or README files. The privacy policy opens with a `cat privacy.txt` prompt. The about page reads like a `--verbose` flag output. Blog articles render with markdown-style headers and monospace text.\n\nThis means the entire app is a single page. There\u2019s no navigation, no route changes, no loading screens. You click a tab and the content appears in the same terminal window. It feels like switching between tmux panes.",
+        },
+        {
+          heading: "What I'd do differently",
+          body: "The animation timing was the hardest part to get right. Each file\u2019s stripping animation needs to feel fast enough to be satisfying but slow enough to actually read. Too fast and it looks broken; too slow and it feels like the tool is actually slow. The sweet spot was about 150ms between category lines with 300ms progress bar fills.\n\nMobile was tricky. The terminal metaphor works beautifully on desktop where you have gutter space for the desktop icons and the window feels like it\u2019s floating. On mobile, the terminal goes full-screen and the desktop icons hide. It\u2019s still a terminal, just without the desktop theater around it.\n\nIf I built it again, I\u2019d probably add more commands. A `man metastrip` page. Maybe `cat` to preview file metadata before stripping. The terminal metaphor is infinitely extensible \u2014 every feature can be a command.",
+        },
+        {
+          heading: "The point of all this",
+          body: "MetaStrip started as a simple problem: strip metadata without uploading files. The solution could have stayed simple too. But somewhere between \"this works\" and \"this is fun,\" the terminal idea took over.\n\nThe result is a privacy tool that feels like a toy \u2014 in the best way. It does exactly one thing (remove metadata), does it entirely in your browser, and wraps the whole experience in enough nerdy details to make the process genuinely enjoyable.\n\nAnd if you type `neofetch`, you\u2019ll see exactly where your files don\u2019t go: nowhere. That\u2019s the point.",
+        },
+      ],
+    },
+  },
+  {
     id: "metadata-privacy-risks",
     slug: "what-metadata-reveals-about-you",
     title:
@@ -53,7 +105,7 @@ export const ARTICLES: BlogArticle[] = [
     category: "privacy",
     date: "Feb 28, 2026",
     readTime: "8 min read",
-    featured: true,
+    featured: false,
     tags: ["EXIF", "GPS", "privacy", "photos"],
     coverGradient: "linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)",
     coverIcon: "MapPin",

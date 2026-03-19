@@ -33,13 +33,7 @@ export const ACCEPTED_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ];
 
-export const FREE_TIER = {
-  maxFilesPerDay: 5,
-  maxFileSizeMB: 25,
-  singleFileOnly: true,
-  selectiveStripping: false,
-  auditReport: false,
-};
+export const BATCH_LIMIT = 20;
 
 export interface CategoryConfig {
   label: string;

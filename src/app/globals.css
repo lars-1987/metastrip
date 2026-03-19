@@ -32,7 +32,24 @@
   --animate-hero-fade-in: heroFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-gradient-shift: gradientShift 8s ease infinite;
   --animate-field-fade-in: fieldFadeIn 0.2s ease both;
+  --animate-blink-cursor: blinkCursor 1s step-end infinite;
+  --animate-type-in: typeIn 0.3s ease-out both;
+  --animate-progress-fill: progressFill 0.3s ease-out both;
 
+  --color-terminal-bg: #0c0c0e;
+
+  @keyframes blinkCursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes typeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes progressFill {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
   @keyframes orbFloat1 {
     0%, 100% { transform: translate(0, 0) scale(1); }
     33% { transform: translate(40px, 30px) scale(1.05); }
@@ -95,6 +112,14 @@
     font-family: var(--font-outfit);
     overflow-x: hidden;
   }
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 ::-webkit-scrollbar {

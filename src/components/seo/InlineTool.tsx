@@ -315,7 +315,7 @@ export default function InlineTool({ config }: InlineToolProps) {
             </p>
           </div>
           <Link
-            href="/pricing"
+            href="/"
             className="shrink-0 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white font-[family-name:var(--font-outfit)] no-underline"
             style={{
               background:

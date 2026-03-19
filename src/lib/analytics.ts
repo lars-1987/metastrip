@@ -32,13 +32,3 @@ export function trackBatchProcessed(props: {
   posthog.capture("batch_processed", props);
 }
 
-export function trackDailyLimitReached() {
-  posthog.capture("daily_limit_reached");
-}
-
-export function trackCheckoutStarted(props: {
-  pass_type: string;
-  price: number;
-}) {
-  posthog.capture("checkout_started", props);
-}

@@ -55,8 +55,8 @@ function PrivacyPolicyContent() {
         <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7]">
           Your files are processed entirely in your browser. We never see,
           store, or transmit your files. We don&apos;t track individual users.
-          We collect minimal analytics data that cannot identify you. Payments
-          are processed by Stripe — we never see your card details.
+          We collect minimal analytics data that cannot identify you. MetaStrip
+          is completely free with no accounts required.
         </p>
       </div>
 
@@ -99,25 +99,13 @@ function PrivacyPolicyContent() {
           created for anonymous visitors. This data cannot identify individual
           users.
         </p>
-        <p className="mb-3">
-          <span className="text-white/65 font-semibold">
-            Payment information:
-          </span>{" "}
-          When you purchase a batch pass, payment is processed entirely by
-          Stripe. We receive confirmation of payment and the email address you
-          provide for your receipt. We do not receive, process, or store your
-          credit card number, CVV, or billing address. See Stripe&apos;s privacy
-          policy at stripe.com/privacy for details on how Stripe handles your
-          payment data.
-        </p>
         <p>
           <span className="text-white/65 font-semibold">
-            Free tier usage limits:
+            Tips via Ko-fi:
           </span>{" "}
-          We use your browser&apos;s localStorage to track the number of free
-          files processed per day. This data is stored only in your browser and
-          is not transmitted to our servers. Clearing your browser data resets
-          this counter.
+          If you choose to leave a tip, payment is processed entirely by Ko-fi.
+          We do not receive, process, or store any payment information. Tips are
+          completely optional and do not unlock additional features.
         </p>
       </LegalSection>
 
@@ -154,9 +142,8 @@ function PrivacyPolicyContent() {
 
       <LegalSection number="4" title="Cookies and Local Storage">
         <p className="mb-3">
-          MetaStrip does not use tracking cookies. We use browser localStorage
-          solely to track the daily free tier usage counter. This data never
-          leaves your browser.
+          MetaStrip does not use tracking cookies or browser localStorage for
+          any tracking purposes.
         </p>
         <p>
           Our analytics provider (PostHog) is configured to use localStorage
@@ -166,15 +153,15 @@ function PrivacyPolicyContent() {
 
       <LegalSection number="5" title="Third-Party Services">
         <p className="mb-2">
-          <span className="text-white/65 font-semibold">Stripe</span> processes
-          payments. See{" "}
+          <span className="text-white/65 font-semibold">Ko-fi</span> processes
+          optional tips. See{" "}
           <Link
-            href="https://stripe.com/privacy"
+            href="https://more.ko-fi.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
-            stripe.com/privacy
+            ko-fi.com/privacy
           </Link>
           .
         </p>
@@ -195,8 +182,7 @@ function PrivacyPolicyContent() {
         </p>
         <p>
           <span className="text-white/65 font-semibold">Vercel</span> hosts
-          MetaStrip&apos;s website (static files and one API endpoint for Stripe
-          checkout). See{" "}
+          MetaStrip&apos;s website. See{" "}
           <Link
             href="https://vercel.com/legal/privacy-policy"
             target="_blank"
@@ -214,10 +200,6 @@ function PrivacyPolicyContent() {
           Since we do not collect personal data beyond payment receipts, there is
           minimal data to retain.
         </p>
-        <p className="mb-2">
-          Stripe retains payment records in accordance with their data retention
-          policy and applicable financial regulations.
-        </p>
         <p>
           PostHog retains aggregate analytics data. No personal profiles are
           created for anonymous visitors.
@@ -232,8 +214,7 @@ function PrivacyPolicyContent() {
           default.
         </p>
         <p>
-          If you have purchased a batch pass and wish to request deletion of
-          your email address from our Stripe records, please contact us at{" "}
+          If you have any privacy concerns, please contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
             className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
@@ -291,10 +272,9 @@ function TermsContent() {
           </span>
         </div>
         <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7]">
-          MetaStrip is a metadata removal tool provided as-is. Batch passes are
-          one-time purchases, non-refundable once used, and do not require
-          subscriptions. You&apos;re responsible for the files you process.
-          Don&apos;t use the service for anything illegal.
+          MetaStrip is a free metadata removal tool provided as-is. You&apos;re
+          responsible for the files you process. Don&apos;t use the service for
+          anything illegal.
         </p>
       </div>
 
@@ -316,68 +296,34 @@ function TermsContent() {
           to our servers.
         </p>
         <p>
-          The Service is available in a free tier (single file processing with
-          daily limits) and through paid batch passes (multi-file processing
-          with additional features).
+          The Service is completely free with support for batch processing of up
+          to 20 files at a time.
         </p>
       </LegalSection>
 
-      <LegalSection number="3" title="Free Tier">
+      <LegalSection number="3" title="Usage Limits">
         <p className="mb-3">
-          The free tier allows processing of single image files with complete
-          metadata removal. Free tier usage is limited to 5 files per day, with
-          a maximum file size of 25 MB. Free tier limits are tracked via browser
-          localStorage.
+          MetaStrip allows processing of up to 20 files per batch, supporting
+          both images and documents. There are no daily limits.
         </p>
         <p>
-          We reserve the right to modify free tier limits at any time without
+          We reserve the right to modify usage limits at any time without
           notice.
         </p>
       </LegalSection>
 
-      <LegalSection number="4" title="Batch Passes and Payments">
-        <p className="mb-3">
-          Batch passes are one-time purchases that unlock multi-file processing
-          for a specified number of files. Batch passes are available in the
-          following tiers:
-        </p>
-        <p className="mb-2">
-          <span className="text-white/65 font-semibold">
-            Image Batch ($2.99 USD):
-          </span>{" "}
-          Process up to 50 image files with selective metadata removal and audit
-          report.
-        </p>
-        <p className="mb-3">
-          <span className="text-white/65 font-semibold">
-            Document Batch ($4.99 USD):
-          </span>{" "}
-          Process up to 25 document files with selective metadata removal and
-          audit report.
-        </p>
-        <p className="mb-3">
-          Payments are processed by Stripe. We do not store your payment
-          details. All prices are in US dollars and include applicable taxes
-          where required.
-        </p>
-        <p className="mb-3">
-          <span className="text-white/65 font-semibold">Refunds:</span> Batch
-          passes that have been fully or partially used are non-refundable. If
-          you experience a technical issue that prevents you from using a
-          purchased batch pass, contact us at{" "}
+      <LegalSection number="4" title="Tips and Support">
+        <p>
+          MetaStrip is free to use. Optional tips can be made via Ko-fi.
+          Tips do not unlock additional features and are non-refundable.
+          For any questions, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
             className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             hello@metastrip.app
-          </Link>{" "}
-          within 7 days of purchase for a refund or replacement.
-        </p>
-        <p>
-          Batch passes do not expire but are tied to a single browser session.
-          Clearing your browser data or switching browsers will invalidate an
-          active batch pass. We recommend using your batch pass promptly after
-          purchase.
+          </Link>
+          .
         </p>
       </LegalSection>
 
