@@ -144,30 +144,41 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
         />
 
         {files.length === 0 && (
-          <div className="font-[family-name:var(--font-mono)] text-sm space-y-1.5 mb-4 animate-card-slide-in">
-            <div className="text-white/55">
-              metastrip v2.0 — client-side metadata removal
-            </div>
-            <div className="text-white/55">
-              supported: jpeg, png, webp, pdf, docx, xlsx, pptx
-            </div>
-            <div className="text-white/55">
-              batch limit: {BATCH_LIMIT} files | all processing happens in your browser
-            </div>
+          <>
+            {/* Upload badge */}
             <div
-              className="text-white/40 mt-3 cursor-pointer hover:text-white/55 transition-colors"
+              className={`flex flex-col items-center justify-center py-10 mb-6 rounded-xl border border-dashed cursor-pointer transition-all duration-200 animate-card-slide-in ${
+                isDragOver
+                  ? "border-purple-light/40 bg-purple/[0.06]"
+                  : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
                 inputRef.current?.click();
               }}
             >
-              {isDragOver ? (
-                <span className="text-purple-light">↳ drop files here...</span>
-              ) : (
-                "drag files here or click to browse"
-              )}
+              <div className={`text-3xl mb-3 transition-transform duration-200 ${isDragOver ? "scale-110 -translate-y-1" : ""}`}>
+                {isDragOver ? "↓" : "↑"}
+              </div>
+              <div className={`font-[family-name:var(--font-mono)] text-sm transition-colors duration-200 ${
+                isDragOver ? "text-purple-light" : "text-white/35"
+              }`}>
+                {isDragOver ? "drop files here..." : "drag & drop files or click to browse"}
+              </div>
+              <div className="font-[family-name:var(--font-mono)] text-[11px] text-white/20 mt-1.5">
+                jpeg, png, webp, pdf, docx, xlsx, pptx
+              </div>
             </div>
-          </div>
+
+            <div className="font-[family-name:var(--font-mono)] text-sm space-y-1.5 mb-4 animate-card-slide-in [animation-delay:100ms]">
+              <div className="text-white/55">
+                metastrip v2.0 — client-side metadata removal
+              </div>
+              <div className="text-white/55">
+                batch limit: {BATCH_LIMIT} files | all processing happens in your browser
+              </div>
+            </div>
+          </>
         )}
 
         {files.length > 0 && (
