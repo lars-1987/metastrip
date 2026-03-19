@@ -133,7 +133,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
       }`}
       {...dragHandlers}
     >
-      <div className="min-h-full flex flex-col justify-end p-4 md:p-6">
+      <div className="min-h-full flex flex-col justify-end p-4 pb-20 md:p-6 md:pb-6">
         <input
           ref={inputRef}
           type="file"
