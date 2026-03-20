@@ -229,6 +229,22 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
           onDownload={handleDownload}
           onClear={clearAll}
         />
+
+        {/* tmux-style status bar */}
+        {files.length === 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 mt-6 pt-3 border-t border-white/[0.04] font-[family-name:var(--font-mono)] text-[11px] animate-card-slide-in [animation-delay:200ms]">
+            <span className="px-2 py-0.5 rounded bg-purple/20 text-purple-light">v2.0</span>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30">client-side</span>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30">no tracking</span>
+            <span className="flex-1" />
+            <a href="mailto:hello@metastrip.app" className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-colors no-underline">
+              hello@metastrip.app
+            </a>
+            <a href="https://twitter.com/metastripapp" target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30 hover:text-cyan-400/70 hover:bg-white/[0.06] transition-colors no-underline">
+              @metastripapp
+            </a>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
     </div>

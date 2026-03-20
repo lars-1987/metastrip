@@ -177,8 +177,8 @@ export function AboutTab() {
               hello@metastrip.app
             </a>
             <span className="text-white/10 mx-2">|</span>
-            <a href="https://twitter.com/metastrip" target="_blank" rel="noopener noreferrer" className="text-cyan-400/50 hover:text-cyan-400 transition-colors no-underline">
-              @metastrip
+            <a href="https://twitter.com/metastripapp" target="_blank" rel="noopener noreferrer" className="text-cyan-400/50 hover:text-cyan-400 transition-colors no-underline">
+              @metastripapp
             </a>
           </div>
         </div>

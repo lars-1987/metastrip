@@ -356,12 +356,12 @@ export function AboutPage() {
               hello@metastrip.app
             </a>
             <a
-              href="https://twitter.com/metastrip"
+              href="https://twitter.com/metastripapp"
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-3.5 rounded-xl cursor-pointer text-white/70 text-[15px] font-semibold font-[family-name:var(--font-outfit)] border border-white/10 bg-white/[0.03] transition-all duration-250 hover:bg-white/[0.06] no-underline"
             >
-              @metastrip
+              @metastripapp
             </a>
           </div>
         </section>
