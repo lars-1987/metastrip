@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SEOLandingPage } from "@/components/seo/SEOLandingPage";
+import { SEOTerminalPage } from "@/components/seo/SEOTerminalPage";
 import { getSEOConfig, SEO_SLUGS } from "@/lib/seo-configs";
 
 interface PageProps {
@@ -67,7 +67,7 @@ export default async function Page({ params }: PageProps) {
           }),
         }}
       />
-      <SEOLandingPage config={config} />
+      <SEOTerminalPage config={config} />
     </>
   );
 }

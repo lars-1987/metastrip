@@ -21,9 +21,15 @@ export interface BatchProgress {
   currentFileName?: string;
 }
 
+export interface CategoryFieldDetail {
+  label: string;
+  value: string;
+}
+
 export interface CategoryResult {
   category: MetadataCategory;
   fieldsRemoved: number;
+  fields?: CategoryFieldDetail[];
 }
 
 export interface ProcessingLogEntry {
@@ -143,7 +149,13 @@ export function useFileProcessor() {
           catMap.set(field.category, (catMap.get(field.category) ?? 0) + 1);
         }
         const categoryResults: CategoryResult[] = Array.from(catMap.entries()).map(
-          ([category, fieldsRemoved]) => ({ category, fieldsRemoved })
+          ([category, count]) => ({
+            category,
+            fieldsRemoved: count,
+            fields: result.report.fieldsRemoved
+              .filter((f) => f.category === category)
+              .map((f) => ({ label: f.label || f.key, value: String(f.value ?? "") })),
+          })
         );
 
         setProcessingLog((prev) =>
@@ -236,7 +248,13 @@ export function useFileProcessor() {
               catMap.set(field.category, (catMap.get(field.category) ?? 0) + 1);
             }
             categoryResults = Array.from(catMap.entries()).map(
-              ([category, fieldsRemoved]) => ({ category, fieldsRemoved })
+              ([category, count]) => ({
+                category,
+                fieldsRemoved: count,
+                fields: result.report.fieldsRemoved
+                  .filter((f) => f.category === category)
+                  .map((f) => ({ label: f.label || f.key, value: String(f.value ?? "") })),
+              })
             );
           }
 
