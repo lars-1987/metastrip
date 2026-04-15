@@ -2,6 +2,8 @@ import { MetadataRoute } from "next";
 import { SEO_SLUGS } from "@/lib/seo-configs";
 import { BLOG_SLUGS } from "@/lib/blog-data";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://metastrip.app";
 
