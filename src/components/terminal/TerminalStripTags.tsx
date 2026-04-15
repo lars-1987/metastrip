@@ -24,7 +24,7 @@ export function TerminalStripTags({ stripOptions, onToggle, onToggleAll }: Termi
         className={`px-2.5 py-1 rounded text-xs font-[family-name:var(--font-mono)] font-medium border cursor-pointer transition-all duration-150 ${
           allSelected
             ? "bg-purple/20 text-purple-light border-purple/30"
-            : "bg-white/[0.03] text-white/30 border-white/[0.06] hover:border-white/[0.12]"
+            : "bg-white/[0.03] text-white/40 border-white/[0.06] hover:border-white/[0.12]"
         }`}
       >
         all
@@ -39,7 +39,7 @@ export function TerminalStripTags({ stripOptions, onToggle, onToggleAll }: Termi
             className={`px-2.5 py-1 rounded text-xs font-[family-name:var(--font-mono)] font-medium border cursor-pointer transition-all duration-150 ${
               active
                 ? "bg-purple/20 text-purple-light border-purple/30"
-                : "bg-white/[0.03] text-white/30 border-white/[0.06] hover:border-white/[0.12]"
+                : "bg-white/[0.03] text-white/40 border-white/[0.06] hover:border-white/[0.12]"
             }`}
           >
             {CATEGORY_CONFIG[cat].label.toLowerCase().split(" ")[0]}

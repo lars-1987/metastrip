@@ -32,7 +32,7 @@ export default function ExplainerTabs({ tabs }: ExplainerTabsProps) {
               <Icon name={tab.icon} size={14} weight="duotone" />
               <span
                 className={`text-[13px] font-medium font-[family-name:var(--font-outfit)] truncate ${
-                  isActive ? "text-white/85" : "text-white/35"
+                  isActive ? "text-white/95" : "text-white/45"
                 }`}
               >
                 {tab.label}
@@ -51,20 +51,20 @@ export default function ExplainerTabs({ tabs }: ExplainerTabsProps) {
           <div className="p-8 px-7">
             {/* Icon + title */}
             <div className="flex items-center gap-3 mb-4">
-              <Icon name={current.icon} size={24} weight="duotone" className="text-white/80" />
-              <h3 className="text-xl font-bold text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em]">
+              <Icon name={current.icon} size={24} weight="duotone" className="text-white/90" />
+              <h3 className="text-xl font-bold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em]">
                 {current.title}
               </h3>
             </div>
 
             {/* Description */}
-            <p className="text-sm text-white/45 font-[family-name:var(--font-outfit)] leading-[1.7] mb-5 max-w-[560px]">
+            <p className="text-sm text-white/55 font-[family-name:var(--font-outfit)] leading-[1.7] mb-5 max-w-[560px]">
               {current.description}
             </p>
 
             {/* Example box */}
             <div className="p-[14px] px-[18px] rounded-xl bg-black/30 border border-white/[0.05] mb-4">
-              <p className="text-[10px] text-white/25 font-[family-name:var(--font-mono)] mb-1.5 tracking-[0.08em] uppercase">
+              <p className="text-[10px] text-white/35 font-[family-name:var(--font-mono)] mb-1.5 tracking-[0.08em] uppercase">
                 {current.example.label}
               </p>
               <p

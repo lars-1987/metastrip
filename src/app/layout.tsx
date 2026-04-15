@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { PostHogProviderWrapper } from "@/components/providers/PostHogProvider";
-import { KofiFloatingWidget } from "@/components/shared/KofiFloatingWidget";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -41,7 +40,6 @@ export default function RootLayout({
         <PostHogProviderWrapper>
           {children}
         </PostHogProviderWrapper>
-        <KofiFloatingWidget />
       </body>
     </html>
   );

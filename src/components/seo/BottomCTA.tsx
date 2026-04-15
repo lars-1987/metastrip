@@ -14,11 +14,11 @@ export default function BottomCTA({ batchCta }: BottomCTAProps) {
           "linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(6,182,212,0.04) 100%)",
       }}
     >
-      <h2 className="text-[26px] font-bold text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2.5">
+      <h2 className="text-[26px] font-bold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2.5">
         Ready to strip metadata? It&apos;s free.
       </h2>
 
-      <p className="text-sm text-white/40 font-[family-name:var(--font-outfit)] mb-6 leading-relaxed">
+      <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] mb-6 leading-relaxed">
         {batchCta.subtext}
       </p>
 

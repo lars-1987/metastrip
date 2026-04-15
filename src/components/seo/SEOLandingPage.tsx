@@ -41,7 +41,7 @@ export function SEOLandingPage({ config }: SEOLandingPageProps) {
           >
             {config.title}
           </h1>
-          <p className="text-[17px] text-white/40 max-w-[540px] mx-auto font-[family-name:var(--font-outfit)] leading-[1.7]">
+          <p className="text-[17px] text-white/50 max-w-[540px] mx-auto font-[family-name:var(--font-outfit)] leading-[1.7]">
             {config.subtitle}
           </p>
         </div>
@@ -51,10 +51,10 @@ export function SEOLandingPage({ config }: SEOLandingPageProps) {
 
         {/* What's Hidden */}
         <section className="mt-20">
-          <h2 className="text-[28px] font-bold text-center text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
+          <h2 className="text-[28px] font-bold text-center text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
             What&apos;s hidden in your files?
           </h2>
-          <p className="text-sm text-white/35 text-center font-[family-name:var(--font-outfit)] mb-8">
+          <p className="text-sm text-white/45 text-center font-[family-name:var(--font-outfit)] mb-8">
             Tap each category to see real examples
           </p>
           <ExplainerTabs tabs={config.explainerTabs} />
@@ -62,10 +62,10 @@ export function SEOLandingPage({ config }: SEOLandingPageProps) {
 
         {/* How It Works */}
         <section className="mt-20">
-          <h2 className="text-[28px] font-bold text-center text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
+          <h2 className="text-[28px] font-bold text-center text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
             How it works
           </h2>
-          <p className="text-sm text-white/35 text-center font-[family-name:var(--font-outfit)] mb-8">
+          <p className="text-sm text-white/45 text-center font-[family-name:var(--font-outfit)] mb-8">
             Three steps. No account. No upload. No cost.
           </p>
           <HowItWorks />
@@ -73,10 +73,10 @@ export function SEOLandingPage({ config }: SEOLandingPageProps) {
 
         {/* Supported Formats */}
         <section className="mt-20">
-          <h2 className="text-[28px] font-bold text-center text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
+          <h2 className="text-[28px] font-bold text-center text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
             Supported formats
           </h2>
-          <p className="text-sm text-white/35 text-center font-[family-name:var(--font-outfit)] mb-8">
+          <p className="text-sm text-white/45 text-center font-[family-name:var(--font-outfit)] mb-8">
             Deep metadata scanning for every field
           </p>
           <SupportedFormats formats={config.supportedFormats} />

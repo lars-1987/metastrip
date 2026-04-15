@@ -26,11 +26,11 @@ function LegalSection({
         <span className="text-xs font-semibold text-purple-light font-[family-name:var(--font-mono)]">
           {number}.
         </span>
-        <h2 className="text-lg font-semibold text-white/85 font-[family-name:var(--font-outfit)] tracking-[-0.02em]">
+        <h2 className="text-lg font-semibold text-white/95 font-[family-name:var(--font-outfit)] tracking-[-0.02em]">
           {title}
         </h2>
       </div>
-      <div className="text-sm text-white/45 font-[family-name:var(--font-outfit)] leading-[1.85] pl-7">
+      <div className="text-sm text-white/55 font-[family-name:var(--font-outfit)] leading-[1.85] pl-7">
         {children}
       </div>
     </div>
@@ -52,7 +52,7 @@ function PrivacyPolicyContent() {
             The short version
           </span>
         </div>
-        <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7]">
+        <p className="text-sm text-white/60 font-[family-name:var(--font-outfit)] leading-[1.7]">
           Your files are processed entirely in your browser. We never see,
           store, or transmit your files. We don&apos;t track individual users.
           We collect minimal analytics data that cannot identify you. MetaStrip
@@ -91,7 +91,7 @@ function PrivacyPolicyContent() {
           We collect the minimum information necessary to operate the service:
         </p>
         <p className="mb-3">
-          <span className="text-white/65 font-semibold">Analytics data:</span>{" "}
+          <span className="text-white/75 font-semibold">Analytics data:</span>{" "}
           We use PostHog for product analytics, configured to use localStorage
           instead of cookies and to respect the Do Not Track browser setting.
           PostHog collects page views, click interactions, referral sources,
@@ -100,7 +100,7 @@ function PrivacyPolicyContent() {
           users.
         </p>
         <p>
-          <span className="text-white/65 font-semibold">
+          <span className="text-white/75 font-semibold">
             Tips via Ko-fi:
           </span>{" "}
           If you choose to leave a tip, payment is processed entirely by Ko-fi.
@@ -153,20 +153,20 @@ function PrivacyPolicyContent() {
 
       <LegalSection number="5" title="Third-Party Services">
         <p className="mb-2">
-          <span className="text-white/65 font-semibold">Ko-fi</span> processes
+          <span className="text-white/75 font-semibold">Ko-fi</span> processes
           optional tips. See{" "}
           <Link
             href="https://more.ko-fi.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             ko-fi.com/privacy
           </Link>
           .
         </p>
         <p className="mb-2">
-          <span className="text-white/65 font-semibold">
+          <span className="text-white/75 font-semibold">
             PostHog
           </span>{" "}
           provides product analytics. See{" "}
@@ -174,20 +174,20 @@ function PrivacyPolicyContent() {
             href="https://posthog.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             posthog.com/privacy
           </Link>
           .
         </p>
         <p>
-          <span className="text-white/65 font-semibold">Vercel</span> hosts
+          <span className="text-white/75 font-semibold">Vercel</span> hosts
           MetaStrip&apos;s website. See{" "}
           <Link
             href="https://vercel.com/legal/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             vercel.com/legal/privacy-policy
           </Link>
@@ -217,7 +217,7 @@ function PrivacyPolicyContent() {
           If you have any privacy concerns, please contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -245,7 +245,7 @@ function PrivacyPolicyContent() {
           For privacy-related questions or concerns, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -271,7 +271,7 @@ function TermsContent() {
             The short version
           </span>
         </div>
-        <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7]">
+        <p className="text-sm text-white/60 font-[family-name:var(--font-outfit)] leading-[1.7]">
           MetaStrip is a free metadata removal tool provided as-is. You&apos;re
           responsible for the files you process. Don&apos;t use the service for
           anything illegal.
@@ -319,7 +319,7 @@ function TermsContent() {
           For any questions, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -433,7 +433,7 @@ function TermsContent() {
           For questions about these Terms, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/70 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -474,7 +474,7 @@ export function PrivacyPage() {
           >
             Legal
           </h1>
-          <p className="text-[15px] text-white/40 font-[family-name:var(--font-outfit)] leading-relaxed">
+          <p className="text-[15px] text-white/50 font-[family-name:var(--font-outfit)] leading-relaxed">
             Boring but important. Here&apos;s how we handle your data (spoiler:
             we don&apos;t).
           </p>
@@ -492,10 +492,10 @@ export function PrivacyPage() {
                   : "bg-transparent hover:bg-white/[0.03]"
               }`}
             >
-              <Icon name={tab.id === "privacy" ? "Lock" : "ClipboardText"} size={15} weight="duotone" className={activeTab === tab.id ? "text-white/90" : "text-white/35"} />
+              <Icon name={tab.id === "privacy" ? "Lock" : "ClipboardText"} size={15} weight="duotone" className={activeTab === tab.id ? "text-white/95" : "text-white/45"} />
               <span
                 className={`text-sm font-semibold font-[family-name:var(--font-outfit)] transition-colors duration-[250ms] ${
-                  activeTab === tab.id ? "text-white/90" : "text-white/35"
+                  activeTab === tab.id ? "text-white/95" : "text-white/45"
                 }`}
               >
                 {tab.label}
@@ -506,13 +506,13 @@ export function PrivacyPage() {
 
         {/* Effective date */}
         <div className="flex items-center gap-2 mb-8 animate-card-slide-in [animation-delay:200ms]">
-          <span className="text-xs text-white/25 font-[family-name:var(--font-mono)]">
+          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
             Effective: March 1, 2026
           </span>
           <span className="text-xs text-white/[0.12] font-[family-name:var(--font-mono)]">
             |
           </span>
-          <span className="text-xs text-white/25 font-[family-name:var(--font-mono)]">
+          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
             Last updated: March 1, 2026
           </span>
         </div>
@@ -532,10 +532,10 @@ export function PrivacyPage() {
         {/* Contact bar */}
         <div className="mt-8 py-5 px-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-between animate-card-slide-in [animation-delay:300ms]">
           <div>
-            <p className="text-sm font-semibold text-white/70 font-[family-name:var(--font-outfit)]">
+            <p className="text-sm font-semibold text-white/80 font-[family-name:var(--font-outfit)]">
               Questions about our policies?
             </p>
-            <p className="text-[13px] text-white/35 font-[family-name:var(--font-outfit)] mt-0.5">
+            <p className="text-[13px] text-white/45 font-[family-name:var(--font-outfit)] mt-0.5">
               We&apos;re happy to clarify anything.
             </p>
           </div>

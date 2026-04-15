@@ -5,7 +5,7 @@ export function AboutTab() {
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Terminal prompt */}
       <div className="shrink-0 px-4 md:px-6 pt-4 pb-3">
-        <div className="font-[family-name:var(--font-mono)] text-sm text-white/55">
+        <div className="font-[family-name:var(--font-mono)] text-sm text-white/65">
           <span className="text-purple-400 mr-1.5">❯</span>
           <span>cat /etc/metastrip/README.md</span>
         </div>
@@ -15,13 +15,13 @@ export function AboutTab() {
       <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-6">
         {/* Header */}
         <div className="mb-6 pb-4 border-b border-white/[0.06]">
-          <div className="text-xs text-white/25 font-[family-name:var(--font-mono)] mb-2">
+          <div className="text-xs text-white/35 font-[family-name:var(--font-mono)] mb-2">
             ─── README.md ───
           </div>
-          <div className="text-xl font-bold text-white/90 font-[family-name:var(--font-mono)]">
+          <div className="text-xl font-bold text-white/95 font-[family-name:var(--font-mono)]">
             # MetaStrip
           </div>
-          <div className="text-sm text-white/45 font-[family-name:var(--font-mono)] mt-1">
+          <div className="text-sm text-white/55 font-[family-name:var(--font-mono)] mt-1">
             Privacy-first metadata removal. Client-side only.
           </div>
         </div>
@@ -38,7 +38,7 @@ export function AboutTab() {
               <div className={`text-lg font-bold font-[family-name:var(--font-mono)] ${stat.color}`}>
                 {stat.value}
               </div>
-              <div className="text-xs text-white/35 font-[family-name:var(--font-mono)] mt-0.5">
+              <div className="text-xs text-white/45 font-[family-name:var(--font-mono)] mt-0.5">
                 {stat.label}
               </div>
             </div>
@@ -47,10 +47,10 @@ export function AboutTab() {
 
         {/* Origin story */}
         <div className="mb-6">
-          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/60 mb-3">
+          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/70 mb-3">
             ## Why MetaStrip exists
           </div>
-          <div className="pl-4 border-l border-white/[0.06] text-sm text-white/50 font-[family-name:var(--font-mono)] leading-[1.9] flex flex-col gap-2.5">
+          <div className="pl-4 border-l border-white/[0.06] text-sm text-white/60 font-[family-name:var(--font-mono)] leading-[1.9] flex flex-col gap-2.5">
             <p>
               It started the way most side projects do — I had a problem and
               nothing solved it properly. I needed to strip metadata from a
@@ -77,7 +77,7 @@ export function AboutTab() {
               programs, why not make one that lives in the browser? Same
               power, zero setup, and a bit of fun baked in.
             </p>
-            <p className="text-white/40">
+            <p className="text-white/50">
               Built in Melbourne by a dev who likes privacy, terminals,
               and not uploading files to random servers.
             </p>
@@ -86,7 +86,7 @@ export function AboutTab() {
 
         {/* Principles */}
         <div className="mb-6">
-          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/60 mb-3">
+          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/70 mb-3">
             ## Privacy principles
           </div>
           {[
@@ -116,11 +116,11 @@ export function AboutTab() {
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400/70 font-[family-name:var(--font-mono)] font-bold">
                   {p.tag}
                 </span>
-                <span className="text-sm text-white/65 font-[family-name:var(--font-mono)] font-bold">
+                <span className="text-sm text-white/75 font-[family-name:var(--font-mono)] font-bold">
                   {p.title}
                 </span>
               </div>
-              <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] leading-relaxed">
+              <div className="text-xs text-white/50 font-[family-name:var(--font-mono)] leading-relaxed">
                 {p.detail}
               </div>
             </div>
@@ -129,17 +129,17 @@ export function AboutTab() {
 
         {/* Data flow */}
         <div className="mb-6">
-          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/60 mb-3">
+          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/70 mb-3">
             ## Data flow
           </div>
           <div className="p-4 rounded-lg bg-black/30 border border-white/[0.06]">
             <div className="text-sm font-[family-name:var(--font-mono)] leading-[2]">
-              <div><span className="text-green-400">1.</span> <span className="text-white/50">Your browser reads file as ArrayBuffer (local memory only)</span></div>
-              <div><span className="text-purple-400">2.</span> <span className="text-white/50">Processing engine runs client-side JS library</span></div>
-              <div className="text-white/35 pl-4">├─ piexifjs → JPEG EXIF removal</div>
-              <div className="text-white/35 pl-4">├─ pdf-lib  → PDF metadata clearing</div>
-              <div className="text-white/35 pl-4">└─ JSZip   → Office XML metadata</div>
-              <div><span className="text-cyan-400">3.</span> <span className="text-white/50">Clean file generated in memory → browser download</span></div>
+              <div><span className="text-green-400">1.</span> <span className="text-white/60">Your browser reads file as ArrayBuffer (local memory only)</span></div>
+              <div><span className="text-purple-400">2.</span> <span className="text-white/60">Processing engine runs client-side JS library</span></div>
+              <div className="text-white/45 pl-4">├─ piexifjs → JPEG EXIF removal</div>
+              <div className="text-white/45 pl-4">├─ pdf-lib  → PDF metadata clearing</div>
+              <div className="text-white/45 pl-4">└─ JSZip   → Office XML metadata</div>
+              <div><span className="text-cyan-400">3.</span> <span className="text-white/60">Clean file generated in memory → browser download</span></div>
             </div>
             <div className="mt-3 pt-3 border-t border-white/[0.06] text-xs text-red-400/50 font-[family-name:var(--font-mono)]">
               ⚠ No server. No API calls. No file uploads. Verify in DevTools.
@@ -149,7 +149,7 @@ export function AboutTab() {
 
         {/* Libraries */}
         <div className="mb-6">
-          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/60 mb-3">
+          <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/70 mb-3">
             ## Dependencies
           </div>
           <div className="text-xs font-[family-name:var(--font-mono)] leading-[2]">
@@ -160,7 +160,7 @@ export function AboutTab() {
             ].map((lib) => (
               <div key={lib.name}>
                 <a href={lib.url} target="_blank" rel="noopener noreferrer" className={`${lib.color} hover:underline underline-offset-2 no-underline`}>{lib.name.padEnd(10)}</a>
-                <span className="text-white/40"> {lib.desc}</span>
+                <span className="text-white/50"> {lib.desc}</span>
               </div>
             ))}
           </div>
@@ -168,15 +168,15 @@ export function AboutTab() {
 
         {/* Contact */}
         <div className="mt-6 pt-4 border-t border-white/[0.06]">
-          <div className="text-xs text-white/25 font-[family-name:var(--font-mono)]">
+          <div className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
             ─── EOF ───
           </div>
-          <div className="text-sm text-white/40 font-[family-name:var(--font-mono)] mt-2">
+          <div className="text-sm text-white/50 font-[family-name:var(--font-mono)] mt-2">
             Questions? →{" "}
             <a href="mailto:hello@metastrip.app" className="text-purple-400/70 hover:text-purple-400 transition-colors no-underline">
               hello@metastrip.app
             </a>
-            <span className="text-white/10 mx-2">|</span>
+            <span className="text-white/20 mx-2">|</span>
             <a href="https://twitter.com/metastripapp" target="_blank" rel="noopener noreferrer" className="text-cyan-400/50 hover:text-cyan-400 transition-colors no-underline">
               @metastripapp
             </a>

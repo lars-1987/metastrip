@@ -70,8 +70,8 @@ function CategoryStripLine({
   return (
     <div>
       <div className="flex items-center gap-1.5 h-5">
-        <span className="text-white/30 w-5 shrink-0 text-right">{branch}</span>
-        <span className="text-white/55 shrink-0">stripping {label}...</span>
+        <span className="text-white/40 w-5 shrink-0 text-right">{branch}</span>
+        <span className="text-white/65 shrink-0">stripping {label}...</span>
         <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden shrink-0 mx-1.5">
           <div
             className="h-full rounded-full transition-all ease-out"
@@ -87,10 +87,10 @@ function CategoryStripLine({
         {showResult ? (
           fieldsRemoved > 0 ? (
             <span className="text-success">
-              removed <span className="text-white/40">({fieldsRemoved} field{fieldsRemoved !== 1 ? "s" : ""})</span>
+              removed <span className="text-white/50">({fieldsRemoved} field{fieldsRemoved !== 1 ? "s" : ""})</span>
             </span>
           ) : (
-            <span className="text-white/35">clean</span>
+            <span className="text-white/45">clean</span>
           )
         ) : (
           <span className="text-purple-light animate-pulse-dot">●</span>
@@ -104,9 +104,9 @@ function CategoryStripLine({
             const fieldBranch = isLast && isLastField ? "└─" : "│ ";
             return (
               <div key={i} className="flex items-center gap-1.5 h-4 text-[12px] animate-card-slide-in">
-                <span className="text-white/15 w-5 shrink-0 text-right">{fieldBranch}</span>
-                <span className="text-white/30">{f.label}:</span>
-                <span className="text-white/20 truncate">{truncate(f.value)}</span>
+                <span className="text-white/25 w-5 shrink-0 text-right">{fieldBranch}</span>
+                <span className="text-white/40">{f.label}:</span>
+                <span className="text-white/30 truncate">{truncate(f.value)}</span>
               </div>
             );
           })}
@@ -164,7 +164,7 @@ function FileProcessingBlock({
     <div className="mb-3 animate-card-slide-in">
       {/* File header */}
       <div className="flex items-center gap-1.5 mb-0.5">
-        <span className="text-white/40">[{index + 1}/{total}]</span>
+        <span className="text-white/50">[{index + 1}/{total}]</span>
         <span className="text-cyan font-semibold">{entry.fileName}</span>
         {entry.status === "processing" && !entry.categoryResults && (
           <span className="text-purple-light animate-pulse-dot">●</span>
@@ -192,7 +192,7 @@ function FileProcessingBlock({
 
       {/* Processing spinner when still working */}
       {entry.status === "processing" && !entry.categoryResults && (
-        <div className="pl-4 flex items-center gap-2 text-white/45">
+        <div className="pl-4 flex items-center gap-2 text-white/55">
           <span className="w-3 h-3 border-2 border-purple/30 border-t-purple rounded-full animate-spin" />
           <span>processing...</span>
         </div>
@@ -210,7 +210,7 @@ function FileProcessingBlock({
       {entry.status === "done" && summaryVisible && (
         <div className="pl-4 mt-1 animate-card-slide-in">
           <span className="text-success">✓ done</span>
-          <span className="text-white/40"> — {entry.fieldsRemoved ?? 0} fields removed</span>
+          <span className="text-white/50"> — {entry.fieldsRemoved ?? 0} fields removed</span>
         </div>
       )}
     </div>
@@ -250,10 +250,10 @@ export function TerminalOutput({ log, total, stripOptions, onOpenSupport }: Term
               <span className="text-danger ml-2">({errorCount} failed)</span>
             )}
           </div>
-          <div className="text-white/55">
+          <div className="text-white/65">
             download ready → <span className="text-cyan">{doneCount > 1 ? "cleaned_files.zip" : `cleaned_${log[0]?.fileName ?? "file"}`}</span>
           </div>
-          <div className="text-white/40 mt-2">
+          <div className="text-white/50 mt-2">
             <span className="mr-1">☕</span> if this saved you time:{" "}
             <button
               onClick={onOpenSupport}

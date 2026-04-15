@@ -96,7 +96,7 @@ export function FloatingWindow({
           </div>
 
           {/* Title */}
-          <span className="flex-1 text-center text-[10px] text-white/30 font-[family-name:var(--font-mono)] truncate">
+          <span className="flex-1 text-center text-[10px] text-white/40 font-[family-name:var(--font-mono)] truncate">
             {title}
           </span>
 

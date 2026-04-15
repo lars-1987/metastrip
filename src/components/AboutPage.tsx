@@ -111,7 +111,7 @@ export function AboutPage() {
             <br />
             By design.
           </h1>
-          <p className="text-[17px] text-white/40 max-w-[520px] mx-auto font-[family-name:var(--font-outfit)] leading-[1.7]">
+          <p className="text-[17px] text-white/50 max-w-[520px] mx-auto font-[family-name:var(--font-outfit)] leading-[1.7]">
             MetaStrip is a metadata removal tool built on a simple principle: a
             privacy tool should be private. Your files are processed entirely in
             your browser. We never see, store, or transmit them.
@@ -137,7 +137,7 @@ export function AboutPage() {
                   </span>
                 )}
               </div>
-              <div className="text-xs text-white/35 font-[family-name:var(--font-outfit)] mt-1.5">
+              <div className="text-xs text-white/45 font-[family-name:var(--font-outfit)] mt-1.5">
                 {s.label}
               </div>
             </div>
@@ -150,12 +150,12 @@ export function AboutPage() {
           style={{ animationDelay: "0.2s" }}
         >
           <div className="flex items-center gap-2.5 mb-5">
-            <Icon name="Lightbulb" size={24} weight="duotone" className="text-white/80" />
-            <h2 className="text-[22px] font-bold text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em]">
+            <Icon name="Lightbulb" size={24} weight="duotone" className="text-white/90" />
+            <h2 className="text-[22px] font-bold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em]">
               Why MetaStrip exists
             </h2>
           </div>
-          <div className="text-[15px] text-white/45 font-[family-name:var(--font-outfit)] leading-[1.85]">
+          <div className="text-[15px] text-white/55 font-[family-name:var(--font-outfit)] leading-[1.85]">
             <p className="mb-3.5">
               It started the way most side projects do — I had a problem and
               nothing solved it properly. I needed to strip metadata from a
@@ -192,10 +192,10 @@ export function AboutPage() {
 
         {/* ── Principles ── */}
         <section className="mt-16">
-          <h2 className="text-[28px] font-bold text-center text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
+          <h2 className="text-[28px] font-bold text-center text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
             Our privacy principles
           </h2>
-          <p className="text-sm text-white/35 text-center font-[family-name:var(--font-outfit)] mb-8">
+          <p className="text-sm text-white/45 text-center font-[family-name:var(--font-outfit)] mb-8">
             Not just promises — architectural guarantees
           </p>
           <div className="flex flex-col gap-4">
@@ -206,12 +206,12 @@ export function AboutPage() {
                 style={{ animationDelay: `${0.15 + i * 0.1}s` }}
               >
                 <div className="flex gap-4.5">
-                  <span className="shrink-0 mt-0.5"><Icon name={p.icon} size={28} weight="duotone" className="text-white/80" /></span>
+                  <span className="shrink-0 mt-0.5"><Icon name={p.icon} size={28} weight="duotone" className="text-white/90" /></span>
                   <div>
-                    <h3 className="text-lg font-bold text-white/90 font-[family-name:var(--font-outfit)] mb-2 -tracking-[0.02em]">
+                    <h3 className="text-lg font-bold text-white/95 font-[family-name:var(--font-outfit)] mb-2 -tracking-[0.02em]">
                       {p.title}
                     </h3>
-                    <p className="text-sm text-white/45 font-[family-name:var(--font-outfit)] leading-[1.75] mb-3">
+                    <p className="text-sm text-white/55 font-[family-name:var(--font-outfit)] leading-[1.75] mb-3">
                       {p.body}
                     </p>
                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-purple/[0.06] border border-purple/[0.08]">
@@ -228,10 +228,10 @@ export function AboutPage() {
 
         {/* ── Tech Architecture ── */}
         <section className="mt-16">
-          <h2 className="text-[28px] font-bold text-center text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
+          <h2 className="text-[28px] font-bold text-center text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
             How it works under the hood
           </h2>
-          <p className="text-sm text-white/35 text-center font-[family-name:var(--font-outfit)] mb-8">
+          <p className="text-sm text-white/45 text-center font-[family-name:var(--font-outfit)] mb-8">
             The complete data flow — verify it yourself with browser DevTools
           </p>
           <div
@@ -242,7 +242,7 @@ export function AboutPage() {
               animationDelay: "0.3s",
             }}
           >
-            <div className="text-[10px] font-semibold text-white/25 font-[family-name:var(--font-mono)] tracking-[0.1em] uppercase mb-5">
+            <div className="text-[10px] font-semibold text-white/35 font-[family-name:var(--font-mono)] tracking-[0.1em] uppercase mb-5">
               Data flow diagram
             </div>
             <div className="flex flex-col md:flex-row gap-3 items-stretch">
@@ -261,12 +261,12 @@ export function AboutPage() {
                     >
                       {step.label}
                     </div>
-                    <p className="text-xs text-white/45 font-[family-name:var(--font-outfit)] leading-[1.6]">
+                    <p className="text-xs text-white/55 font-[family-name:var(--font-outfit)] leading-[1.6]">
                       {step.description}
                     </p>
                   </div>
                   {i < techSteps.length - 1 && (
-                    <div className="py-2 text-white/15 text-lg md:hidden">
+                    <div className="py-2 text-white/25 text-lg md:hidden">
                       ↓
                     </div>
                   )}
@@ -291,10 +291,10 @@ export function AboutPage() {
 
         {/* ── Open Source Libraries ── */}
         <section className="mt-16">
-          <h2 className="text-[28px] font-bold text-center text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
+          <h2 className="text-[28px] font-bold text-center text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-1.5">
             Built on open source
           </h2>
-          <p className="text-sm text-white/35 text-center font-[family-name:var(--font-outfit)] mb-8">
+          <p className="text-sm text-white/45 text-center font-[family-name:var(--font-outfit)] mb-8">
             MetaStrip&apos;s processing engine uses trusted, auditable
             open-source libraries
           </p>
@@ -311,14 +311,14 @@ export function AboutPage() {
                 >
                   {lib.name}
                 </div>
-                <p className="text-[13px] text-white/40 font-[family-name:var(--font-outfit)] leading-[1.65] mb-3.5">
+                <p className="text-[13px] text-white/50 font-[family-name:var(--font-outfit)] leading-[1.65] mb-3.5">
                   {lib.description}
                 </p>
                 <a
                   href={lib.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11px] text-white/20 font-[family-name:var(--font-mono)] hover:text-white/40 transition-colors duration-200 no-underline"
+                  className="text-[11px] text-white/30 font-[family-name:var(--font-mono)] hover:text-white/50 transition-colors duration-200 no-underline"
                 >
                   View on GitHub →
                 </a>
@@ -337,10 +337,10 @@ export function AboutPage() {
             animationDelay: "0.3s",
           }}
         >
-          <h3 className="text-2xl font-bold mb-2.5 font-[family-name:var(--font-outfit)] text-white/90 -tracking-[0.02em]">
+          <h3 className="text-2xl font-bold mb-2.5 font-[family-name:var(--font-outfit)] text-white/95 -tracking-[0.02em]">
             Questions, feedback, or feature requests?
           </h3>
-          <p className="text-[15px] text-white/40 mb-6 font-[family-name:var(--font-outfit)] leading-[1.6]">
+          <p className="text-[15px] text-white/50 mb-6 font-[family-name:var(--font-outfit)] leading-[1.6]">
             MetaStrip is built by one person. I read every message.
           </p>
           <div className="flex justify-center gap-3">
@@ -359,7 +359,7 @@ export function AboutPage() {
               href="https://twitter.com/metastripapp"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-3.5 rounded-xl cursor-pointer text-white/70 text-[15px] font-semibold font-[family-name:var(--font-outfit)] border border-white/10 bg-white/[0.03] transition-all duration-250 hover:bg-white/[0.06] no-underline"
+              className="px-8 py-3.5 rounded-xl cursor-pointer text-white/80 text-[15px] font-semibold font-[family-name:var(--font-outfit)] border border-white/10 bg-white/[0.03] transition-all duration-250 hover:bg-white/[0.06] no-underline"
             >
               @metastripapp
             </a>

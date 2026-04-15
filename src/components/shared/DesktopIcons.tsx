@@ -62,22 +62,6 @@ function ImageSVG() {
   );
 }
 
-/* ── Terminal/app icon ── */
-function AppSVG() {
-  return (
-    <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
-      <rect x="6" y="10" width="52" height="44" rx="6" fill="#1a1a22" stroke="#7c3aed" strokeWidth="1.5" opacity="0.9" />
-      {/* Title bar dots */}
-      <circle cx="16" cy="18" r="2" fill="#ff5f57" opacity="0.7" />
-      <circle cx="23" cy="18" r="2" fill="#febc2e" opacity="0.7" />
-      <circle cx="30" cy="18" r="2" fill="#28c840" opacity="0.7" />
-      {/* Prompt */}
-      <path d="M16 30L22 36L16 42" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-      <line x1="28" y1="42" x2="42" y2="42" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-    </svg>
-  );
-}
-
 /* ── Lock/shield file icon ── */
 function LockFileSVG() {
   return (
@@ -137,15 +121,6 @@ const ICONS: DesktopIconData[] = [
     defaultY: 72,
     tabType: "about",
     tabLabel: "about",
-  },
-  {
-    id: "app",
-    label: "metastrip.app",
-    icon: <AppSVG />,
-    defaultX: 92.5,
-    defaultY: 70,
-    tabType: "metastrip",
-    tabLabel: "metastrip",
   },
   {
     id: "env",
@@ -290,14 +265,14 @@ function DraggableIcon({ data, onOpen, onDropOnTerminal, onDragStateChange }: { 
       <span
         className={`text-[11px] font-[family-name:var(--font-mono)] whitespace-nowrap px-1.5 py-0.5 rounded ${
           selected
-            ? "bg-[#3b82f6]/30 text-white/90"
-            : "text-white/50 hover:text-white/70"
+            ? "bg-[#3b82f6]/30 text-white/95"
+            : "text-white/60 hover:text-white/80"
         } transition-all duration-150`}
       >
         {data.label}
       </span>
       {data.sublabel && (
-        <span className="text-[9px] font-[family-name:var(--font-mono)] text-white/25 -mt-0.5">
+        <span className="text-[9px] font-[family-name:var(--font-mono)] text-white/35 -mt-0.5">
           {data.sublabel}
         </span>
       )}

@@ -26,21 +26,21 @@ export default function ArticleCard({ article }: { article: BlogArticle }) {
           <span className="text-[10px] px-2 py-[2px] rounded-[5px] bg-purple/[0.08] text-purple-light font-[family-name:var(--font-mono)] font-semibold uppercase tracking-[0.05em]">
             {getCategoryLabel(article.category)}
           </span>
-          <span className="text-[11px] text-white/20 font-[family-name:var(--font-mono)]">
+          <span className="text-[11px] text-white/30 font-[family-name:var(--font-mono)]">
             {article.readTime}
           </span>
         </div>
-        <h3 className="text-[17px] font-semibold text-white/85 font-[family-name:var(--font-outfit)] leading-[1.35] tracking-[-0.01em] mb-2">
+        <h3 className="text-[17px] font-semibold text-white/95 font-[family-name:var(--font-outfit)] leading-[1.35] tracking-[-0.01em] mb-2">
           {article.title}
         </h3>
-        <p className="text-[13px] text-white/35 font-[family-name:var(--font-outfit)] leading-[1.6] mb-3.5 line-clamp-3">
+        <p className="text-[13px] text-white/45 font-[family-name:var(--font-outfit)] leading-[1.6] mb-3.5 line-clamp-3">
           {article.excerpt}
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xs text-purple-light font-[family-name:var(--font-outfit)] font-semibold">
             Read &rarr;
           </span>
-          <span className="text-[11px] text-white/15 font-[family-name:var(--font-mono)]">
+          <span className="text-[11px] text-white/25 font-[family-name:var(--font-mono)]">
             {article.date}
           </span>
         </div>

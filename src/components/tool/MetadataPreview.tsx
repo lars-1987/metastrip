@@ -22,10 +22,10 @@ export function MetadataPreview({ entry }: MetadataPreviewProps) {
     return (
       <div className="rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.06] animate-panel-fade-in">
         <div className="p-4 px-5">
-          <span className="text-[13px] font-semibold text-white/70 font-[family-name:var(--font-outfit)]">
+          <span className="text-[13px] font-semibold text-white/80 font-[family-name:var(--font-outfit)]">
             No metadata found
           </span>
-          <p className="text-xs text-white/30 font-[family-name:var(--font-outfit)] mt-2">
+          <p className="text-xs text-white/40 font-[family-name:var(--font-outfit)] mt-2">
             This file doesn&apos;t contain any detectable metadata.
           </p>
         </div>
@@ -60,7 +60,7 @@ export function MetadataPreview({ entry }: MetadataPreviewProps) {
     <div className="rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.06] animate-panel-fade-in">
       {/* Header */}
       <div className="p-3.5 px-5 border-b border-white/[0.05] flex items-center justify-between">
-        <span className="text-[13px] font-semibold text-white/70 font-[family-name:var(--font-outfit)]">
+        <span className="text-[13px] font-semibold text-white/80 font-[family-name:var(--font-outfit)]">
           Metadata Found
         </span>
         <span
@@ -88,7 +88,7 @@ export function MetadataPreview({ entry }: MetadataPreviewProps) {
               className="w-full p-3 px-5 border-none cursor-pointer bg-transparent flex items-center gap-2.5 transition-colors duration-200 hover:bg-white/[0.02]"
             >
               <Icon name={config.icon} size={16} weight="duotone" color={config.color} />
-              <span className="flex-1 text-left text-[13px] font-medium text-white/70 font-[family-name:var(--font-outfit)]">
+              <span className="flex-1 text-left text-[13px] font-medium text-white/80 font-[family-name:var(--font-outfit)]">
                 {config.label}
               </span>
               <span
@@ -102,7 +102,7 @@ export function MetadataPreview({ entry }: MetadataPreviewProps) {
               </span>
               <span
                 className={cn(
-                  "text-white/30 text-xs transition-transform duration-200",
+                  "text-white/40 text-xs transition-transform duration-200",
                   isExpanded && "rotate-180"
                 )}
               >
@@ -124,15 +124,15 @@ export function MetadataPreview({ entry }: MetadataPreviewProps) {
                         i < catFields.length - 1 && "border-b border-white/[0.02]"
                       )}
                     >
-                      <span className="text-xs text-white/40 font-[family-name:var(--font-outfit)]">
+                      <span className="text-xs text-white/50 font-[family-name:var(--font-outfit)]">
                         {field.label}
                       </span>
                       <span
                         className={cn(
                           "text-xs font-[family-name:var(--font-mono)] max-w-[280px] truncate",
                           isRemoved
-                            ? "text-white/20 line-through"
-                            : "text-white/60"
+                            ? "text-white/30 line-through"
+                            : "text-white/70"
                         )}
                       >
                         {String(field.value ?? "")}

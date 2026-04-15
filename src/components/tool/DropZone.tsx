@@ -96,14 +96,14 @@ export function DropZone({
           </svg>
         </div>
 
-        <p className="text-lg font-semibold text-white/85 font-[family-name:var(--font-outfit)] mb-2">
+        <p className="text-lg font-semibold text-white/95 font-[family-name:var(--font-outfit)] mb-2">
           {isDragOver
             ? "Release to strip metadata"
             : multiple
               ? "Drop files here or click to browse"
               : "Drop a file here or click to browse"}
         </p>
-        <p className="text-[13px] text-white/35 font-[family-name:var(--font-outfit)] leading-relaxed">
+        <p className="text-[13px] text-white/45 font-[family-name:var(--font-outfit)] leading-relaxed">
           JPEG, PNG, WebP, PDF, DOCX, XLSX, PPTX
         </p>
 

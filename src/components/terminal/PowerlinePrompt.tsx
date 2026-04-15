@@ -27,14 +27,16 @@ export function PowerlineBar() {
       <div className="flex items-center gap-1.5 bg-white/[0.08] pl-2 pr-0.5 py-[3px] rounded-l-md">
         <MetaStripIcon size={14} />
         <span className="text-purple-300 font-semibold text-xs">metastrip</span>
-        <span className="text-white/20 text-xs ml-0.5">❯</span>
+        <span className="text-white/30 text-xs ml-0.5">❯</span>
       </div>
       <div className="flex items-center bg-white/[0.05] px-2.5 py-[3px]">
         <span className="text-cyan-300/80 text-xs">…/uploads</span>
-        <span className="text-white/20 text-xs ml-1.5">❯</span>
+        <span className="text-white/30 text-xs ml-1.5">❯</span>
       </div>
-      <div className="flex items-center bg-white/[0.03] px-2.5 py-[3px] rounded-r-md">
+      <div className="flex items-center gap-1.5 bg-white/[0.03] px-2.5 py-[3px] rounded-r-md">
         <span className="text-amber-400/70 text-xs">⎇ main</span>
+        <span className="text-cyan-300/60 text-[11px]" title="3 commits ahead of origin">↑3</span>
+        <span className="text-amber-300/80 text-[11px]" title="uncommitted changes">✱</span>
       </div>
     </div>
   );
@@ -87,8 +89,8 @@ export function PowerlinePrompt({
         {interactive ? (
           /* Interactive mode: real input that looks like the terminal */
           <div className="flex-1 flex items-start min-w-0">
-            <span className="text-white/80 break-all whitespace-pre-wrap">{inputValue}</span>
-            <span className="text-white/60 animate-blink-cursor">_</span>
+            <span className="text-white/90 break-all whitespace-pre-wrap">{inputValue}</span>
+            <span className="text-white/70 animate-blink-cursor">_</span>
             <input
               ref={inputRef}
               type="text"
@@ -104,14 +106,14 @@ export function PowerlinePrompt({
             />
           </div>
         ) : command ? (
-          <span className="text-white/80 break-all">
+          <span className="text-white/90 break-all">
             {command}
             {(isTyping || isProcessing) && (
-              <span className={`text-white/40 ml-0.5 ${isTyping ? "" : "animate-blink-cursor"}`}>_</span>
+              <span className={`text-white/50 ml-0.5 ${isTyping ? "" : "animate-blink-cursor"}`}>_</span>
             )}
           </span>
         ) : showCursor ? (
-          <span className="text-white/60 animate-blink-cursor">_</span>
+          <span className="text-white/70 animate-blink-cursor">_</span>
         ) : null}
       </div>
     </div>

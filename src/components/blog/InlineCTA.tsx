@@ -4,10 +4,10 @@ export default function InlineCTA() {
   return (
     <div className="my-9 p-6 px-7 rounded-2xl bg-gradient-to-br from-purple/[0.06] to-cyan/[0.03] border border-purple/[0.1] flex flex-col sm:flex-row items-center justify-between gap-5">
       <div>
-        <p className="text-[15px] font-semibold text-white/85 font-[family-name:var(--font-outfit)] mb-1">
+        <p className="text-[15px] font-semibold text-white/95 font-[family-name:var(--font-outfit)] mb-1">
           Try MetaStrip &mdash; it&apos;s free
         </p>
-        <p className="text-[13px] text-white/40 font-[family-name:var(--font-outfit)]">
+        <p className="text-[13px] text-white/50 font-[family-name:var(--font-outfit)]">
           Strip metadata from any photo in seconds. No upload, no account.
         </p>
       </div>

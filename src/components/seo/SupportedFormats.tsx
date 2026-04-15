@@ -22,7 +22,7 @@ export default function SupportedFormats({ formats }: SupportedFormatsProps) {
             >
               .{f.ext.toLowerCase()}
             </p>
-            <p className="text-xs text-white/35 font-[family-name:var(--font-outfit)] m-0 leading-snug">
+            <p className="text-xs text-white/45 font-[family-name:var(--font-outfit)] m-0 leading-snug">
               {f.desc}
             </p>
           </div>

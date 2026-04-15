@@ -14,13 +14,13 @@ export function Footer() {
           <Link
             key={link.label}
             href={link.href}
-            className="text-[13px] text-white/30 font-[family-name:var(--font-outfit)] hover:text-white/60 transition-colors duration-200 no-underline"
+            className="text-[13px] text-white/40 font-[family-name:var(--font-outfit)] hover:text-white/70 transition-colors duration-200 no-underline"
           >
             {link.label}
           </Link>
         ))}
       </div>
-      <p className="text-xs text-white/15 font-[family-name:var(--font-mono)]">
+      <p className="text-xs text-white/25 font-[family-name:var(--font-mono)]">
         MetaStrip — Your files never leave your device. Built in Melbourne.
       </p>
     </footer>

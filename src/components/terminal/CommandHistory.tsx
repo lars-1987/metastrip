@@ -7,9 +7,9 @@ const STYLE_COLORS: Record<string, string> = {
   success: "text-success",
   error: "text-danger",
   warning: "text-warning",
-  info: "text-white/60",
+  info: "text-white/70",
   joke: "text-amber-300/80",
-  neofetch: "text-white/60",
+  neofetch: "text-white/70",
 };
 
 /* ── Neofetch renderer ── */
@@ -24,15 +24,15 @@ const ASCII_LOGO = [
 function NeofetchOutput({ meta }: { meta: Record<string, string> }) {
   const infoLines = [
     { label: null, value: "user@anonymous", labelColor: "", valueColor: "text-purple-300 font-semibold" },
-    { label: null, value: "─────────────────────", labelColor: "", valueColor: "text-white/20" },
-    { label: "os", value: meta.os, labelColor: "text-purple-400", valueColor: "text-white/60" },
-    { label: "browser", value: meta.browser, labelColor: "text-purple-400", valueColor: "text-white/60" },
-    { label: "shell", value: meta.shell, labelColor: "text-purple-400", valueColor: "text-white/60" },
-    { label: "uptime", value: meta.uptime, labelColor: "text-purple-400", valueColor: "text-white/60" },
-    { label: "packages", value: meta.packages, labelColor: "text-purple-400", valueColor: "text-white/60" },
+    { label: null, value: "─────────────────────", labelColor: "", valueColor: "text-white/30" },
+    { label: "os", value: meta.os, labelColor: "text-purple-400", valueColor: "text-white/70" },
+    { label: "browser", value: meta.browser, labelColor: "text-purple-400", valueColor: "text-white/70" },
+    { label: "shell", value: meta.shell, labelColor: "text-purple-400", valueColor: "text-white/70" },
+    { label: "uptime", value: meta.uptime, labelColor: "text-purple-400", valueColor: "text-white/70" },
+    { label: "packages", value: meta.packages, labelColor: "text-purple-400", valueColor: "text-white/70" },
     { label: "privacy", value: meta.privacy, labelColor: "text-purple-400", valueColor: "text-success" },
-    { label: "tracking", value: meta.tracking, labelColor: "text-purple-400", valueColor: "text-white/60" },
-    { label: "accounts", value: meta.accounts, labelColor: "text-purple-400", valueColor: "text-white/60" },
+    { label: "tracking", value: meta.tracking, labelColor: "text-purple-400", valueColor: "text-white/70" },
+    { label: "accounts", value: meta.accounts, labelColor: "text-purple-400", valueColor: "text-white/70" },
   ];
 
   const maxLines = Math.max(ASCII_LOGO.length, infoLines.length);
@@ -54,7 +54,7 @@ function NeofetchOutput({ meta }: { meta: Record<string, string> }) {
                 {info.label ? (
                   <>
                     <span className={info.labelColor}>{info.label}</span>
-                    <span className="text-white/30">: </span>
+                    <span className="text-white/40">: </span>
                     <span className={info.valueColor}>{info.value}</span>
                   </>
                 ) : (
@@ -101,7 +101,7 @@ function CommandEntry({ result }: { result: CommandResult }) {
         <PowerlineBar />
         <div className="flex items-start">
           <span className="text-purple-400 mr-1.5 shrink-0">❯</span>
-          <span className="text-white/80 break-all">{result.command}</span>
+          <span className="text-white/90 break-all">{result.command}</span>
         </div>
       </div>
 

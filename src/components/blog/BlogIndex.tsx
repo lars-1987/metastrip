@@ -42,7 +42,7 @@ export default function BlogIndex() {
             Privacy, metadata &<br />
             digital self-defense
           </h1>
-          <p className="text-base text-white/40 max-w-[460px] mx-auto font-[family-name:var(--font-outfit)] leading-[1.7]">
+          <p className="text-base text-white/50 max-w-[460px] mx-auto font-[family-name:var(--font-outfit)] leading-[1.7]">
             Practical guides on protecting your identity in the files you share
             every day.
           </p>
@@ -59,8 +59,8 @@ export default function BlogIndex() {
               onClick={() => setActiveCategory(cat.id)}
               className={`flex-1 py-[9px] px-3.5 rounded-[10px] border-none cursor-pointer transition-all duration-250 ${
                 activeCategory === cat.id
-                  ? "bg-white/[0.05] text-white/85"
-                  : "bg-transparent text-white/35 hover:bg-white/[0.03]"
+                  ? "bg-white/[0.05] text-white/95"
+                  : "bg-transparent text-white/45 hover:bg-white/[0.03]"
               }`}
             >
               <span className="text-[13px] font-medium font-[family-name:var(--font-outfit)]">

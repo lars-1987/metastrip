@@ -8,7 +8,7 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Prompt */}
       <div className="shrink-0 px-4 md:px-6 pt-4 pb-3">
-        <div className="font-[family-name:var(--font-mono)] text-sm text-white/55">
+        <div className="font-[family-name:var(--font-mono)] text-sm text-white/65">
           <span className="text-purple-400 mr-1.5">❯</span>
           <span>cat /var/blog/{article.slug}.md</span>
         </div>
@@ -19,21 +19,21 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
         {/* Back */}
         <button
           onClick={onBack}
-          className="mb-4 text-xs text-white/40 font-[family-name:var(--font-mono)] bg-transparent border-none cursor-pointer hover:text-white/50 transition-colors p-0"
+          className="mb-4 text-xs text-white/50 font-[family-name:var(--font-mono)] bg-transparent border-none cursor-pointer hover:text-white/60 transition-colors p-0"
         >
           ← cd /var/blog
         </button>
 
         {/* Header */}
         <div className="mb-6 pb-4 border-b border-white/[0.06]">
-          <div className="text-xl font-bold text-white/90 font-[family-name:var(--font-mono)] leading-tight mb-2">
+          <div className="text-xl font-bold text-white/95 font-[family-name:var(--font-mono)] leading-tight mb-2">
             # {article.title}
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-[family-name:var(--font-mono)]">
-            <span className="text-white/35">{article.date}</span>
-            <span className="text-white/10">|</span>
-            <span className="text-white/35">{article.readTime}</span>
-            <span className="text-white/10">|</span>
+            <span className="text-white/45">{article.date}</span>
+            <span className="text-white/20">|</span>
+            <span className="text-white/45">{article.readTime}</span>
+            <span className="text-white/20">|</span>
             <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400/70 font-bold">
               {article.category}
             </span>
@@ -43,7 +43,7 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-5">
           {article.tags.map((tag) => (
-            <span key={tag} className="text-xs px-2 py-0.5 rounded bg-white/[0.04] text-white/40 font-[family-name:var(--font-mono)]">
+            <span key={tag} className="text-xs px-2 py-0.5 rounded bg-white/[0.04] text-white/50 font-[family-name:var(--font-mono)]">
               #{tag}
             </span>
           ))}
@@ -53,7 +53,7 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
         {article.content ? (
           <>
             {/* Intro */}
-            <div className="mb-6 text-sm text-white/55 font-[family-name:var(--font-mono)] leading-[1.9]">
+            <div className="mb-6 text-sm text-white/65 font-[family-name:var(--font-mono)] leading-[1.9]">
               {article.content.intro.split("\n\n").map((p, i) => (
                 <p key={i} className="mb-3">{p}</p>
               ))}
@@ -62,10 +62,10 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
             {/* Sections */}
             {article.content.sections.map((section, i) => (
               <div key={i} className="mb-6">
-                <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/60 mb-3">
+                <div className="text-sm font-bold font-[family-name:var(--font-mono)] text-white/70 mb-3">
                   ## {section.heading}
                 </div>
-                <div className="pl-4 border-l border-white/[0.06] text-sm text-white/50 font-[family-name:var(--font-mono)] leading-[1.9]">
+                <div className="pl-4 border-l border-white/[0.06] text-sm text-white/60 font-[family-name:var(--font-mono)] leading-[1.9]">
                   {section.body.split("\n\n").map((p, j) => {
                     // Handle **bold** in text
                     const parts = p.split(/(\*\*[^*]+\*\*)/g);
@@ -73,7 +73,7 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
                       <p key={j} className="mb-3">
                         {parts.map((part, k) =>
                           part.startsWith("**") && part.endsWith("**") ? (
-                            <span key={k} className="text-white/65 font-bold">
+                            <span key={k} className="text-white/75 font-bold">
                               {part.slice(2, -2)}
                             </span>
                           ) : (
@@ -88,14 +88,14 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
             ))}
           </>
         ) : (
-          <div className="text-sm text-white/40 font-[family-name:var(--font-mono)]">
+          <div className="text-sm text-white/50 font-[family-name:var(--font-mono)]">
             {article.excerpt}
           </div>
         )}
 
         {/* EOF */}
         <div className="mt-6 pt-4 border-t border-white/[0.06]">
-          <div className="text-xs text-white/25 font-[family-name:var(--font-mono)]">
+          <div className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
             ─── EOF ───
           </div>
         </div>
@@ -120,7 +120,7 @@ export function BlogTab() {
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Prompt */}
       <div className="shrink-0 px-4 md:px-6 pt-4 pb-3">
-        <div className="font-[family-name:var(--font-mono)] text-sm text-white/55">
+        <div className="font-[family-name:var(--font-mono)] text-sm text-white/65">
           <span className="text-purple-400 mr-1.5">❯</span>
           <span>ls /var/blog/ {activeCategory !== "all" ? `--filter=${activeCategory}` : ""}</span>
         </div>
@@ -135,7 +135,7 @@ export function BlogTab() {
             className={`px-2.5 py-1 rounded-md text-xs font-[family-name:var(--font-mono)] font-medium border-none cursor-pointer transition-colors duration-150 ${
               activeCategory === cat.id
                 ? "bg-purple-500/20 text-purple-400"
-                : "bg-white/[0.04] text-white/25 hover:text-white/40"
+                : "bg-white/[0.04] text-white/35 hover:text-white/50"
             }`}
           >
             {cat.label.toLowerCase()}
@@ -145,7 +145,7 @@ export function BlogTab() {
 
       {/* Article list */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-6">
-        <div className="text-xs text-white/30 font-[family-name:var(--font-mono)] mb-3">
+        <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] mb-3">
           {filtered.length} {filtered.length === 1 ? "file" : "files"} found
         </div>
 
@@ -156,21 +156,21 @@ export function BlogTab() {
             className="w-full text-left mb-2 p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.03] transition-all duration-150 cursor-pointer block"
           >
             <div className="flex items-start gap-3">
-              <div className="text-xs text-white/30 font-[family-name:var(--font-mono)] mt-0.5 shrink-0 w-5 text-right">
+              <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] mt-0.5 shrink-0 w-5 text-right">
                 {String(i + 1).padStart(2, "0")}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm text-white/70 font-[family-name:var(--font-mono)] font-bold mb-1 truncate">
+                <div className="text-sm text-white/80 font-[family-name:var(--font-mono)] font-bold mb-1 truncate">
                   {article.title}
                 </div>
-                <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] leading-relaxed line-clamp-2 mb-2">
+                <div className="text-xs text-white/50 font-[family-name:var(--font-mono)] leading-relaxed line-clamp-2 mb-2">
                   {article.excerpt}
                 </div>
                 <div className="flex items-center gap-2 text-xs font-[family-name:var(--font-mono)]">
-                  <span className="text-white/30">{article.date}</span>
-                  <span className="text-white/10">·</span>
-                  <span className="text-white/30">{article.readTime}</span>
-                  <span className="text-white/10">·</span>
+                  <span className="text-white/40">{article.date}</span>
+                  <span className="text-white/20">·</span>
+                  <span className="text-white/40">{article.readTime}</span>
+                  <span className="text-white/20">·</span>
                   <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400/50 font-medium">
                     {article.category}
                   </span>

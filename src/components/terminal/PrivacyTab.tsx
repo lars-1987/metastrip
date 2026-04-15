@@ -152,7 +152,7 @@ export function PrivacyTab() {
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Terminal prompt */}
       <div className="shrink-0 px-4 md:px-6 pt-4 pb-2">
-        <div className="font-[family-name:var(--font-mono)] text-sm text-white/55">
+        <div className="font-[family-name:var(--font-mono)] text-sm text-white/65">
           <span className="text-purple-400 mr-1.5">❯</span>
           <span>cat /etc/metastrip/{activeDoc === "privacy" ? "privacy-policy" : "terms-of-service"}.md</span>
         </div>
@@ -165,7 +165,7 @@ export function PrivacyTab() {
           className={`px-3 py-1.5 rounded-md text-sm font-[family-name:var(--font-mono)] border-none cursor-pointer transition-colors duration-150 ${
             activeDoc === "privacy"
               ? "bg-purple-500/20 text-purple-400"
-              : "bg-white/[0.04] text-white/30 hover:text-white/50"
+              : "bg-white/[0.04] text-white/40 hover:text-white/60"
           }`}
         >
           privacy-policy.md
@@ -175,7 +175,7 @@ export function PrivacyTab() {
           className={`px-3 py-1.5 rounded-md text-sm font-[family-name:var(--font-mono)] border-none cursor-pointer transition-colors duration-150 ${
             activeDoc === "terms"
               ? "bg-purple-500/20 text-purple-400"
-              : "bg-white/[0.04] text-white/30 hover:text-white/50"
+              : "bg-white/[0.04] text-white/40 hover:text-white/60"
           }`}
         >
           terms-of-service.md
@@ -186,13 +186,13 @@ export function PrivacyTab() {
       <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-6">
         {/* Header */}
         <div className="mb-6 pb-4 border-b border-white/[0.06]">
-          <div className="text-xs text-white/25 font-[family-name:var(--font-mono)] mb-2">
+          <div className="text-xs text-white/35 font-[family-name:var(--font-mono)] mb-2">
             ─── {activeDoc === "privacy" ? "PRIVACY POLICY" : "TERMS OF SERVICE"} ───
           </div>
-          <div className="text-xl font-bold text-white/90 font-[family-name:var(--font-mono)]">
+          <div className="text-xl font-bold text-white/95 font-[family-name:var(--font-mono)]">
             # {activeDoc === "privacy" ? "Privacy Policy" : "Terms of Service"}
           </div>
-          <div className="text-xs text-white/30 font-[family-name:var(--font-mono)] mt-1">
+          <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] mt-1">
             Effective: 2026-03-01 | Last updated: 2026-03-01
           </div>
         </div>
@@ -202,7 +202,7 @@ export function PrivacyTab() {
           <div className="text-xs text-success font-[family-name:var(--font-mono)] font-bold mb-2">
             &gt; TL;DR
           </div>
-          <div className="text-sm text-white/50 font-[family-name:var(--font-mono)] leading-relaxed">
+          <div className="text-sm text-white/60 font-[family-name:var(--font-mono)] leading-relaxed">
             {activeDoc === "privacy"
               ? "Files processed in-browser. We never see them. No tracking cookies. No accounts. Minimal analytics. Free forever."
               : "MetaStrip is free, as-is. You own your files. Don't use it for anything illegal. Batch limit: 20 files."}
@@ -214,14 +214,14 @@ export function PrivacyTab() {
           <div key={section.num} className="mb-5">
             <div className="text-xs font-bold font-[family-name:var(--font-mono)] mb-2">
               <span className="text-purple-400/70">{section.num}</span>
-              <span className="text-white/60 ml-2">## {section.title}</span>
+              <span className="text-white/70 ml-2">## {section.title}</span>
             </div>
             <div className="pl-4 border-l border-white/[0.06]">
               {section.lines.map((line, j) => (
                 <div
                   key={j}
                   className={`text-sm font-[family-name:var(--font-mono)] leading-[1.8] ${
-                    line === "" ? "h-3" : line.startsWith("  →") ? "text-white/40 pl-2" : "text-white/50"
+                    line === "" ? "h-3" : line.startsWith("  →") ? "text-white/50 pl-2" : "text-white/60"
                   }`}
                 >
                   {line}
@@ -233,10 +233,10 @@ export function PrivacyTab() {
 
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-white/[0.06]">
-          <div className="text-xs text-white/25 font-[family-name:var(--font-mono)]">
+          <div className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
             ─── EOF ───
           </div>
-          <div className="text-sm text-white/40 font-[family-name:var(--font-mono)] mt-2">
+          <div className="text-sm text-white/50 font-[family-name:var(--font-mono)] mt-2">
             Questions? →{" "}
             <a href="mailto:hello@metastrip.app" className="text-purple-400/70 hover:text-purple-400 transition-colors no-underline">
               hello@metastrip.app

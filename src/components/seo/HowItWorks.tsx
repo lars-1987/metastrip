@@ -87,11 +87,11 @@ export default function HowItWorks() {
               <div style={{ stroke: step.stroke }}>{step.icon}</div>
             </div>
 
-            <h3 className="text-[17px] font-semibold text-white/90 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2">
+            <h3 className="text-[17px] font-semibold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2">
               {step.title}
             </h3>
 
-            <p className="text-sm text-white/40 font-[family-name:var(--font-outfit)] leading-[1.7] m-0">
+            <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7] m-0">
               {step.description}
             </p>
           </div>

@@ -11,6 +11,22 @@ import { TerminalStripTags } from "./TerminalStripTags";
 import { TerminalOutput } from "./TerminalOutput";
 import { TerminalActions } from "./TerminalActions";
 import { trackFileDownloaded } from "@/lib/analytics";
+import { useClock } from "@/hooks/useClock";
+
+function SystemClockPill() {
+  const now = useClock();
+  const label = now
+    ? now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+    : "";
+  return (
+    <span
+      className="px-2 py-0.5 rounded bg-white/[0.04] text-white/60 tabular-nums"
+      suppressHydrationWarning
+    >
+      {label || "—"}
+    </span>
+  );
+}
 
 interface TerminalSessionTabProps {
   onOpenSupport?: () => void;
@@ -161,20 +177,20 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
                 {isDragOver ? "↓" : "↑"}
               </div>
               <div className={`font-[family-name:var(--font-mono)] text-sm transition-colors duration-200 ${
-                isDragOver ? "text-purple-light" : "text-white/35"
+                isDragOver ? "text-purple-light" : "text-white/45"
               }`}>
                 {isDragOver ? "drop files here..." : "drag & drop files or click to browse"}
               </div>
-              <div className="font-[family-name:var(--font-mono)] text-[11px] text-white/20 mt-1.5">
+              <div className="font-[family-name:var(--font-mono)] text-[11px] text-white/30 mt-1.5">
                 jpeg, png, webp, pdf, docx, xlsx, pptx
               </div>
             </div>
 
             <div className="font-[family-name:var(--font-mono)] text-sm space-y-1.5 mb-4 animate-card-slide-in [animation-delay:100ms]">
-              <div className="text-white/55">
+              <div className="text-white/65">
                 metastrip v2.0 — client-side metadata removal
               </div>
-              <div className="text-white/55">
+              <div className="text-white/65">
                 batch limit: {BATCH_LIMIT} files | all processing happens in your browser
               </div>
             </div>
@@ -189,7 +205,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
 
         {files.length > 0 && hasPending && !isProcessing && (
           <div className="mb-1">
-            <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] mb-1">
+            <div className="text-xs text-white/50 font-[family-name:var(--font-mono)] mb-1">
               select metadata to remove:
             </div>
             <TerminalStripTags
@@ -234,15 +250,22 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
         {files.length === 0 && (
           <div className="flex flex-wrap items-center gap-1.5 mt-6 pt-3 border-t border-white/[0.04] font-[family-name:var(--font-mono)] text-[11px] animate-card-slide-in [animation-delay:200ms]">
             <span className="px-2 py-0.5 rounded bg-purple/20 text-purple-light">v2.0</span>
-            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30">client-side</span>
-            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30">no tracking</span>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">client-side</span>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">no tracking</span>
+            <a
+              href="https://github.com/lars-1987/metastrip"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-0.5 rounded bg-white/[0.04] text-amber-400/70 hover:bg-white/[0.06] hover:text-amber-300 transition-colors no-underline flex items-center gap-1"
+              title="View source on GitHub"
+            >
+              <span>⎇ main</span>
+              <span className="text-cyan-300/70">↑3</span>
+              <span className="text-amber-300/80">✱</span>
+            </a>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-emerald-400/70">✓ build passing</span>
             <span className="flex-1" />
-            <a href="mailto:hello@metastrip.app" className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-colors no-underline">
-              hello@metastrip.app
-            </a>
-            <a href="https://twitter.com/metastripapp" target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded bg-white/[0.04] text-white/30 hover:text-cyan-400/70 hover:bg-white/[0.06] transition-colors no-underline">
-              @metastripapp
-            </a>
+            <SystemClockPill />
           </div>
         )}
         <div ref={bottomRef} />

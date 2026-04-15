@@ -19,7 +19,7 @@ export function TerminalTitleBar({ onDragStart }: TerminalTitleBarProps) {
 
       {/* Center title */}
       <div className="flex-1 text-center">
-        <span className="text-[11px] text-white/20 font-[family-name:var(--font-mono)]">
+        <span className="text-[11px] text-white/30 font-[family-name:var(--font-mono)]">
           metastrip
         </span>
       </div>

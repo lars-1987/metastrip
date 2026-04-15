@@ -3,7 +3,7 @@
 export function KofiTab() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-6">
-      <div className="font-[family-name:var(--font-mono)] text-sm text-white/55 mb-4">
+      <div className="font-[family-name:var(--font-mono)] text-sm text-white/65 mb-4">
         <span className="text-purple-400 mr-1.5">❯</span>
         <span>open https://ko-fi.com/metastrip</span>
       </div>

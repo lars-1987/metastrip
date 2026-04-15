@@ -57,7 +57,7 @@ export function TerminalActions({
       {hasFiles && !isProcessing && (
         <button
           onClick={onClear}
-          className="px-3 py-2 rounded-lg text-sm font-[family-name:var(--font-mono)] text-white/40 hover:text-white/60 bg-transparent border border-white/[0.06] hover:border-white/[0.12] cursor-pointer transition-colors duration-200"
+          className="px-3 py-2 rounded-lg text-sm font-[family-name:var(--font-mono)] text-white/50 hover:text-white/70 bg-transparent border border-white/[0.06] hover:border-white/[0.12] cursor-pointer transition-colors duration-200"
         >
           clear
         </button>

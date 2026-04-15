@@ -17,7 +17,7 @@ export function Nav() {
         <Logo />
       </Link>
       <div className="flex items-center gap-6">
-        <span className="text-[13px] text-white/40 font-[family-name:var(--font-outfit)] tracking-[0.02em] hidden sm:block">
+        <span className="text-[13px] text-white/50 font-[family-name:var(--font-outfit)] tracking-[0.02em] hidden sm:block">
           100% Client-Side Processing
         </span>
       </div>

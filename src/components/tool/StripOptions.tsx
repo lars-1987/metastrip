@@ -37,7 +37,7 @@ export function StripOptions({ options, onChange }: StripOptionsProps) {
   return (
     <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5 animate-panel-fade-in">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[13px] font-semibold text-white/70 font-[family-name:var(--font-outfit)]">
+        <h3 className="text-[13px] font-semibold text-white/80 font-[family-name:var(--font-outfit)]">
           Strip Options
         </h3>
         <button
@@ -89,7 +89,7 @@ export function StripOptions({ options, onChange }: StripOptionsProps) {
               )}
             </div>
             <Icon name={config.icon} size={16} weight="duotone" color={config.color} />
-            <span className="text-[13px] text-white/65 font-[family-name:var(--font-outfit)]">
+            <span className="text-[13px] text-white/75 font-[family-name:var(--font-outfit)]">
               {config.label}
             </span>
           </label>
