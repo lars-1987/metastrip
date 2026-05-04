@@ -15,8 +15,8 @@ import { Icon } from "@/components/shared/Icon";
 
 function renderInlineMarkdown(text: string): ReactNode[] {
   const parts: ReactNode[] = [];
-  // Match **bold** and `code` inline markers
-  const regex = /\*\*(.+?)\*\*|`([^`]+)`/g;
+  // Match **bold**, `code`, and [text](url) inline markers
+  const regex = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let key = 0;
@@ -28,6 +28,18 @@ function renderInlineMarkdown(text: string): ReactNode[] {
       parts.push(<strong key={key++} className="text-white/70 font-semibold">{match[1]}</strong>);
     } else if (match[2] !== undefined) {
       parts.push(<code key={key++} className="text-[13px] px-1.5 py-0.5 rounded bg-white/[0.06] text-purple-light font-[family-name:var(--font-mono)]">{match[2]}</code>);
+    } else if (match[3] !== undefined && match[4] !== undefined) {
+      const isExternal = /^https?:/.test(match[4]);
+      parts.push(
+        <Link
+          key={key++}
+          href={match[4]}
+          className="text-purple-400/80 hover:text-purple-300 underline underline-offset-2 transition-colors"
+          {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        >
+          {match[3]}
+        </Link>
+      );
     }
     lastIndex = match.index + match[0].length;
   }

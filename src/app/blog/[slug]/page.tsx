@@ -40,11 +40,30 @@ export default async function Page({ params }: PageProps) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
+    headline: article.title,
     name: article.title,
     description: article.excerpt,
     url: `https://metastrip.app/blog/${slug}`,
     datePublished: article.date,
-    publisher: { "@type": "Organization", name: "MetaStrip" },
+    dateModified: article.date,
+    image: "https://metastrip.app/opengraph-image",
+    author: {
+      "@type": "Person",
+      name: "Lars Holmstrom",
+      url: "https://x.com/larsitodev",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "MetaStrip",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://metastrip.app/favicon-96x96.png",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://metastrip.app/blog/${slug}`,
+    },
   };
 
   return (

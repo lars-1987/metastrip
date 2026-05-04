@@ -16,9 +16,23 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MetaStrip — Strip Hidden Metadata from Files",
+  metadataBase: new URL("https://metastrip.app"),
+  title: {
+    default: "MetaStrip — Strip Hidden Metadata from Files",
+    template: "%s — MetaStrip",
+  },
   description:
     "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from your files. 100% client-side — files never leave your device.",
+  openGraph: {
+    type: "website",
+    siteName: "MetaStrip",
+    locale: "en_US",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "MetaStrip — Strip Hidden Metadata from Files" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    creator: "@larsitodev",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },

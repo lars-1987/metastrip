@@ -67,19 +67,34 @@ function ArticleView({ article, onBack }: { article: BlogArticle; onBack: () => 
                 </div>
                 <div className="pl-4 border-l border-white/[0.06] text-sm text-white/60 font-[family-name:var(--font-mono)] leading-[1.9]">
                   {section.body.split("\n\n").map((p, j) => {
-                    // Handle **bold** in text
-                    const parts = p.split(/(\*\*[^*]+\*\*)/g);
+                    // Handle **bold** and [text](url) links in text
+                    const parts = p.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
                     return (
                       <p key={j} className="mb-3">
-                        {parts.map((part, k) =>
-                          part.startsWith("**") && part.endsWith("**") ? (
-                            <span key={k} className="text-white/75 font-bold">
-                              {part.slice(2, -2)}
-                            </span>
-                          ) : (
-                            <span key={k}>{part}</span>
-                          )
-                        )}
+                        {parts.map((part, k) => {
+                          if (part.startsWith("**") && part.endsWith("**")) {
+                            return (
+                              <span key={k} className="text-white/75 font-bold">
+                                {part.slice(2, -2)}
+                              </span>
+                            );
+                          }
+                          const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+                          if (linkMatch) {
+                            const isExternal = /^https?:/.test(linkMatch[2]);
+                            return (
+                              <a
+                                key={k}
+                                href={linkMatch[2]}
+                                className="text-purple-400/80 hover:text-purple-300 underline underline-offset-2 transition-colors"
+                                {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                              >
+                                {linkMatch[1]}
+                              </a>
+                            );
+                          }
+                          return <span key={k}>{part}</span>;
+                        })}
                       </p>
                     );
                   })}
