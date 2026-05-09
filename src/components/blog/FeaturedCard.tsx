@@ -7,46 +7,81 @@ export default function FeaturedCard({ article }: { article: BlogArticle }) {
   return (
     <Link
       href={`/blog/${article.slug}`}
-      className="group relative grid grid-cols-1 md:grid-cols-2 gap-0 rounded-[24px] overflow-hidden bg-white/[0.02] border border-purple/[0.12] transition-all duration-400 hover:-translate-y-[3px] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] animate-card-slide-in cursor-pointer"
+      className="group relative grid grid-cols-1 md:grid-cols-2 gap-0 rounded-3xl overflow-hidden transition-all duration-400 hover:-translate-y-[3px] cursor-pointer no-underline"
+      style={{
+        background: "var(--card-inverse-bg)",
+        color: "var(--card-inverse-text)",
+        boxShadow:
+          "0 12px 32px -8px rgba(31,21,48,0.18), 0 2px 8px -2px rgba(31,21,48,0.08)",
+      }}
     >
-      {/* Cover art */}
+      {/* Cover art — solid dark with cream icon, matches site visual language */}
       <div
         className="relative min-h-[280px] flex items-center justify-center overflow-hidden"
-        style={{ background: article.coverGradient }}
+        style={{ background: "var(--accent-strong)" }}
       >
-        <span className="opacity-30 blur-[1px] transition-all duration-400 group-hover:scale-110 group-hover:rotate-[5deg]">
-          <Icon name={article.coverIcon} size={72} weight="duotone" className="text-white" />
+        <span
+          className="opacity-50 transition-all duration-400 group-hover:scale-110"
+          style={{ color: "var(--card-inverse-text)" }}
+        >
+          <Icon name={article.coverIcon} size={88} weight="duotone" />
         </span>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background/80" />
         {/* Featured badge */}
-        <div className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-[#fbbf24] font-[family-name:var(--font-mono)] tracking-[0.08em]">
-            FEATURED
+        <div
+          className="absolute top-4 left-4 px-3 py-1 rounded-lg"
+          style={{ background: "var(--card-inverse-bg)" }}
+        >
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.14em] font-[family-name:var(--font-mono)]"
+            style={{ color: "var(--accent-strong)" }}
+          >
+            Featured
           </span>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex flex-col justify-center p-9 px-8">
-        <div className="flex items-center gap-2.5 mb-3.5">
-          <span className="text-[11px] px-2.5 py-[3px] rounded-md bg-purple/10 text-purple-light font-[family-name:var(--font-mono)] font-semibold uppercase tracking-[0.05em]">
+        <div className="flex items-center gap-3 mb-4">
+          <span
+            className="text-[11px] px-2.5 py-[3px] rounded-md font-[family-name:var(--font-mono)] font-bold uppercase tracking-[0.1em]"
+            style={{
+              background: "color-mix(in srgb, var(--accent-strong) 18%, transparent)",
+              color: "var(--accent-strong)",
+            }}
+          >
             {getCategoryLabel(article.category)}
           </span>
-          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
+          <span
+            className="text-xs font-[family-name:var(--font-mono)]"
+            style={{ color: "var(--card-inverse-muted)" }}
+          >
             {article.readTime}
           </span>
         </div>
-        <h2 className="text-2xl font-bold text-white/95 font-[family-name:var(--font-outfit)] leading-[1.3] tracking-[-0.02em] mb-3">
+        <h2
+          className="font-bold leading-[1.2] tracking-[-0.02em] mb-3"
+          style={{ color: "var(--card-inverse-text)", fontSize: 26 }}
+        >
           {article.title}
         </h2>
-        <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7] mb-4">
+        <p
+          className="text-[15px] leading-[1.65] mb-5"
+          style={{ color: "var(--card-inverse-muted)" }}
+        >
           {article.excerpt}
         </p>
         <div className="flex items-center gap-3">
-          <span className="text-[13px] text-purple-light font-[family-name:var(--font-outfit)] font-semibold">
-            Read article &rarr;
+          <span
+            className="text-[14px] font-semibold"
+            style={{ color: "var(--accent-strong)" }}
+          >
+            Read article →
           </span>
-          <span className="text-xs text-white/30 font-[family-name:var(--font-mono)]">
+          <span
+            className="text-xs font-[family-name:var(--font-mono)]"
+            style={{ color: "var(--card-inverse-muted)" }}
+          >
             {article.date}
           </span>
         </div>

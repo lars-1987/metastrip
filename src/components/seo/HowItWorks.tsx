@@ -73,7 +73,7 @@ export default function HowItWorks() {
         {steps.map((step, i) => (
           <div
             key={step.number}
-            className="relative p-8 px-6 rounded-[20px] bg-white/[0.02] border border-white/[0.05] hover:border-purple/[0.12] hover:-translate-y-0.5 transition-all duration-300 animate-card-slide-in"
+            className="relative p-8 px-6 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] hover:border-[color:color-mix(in_srgb,var(--accent-strong)_30%,transparent)] hover:-translate-y-0.5 transition-all duration-300 animate-card-slide-in"
             style={{ animationDelay: `${i * 100}ms` }}
           >
             <span className="absolute top-4 right-5 text-[72px] font-bold text-white/[0.03] leading-none font-[family-name:var(--font-outfit)]">
@@ -81,17 +81,17 @@ export default function HowItWorks() {
             </span>
 
             <div
-              className="w-[52px] h-[52px] rounded-[14px] bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-5"
+              className="w-[52px] h-[52px] rounded-[14px] bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center mb-5"
               style={{ color: step.stroke }}
             >
               <div style={{ stroke: step.stroke }}>{step.icon}</div>
             </div>
 
-            <h3 className="text-[17px] font-semibold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2">
+            <h3 className="text-[17px] font-semibold text-[color:var(--text)] font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2">
               {step.title}
             </h3>
 
-            <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7] m-0">
+            <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7] m-0">
               {step.description}
             </p>
           </div>

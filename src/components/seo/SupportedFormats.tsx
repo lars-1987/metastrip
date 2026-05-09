@@ -13,7 +13,7 @@ export default function SupportedFormats({ formats }: SupportedFormatsProps) {
         {formats.map((f, i) => (
           <div
             key={f.ext}
-            className="p-5 px-[18px] rounded-[14px] bg-white/[0.02] border border-white/[0.05] text-center transition-all duration-300 hover:border-white/15 animate-card-slide-in"
+            className="p-5 px-[18px] rounded-[14px] bg-[var(--surface)] border border-[var(--border)] text-center transition-all duration-300 hover:border-white/15 animate-card-slide-in"
             style={{ animationDelay: `${i * 80}ms` }}
           >
             <p
@@ -22,7 +22,7 @@ export default function SupportedFormats({ formats }: SupportedFormatsProps) {
             >
               .{f.ext.toLowerCase()}
             </p>
-            <p className="text-xs text-white/45 font-[family-name:var(--font-outfit)] m-0 leading-snug">
+            <p className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)] m-0 leading-snug">
               {f.desc}
             </p>
           </div>

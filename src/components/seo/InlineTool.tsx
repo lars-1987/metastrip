@@ -107,7 +107,7 @@ export default function InlineTool({ config }: InlineToolProps) {
   if (!file) {
     return (
       <div
-        className="rounded-3xl overflow-hidden bg-white/[0.02] border border-white/[0.06] animate-card-slide-in"
+        className="rounded-3xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] animate-card-slide-in"
         style={{ animationDelay: "0.25s" }}
       >
         <div
@@ -116,7 +116,7 @@ export default function InlineTool({ config }: InlineToolProps) {
           onDragLeave={onDragLeave}
           onClick={() => inputRef.current?.click()}
           className={`py-[52px] px-10 text-center cursor-pointer transition-colors duration-200 ${
-            isDragOver ? "bg-purple/[0.04]" : ""
+            isDragOver ? "bg-[color:color-mix(in_srgb,var(--accent-strong)_8%,transparent)]" : ""
           }`}
         >
           <input
@@ -127,14 +127,14 @@ export default function InlineTool({ config }: InlineToolProps) {
             className="hidden"
           />
 
-          <div className="w-16 h-16 rounded-[18px] mx-auto mb-[18px] flex items-center justify-center bg-gradient-to-br from-purple/[0.12] to-cyan/[0.08] border border-purple/[0.12]">
-            <Icon name={config.fileIcon} size={28} weight="duotone" className="text-white/90" />
+          <div className="w-16 h-16 rounded-[18px] mx-auto mb-[18px] flex items-center justify-center bg-gradient-to-br from-purple/[0.12] to-cyan/[0.08] border border-[color:color-mix(in_srgb,var(--accent-strong)_30%,transparent)]">
+            <Icon name={config.fileIcon} size={28} weight="duotone" className="text-[color:var(--text)]" />
           </div>
 
-          <p className="text-[17px] font-semibold text-white/95 font-[family-name:var(--font-outfit)] mb-1.5">
+          <p className="text-[17px] font-semibold text-[color:var(--text)] font-[family-name:var(--font-outfit)] mb-1.5">
             Drop a file here to try it
           </p>
-          <p className="text-[13px] text-white/40 font-[family-name:var(--font-outfit)]">
+          <p className="text-[13px] text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)]">
             {config.acceptedLabel} — max 25 MB — free, no account
           </p>
         </div>
@@ -147,12 +147,12 @@ export default function InlineTool({ config }: InlineToolProps) {
 
   return (
     <div
-      className="rounded-3xl overflow-hidden bg-white/[0.02] border border-white/[0.06] animate-card-slide-in"
+      className="rounded-3xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] animate-card-slide-in"
       style={{ animationDelay: "0.25s" }}
     >
       {/* ── File header bar ── */}
       <div
-        className={`px-6 py-4 flex items-center gap-3.5 border-b border-white/[0.04] transition-colors duration-300 ${
+        className={`px-6 py-4 flex items-center gap-3.5 border-b border-[var(--border)] transition-colors duration-300 ${
           status === "done" ? "bg-emerald-500/[0.04]" : ""
         }`}
       >
@@ -161,7 +161,7 @@ export default function InlineTool({ config }: InlineToolProps) {
           className={`w-[42px] h-[42px] rounded-xl shrink-0 flex items-center justify-center text-lg ${
             status === "done"
               ? "bg-emerald-500/[0.1] border border-emerald-500/[0.15]"
-              : "bg-white/[0.03] border border-white/[0.06]"
+              : "bg-[var(--surface)] border border-[var(--border)]"
           }`}
         >
           {status === "done" ? (
@@ -169,16 +169,16 @@ export default function InlineTool({ config }: InlineToolProps) {
           ) : status === "stripping" ? (
             <div className="w-5 h-5 border-2 border-purple/30 border-t-purple rounded-full animate-spin" />
           ) : (
-            <Icon name={config.fileIcon} size={18} weight="duotone" className="text-white/90" />
+            <Icon name={config.fileIcon} size={18} weight="duotone" className="text-[color:var(--text)]" />
           )}
         </div>
 
         {/* File info */}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-white/95 font-[family-name:var(--font-outfit)] truncate">
+          <p className="text-sm font-semibold text-[color:var(--text)] font-[family-name:var(--font-outfit)] truncate">
             {file.name}
           </p>
-          <p className="text-xs text-white/45 font-[family-name:var(--font-outfit)] mt-0.5">
+          <p className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)] mt-0.5">
             {formatBytes(file.size)}
             {status === "scanning" && (
               <span className="text-purple/70 ml-2">Scanning...</span>
@@ -223,7 +223,7 @@ export default function InlineTool({ config }: InlineToolProps) {
 
           <button
             onClick={handleReset}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.04] transition-colors duration-200 cursor-pointer bg-transparent border-none text-base"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[color:var(--text-muted)] hover:text-[color:var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors duration-200 cursor-pointer bg-transparent border-none text-base"
             aria-label="Reset"
           >
             &#215;
@@ -252,7 +252,7 @@ export default function InlineTool({ config }: InlineToolProps) {
               {/* Category header */}
               <div className="flex items-center gap-2 mb-1.5 px-1">
                 <Icon name={cat.icon} size={14} weight="duotone" color={cat.color} />
-                <span className="text-xs font-medium text-white/60 font-[family-name:var(--font-outfit)]">
+                <span className="text-xs font-medium text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)]">
                   {cat.label}
                 </span>
                 <span
@@ -273,16 +273,16 @@ export default function InlineTool({ config }: InlineToolProps) {
                     field.visible && (
                       <div
                         key={i}
-                        className="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-white/[0.02] transition-colors duration-150 animate-field-fade-in"
+                        className="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-[var(--surface)] transition-colors duration-150 animate-field-fade-in"
                       >
-                        <span className="text-xs text-white/50 font-[family-name:var(--font-outfit)]">
+                        <span className="text-xs text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)]">
                           {field.label}
                         </span>
                         <span
                           className={`text-xs font-[family-name:var(--font-mono)] text-right max-w-[55%] truncate ${
                             status === "done"
-                              ? "line-through text-white/30"
-                              : "text-white/70"
+                              ? "line-through text-[color:var(--text-muted)]"
+                              : "text-[color:var(--text-secondary)]"
                           }`}
                         >
                           {field.value}
@@ -307,10 +307,10 @@ export default function InlineTool({ config }: InlineToolProps) {
           }}
         >
           <div className="min-w-0 mr-4">
-            <p className="text-sm font-semibold text-white/90 font-[family-name:var(--font-outfit)] mb-0.5">
+            <p className="text-sm font-semibold text-[color:var(--text)] font-[family-name:var(--font-outfit)] mb-0.5">
               Need to strip more files?
             </p>
-            <p className="text-xs text-white/45 font-[family-name:var(--font-outfit)]">
+            <p className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)]">
               {config.batchCta.subtext}
             </p>
           </div>

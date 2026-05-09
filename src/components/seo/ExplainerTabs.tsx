@@ -16,7 +16,7 @@ export default function ExplainerTabs({ tabs }: ExplainerTabsProps) {
   return (
     <div>
       {/* ── Tab bar ── */}
-      <div className="flex gap-1.5 p-1 rounded-[14px] bg-white/[0.02] border border-white/[0.05] overflow-x-auto">
+      <div className="flex gap-1.5 p-1 rounded-[14px] bg-[var(--surface)] border border-[var(--border)] overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
@@ -25,14 +25,14 @@ export default function ExplainerTabs({ tabs }: ExplainerTabsProps) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2.5 px-3 rounded-[10px] border-none cursor-pointer flex items-center justify-center gap-[7px] transition-all duration-200 min-w-0 ${
                 isActive
-                  ? "bg-white/[0.05]"
-                  : "bg-transparent hover:bg-white/[0.03]"
+                  ? "bg-[var(--surface-elevated)]"
+                  : "bg-transparent hover:bg-[var(--surface)]"
               }`}
             >
               <Icon name={tab.icon} size={14} weight="duotone" />
               <span
                 className={`text-[13px] font-medium font-[family-name:var(--font-outfit)] truncate ${
-                  isActive ? "text-white/95" : "text-white/45"
+                  isActive ? "text-[color:var(--text)]" : "text-[color:var(--text-muted)]"
                 }`}
               >
                 {tab.label}
@@ -46,25 +46,25 @@ export default function ExplainerTabs({ tabs }: ExplainerTabsProps) {
       {current && (
         <div
           key={current.id}
-          className="rounded-[20px] bg-white/[0.02] border border-white/[0.06] animate-panel-fade-in mt-4"
+          className="rounded-[20px] bg-[var(--surface)] border border-[var(--border)] animate-panel-fade-in mt-4"
         >
           <div className="p-8 px-7">
             {/* Icon + title */}
             <div className="flex items-center gap-3 mb-4">
-              <Icon name={current.icon} size={24} weight="duotone" className="text-white/90" />
-              <h3 className="text-xl font-bold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em]">
+              <Icon name={current.icon} size={24} weight="duotone" className="text-[color:var(--text)]" />
+              <h3 className="text-xl font-bold text-[color:var(--text)] font-[family-name:var(--font-outfit)] -tracking-[0.02em]">
                 {current.title}
               </h3>
             </div>
 
             {/* Description */}
-            <p className="text-sm text-white/55 font-[family-name:var(--font-outfit)] leading-[1.7] mb-5 max-w-[560px]">
+            <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7] mb-5 max-w-[560px]">
               {current.description}
             </p>
 
             {/* Example box */}
-            <div className="p-[14px] px-[18px] rounded-xl bg-black/30 border border-white/[0.05] mb-4">
-              <p className="text-[10px] text-white/35 font-[family-name:var(--font-mono)] mb-1.5 tracking-[0.08em] uppercase">
+            <div className="p-[14px] px-[18px] rounded-xl bg-black/30 border border-[var(--border)] mb-4">
+              <p className="text-[10px] text-[color:var(--text-muted)] font-[family-name:var(--font-mono)] mb-1.5 tracking-[0.08em] uppercase">
                 {current.example.label}
               </p>
               <p

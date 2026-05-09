@@ -8,17 +8,17 @@ interface BottomCTAProps {
 export default function BottomCTA({ batchCta }: BottomCTAProps) {
   return (
     <section
-      className="text-center mt-16 py-12 px-9 rounded-3xl border border-purple/[0.1]"
+      className="text-center mt-16 py-12 px-9 rounded-3xl border border-[color:color-mix(in_srgb,var(--accent-strong)_30%,transparent)]"
       style={{
         background:
           "linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(6,182,212,0.04) 100%)",
       }}
     >
-      <h2 className="text-[26px] font-bold text-white/95 font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2.5">
+      <h2 className="text-[26px] font-bold text-[color:var(--text)] font-[family-name:var(--font-outfit)] -tracking-[0.02em] mb-2.5">
         Ready to strip metadata? It&apos;s free.
       </h2>
 
-      <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] mb-6 leading-relaxed">
+      <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] mb-6 leading-relaxed">
         {batchCta.subtext}
       </p>
 

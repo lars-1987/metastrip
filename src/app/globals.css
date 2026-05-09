@@ -1,5 +1,65 @@
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────────────────────────────
+   Design tokens — light ("Linen") + dark ("Aubergine")
+   Toggle via <html data-theme="dark"> (default is light)
+   ────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* System font stack — matches Helio. No Google Font load, native feel. */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Coastal (light) — palette: ink black, teal, muted teal, ash grey, vanilla cream */
+  --bg: #efe9d9;              /* eggshell */
+  --surface: #f4e9cd;         /* vanilla cream */
+  --surface-elevated: #f4e9cd;
+  --text: #0c0c0e;            /* warm dark — "black text" */
+  --text-secondary: #5a4d49;  /* warm dark, lighter */
+  --text-muted: #8a7d79;      /* warm muted */
+  --accent: #dce2cd;          /* sage — button highlight */
+  --accent-hover: #c8d2b8;    /* slightly deeper sage on hover */
+  --accent-fg: #0c0c0e;       /* warm dark text on sage button */
+  --accent-strong: #d9663d;   /* warm clay — color pop for redaction, eyebrows, dots */
+  --accent-soft: #dce2cd;     /* same sage — hover pill bg */
+  --accent-2: #77aca2;        /* muted teal — success/clean */
+  --accent-2-soft: #b8d2cd;
+  --border: #7fa39f;          /* darker than bg */
+  --border-strong: #5d8a85;
+  --danger: #b85c4a;          /* terracotta — no red in palette, keep as-is for now */
+  --danger-soft: #e0b3a8;
+  --terminal-bg: #0c0c0e;     /* darkest — terminal stays distinctly the darkest element */
+  --terminal-text: #f4e9cd;
+  --card-inverse-bg: #0c0c0e; /* FAQ cards — same warm dark as text for cohesion */
+  --card-inverse-text: #f4e9cd;
+  --card-inverse-muted: #b8aeac;
+}
+
+[data-theme="dark"] {
+  /* Inverted light theme — dark bg, cream text, same terracotta + sage accents */
+  --bg: #0c0c0e;              /* was light's --text */
+  --surface: #1a1411;         /* slightly elevated from bg */
+  --surface-elevated: #221a14;
+  --text: #efe9d9;            /* was light's --bg */
+  --text-secondary: #c9bcb8;
+  --text-muted: #8a7d79;
+  --accent: #dce2cd;          /* sage stays — works in both modes */
+  --accent-hover: #c8d2b8;
+  --accent-fg: #0c0c0e;       /* dark text on sage button */
+  --accent-strong: #d9663d;   /* terracotta — brand color, same in both */
+  --accent-soft: #2a3023;     /* deep sage hover pill bg on dark */
+  --accent-2: #9db4ac;
+  --accent-2-soft: #2a3530;
+  --border: #2a2422;
+  --border-strong: #3a322f;
+  --danger: #d97a6e;
+  --danger-soft: #3d211f;
+  --terminal-bg: #0c0c0e;     /* terminals always dark */
+  --terminal-text: #f4e9cd;
+  --card-inverse-bg: #efe9d9; /* INVERTED: cream cards on dark page */
+  --card-inverse-text: #0c0c0e;
+  --card-inverse-muted: #5a4d49;
+}
+
 @theme inline {
   --color-background: #09090b;
   --color-foreground: #f8fafc;
@@ -35,12 +95,32 @@
   --animate-blink-cursor: blinkCursor 1s step-end infinite;
   --animate-type-in: typeIn 0.3s ease-out both;
   --animate-progress-fill: progressFill 0.3s ease-out both;
+  --animate-bounce-subtle: bounceSubtle 2s ease-in-out infinite;
+  --animate-redact-swap: redactSwap 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-draw-underline: drawUnderline 1.2s cubic-bezier(0.65, 0, 0.35, 1) 0.4s both;
+  --animate-bounce-down: bounceDown 1.8s ease-in-out infinite;
 
   --color-terminal-bg: #0c0c0e;
 
   @keyframes blinkCursor {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
+  }
+  @keyframes bounceSubtle {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+  @keyframes redactSwap {
+    0% { opacity: 0; transform: translateY(-3px) scaleY(0.92); }
+    100% { opacity: 1; transform: translateY(0) scaleY(1); }
+  }
+  @keyframes drawUnderline {
+    0% { stroke-dashoffset: 320; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes bounceDown {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
   }
   @keyframes typeIn {
     from { opacity: 0; transform: translateY(4px); }
@@ -105,12 +185,20 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  [data-underline-path] {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
 @layer base {
   body {
-    background: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-outfit);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   @media (max-width: 767px) {

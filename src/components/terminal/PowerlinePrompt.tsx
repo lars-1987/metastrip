@@ -53,10 +53,11 @@ export function PowerlinePrompt({
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus the input when interactive
+  // Auto-focus the input when interactive — preventScroll so a small viewport
+  // doesn't yank the page down to the input on initial load.
   useEffect(() => {
     if (interactive && inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
     }
   }, [interactive]);
 
@@ -73,7 +74,7 @@ export function PowerlinePrompt({
   // Click anywhere on the prompt area to focus the hidden input
   const handleClick = useCallback(() => {
     if (interactive && inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
     }
   }, [interactive]);
 

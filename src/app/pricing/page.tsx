@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AnimatedBackground } from "@/components/shared/AnimatedBackground";
+import { TopNav } from "@/components/shared/TopNav";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
@@ -39,79 +39,195 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <AnimatedBackground />
-      <main className="relative z-[1] min-h-screen flex items-center justify-center px-6 py-24">
-        <div className="max-w-2xl text-center">
-          <span className="inline-block px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-[0.1em] bg-purple/15 text-purple-light font-[family-name:var(--font-outfit)] mb-6">
-            Pricing
-          </span>
-          <h1 className="text-[44px] md:text-[56px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white/95 font-[family-name:var(--font-outfit)] mb-5">
-            MetaStrip is{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%)" }}
+      <TopNav />
+      <main className="relative z-10" style={{ background: "var(--bg)" }}>
+        <section className="px-6 lg:px-8 pt-20 lg:pt-28 pb-24">
+          <div className="max-w-3xl mx-auto text-center">
+            <div
+              className="text-[12px] font-bold uppercase tracking-[0.18em] mb-4"
+              style={{ color: "var(--accent-strong)" }}
             >
-              free
-            </span>
-            .
-          </h1>
-          <p className="text-[18px] text-white/65 leading-[1.6] font-[family-name:var(--font-outfit)] mb-10">
-            Every feature, every file type, every time. No signup, no account, no upload —
-            because your files never leave your device. The whole tool runs in your browser.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 text-left">
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
-              <h2 className="text-[15px] font-semibold text-white/90 font-[family-name:var(--font-outfit)] mb-2">
-                For everyone
-              </h2>
-              <div className="text-[32px] font-bold text-white/95 mb-1 font-[family-name:var(--font-outfit)]">
-                $0
-              </div>
-              <p className="text-[13px] text-white/55 mb-4 font-[family-name:var(--font-outfit)]">
-                No catch. No ads. No tracking.
-              </p>
-              <ul className="space-y-1.5 text-[13px] text-white/65 font-[family-name:var(--font-outfit)]">
-                <li>EXIF, GPS, IPTC, XMP, C2PA removal</li>
-                <li>Photos, PDFs, Word docs, spreadsheets</li>
-                <li>Batch processing up to 20 files</li>
-                <li>100% client-side — nothing uploaded</li>
-              </ul>
+              Pricing
             </div>
+            <h1
+              className="font-extrabold leading-[1.02] tracking-[-0.04em] mb-6"
+              style={{
+                color: "var(--text)",
+                fontSize: "clamp(44px, 6.5vw, 72px)",
+              }}
+            >
+              MetaStrip is free.
+            </h1>
+            <p
+              className="mx-auto leading-[1.55] font-medium mb-14"
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "clamp(18px, 1.7vw, 21px)",
+                maxWidth: 600,
+              }}
+            >
+              Every feature, every file type, every time. No signup, no account,
+              no upload — because your files never leave your device.
+            </p>
 
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
-              <h2 className="text-[15px] font-semibold text-white/90 font-[family-name:var(--font-outfit)] mb-2">
-                Like the tool?
-              </h2>
-              <div className="text-[32px] font-bold text-white/95 mb-1 font-[family-name:var(--font-outfit)]">
-                ☕
-              </div>
-              <p className="text-[13px] text-white/55 mb-4 font-[family-name:var(--font-outfit)]">
-                Buy me a coffee on Ko-fi. Optional, appreciated, never required.
-              </p>
-              <a
-                href="https://ko-fi.com/metastrip"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-5 py-2 rounded-lg text-[13px] font-semibold text-white bg-purple/30 hover:bg-purple/40 transition-colors no-underline font-[family-name:var(--font-outfit)]"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-14 text-left">
+              {/* Free tier */}
+              <div
+                className="rounded-3xl p-7 lg:p-8"
+                style={{
+                  background: "var(--card-inverse-bg)",
+                  color: "var(--card-inverse-text)",
+                  boxShadow:
+                    "0 12px 32px -8px rgba(31,21,48,0.18), 0 2px 8px -2px rgba(31,21,48,0.08)",
+                }}
               >
-                Support on Ko-fi →
-              </a>
+                <div
+                  className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3"
+                  style={{ color: "var(--accent-strong)" }}
+                >
+                  For everyone
+                </div>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span
+                    className="font-extrabold tracking-[-0.04em]"
+                    style={{ fontSize: 56 }}
+                  >
+                    $0
+                  </span>
+                </div>
+                <p
+                  className="text-[14px] mb-6"
+                  style={{ color: "var(--card-inverse-muted)" }}
+                >
+                  No catch. No ads. No tracking.
+                </p>
+                <ul
+                  className="space-y-2.5 list-none p-0 m-0 mb-7"
+                  style={{ color: "var(--card-inverse-muted)" }}
+                >
+                  {[
+                    "EXIF, GPS, IPTC, XMP, C2PA removal",
+                    "Photos, PDFs, Word, Excel, PowerPoint",
+                    "Batch processing up to 20 files",
+                    "100% client-side — nothing uploaded",
+                    "Open source under MIT licence",
+                  ].map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-3 text-[14px] leading-[1.55]"
+                    >
+                      <span
+                        className="shrink-0 mt-[7px]"
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "var(--accent-strong)",
+                        }}
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/"
+                  className="inline-flex items-center px-6 py-3 rounded-xl text-[14px] font-semibold no-underline"
+                  style={{
+                    background: "var(--accent)",
+                    color: "var(--accent-fg)",
+                  }}
+                >
+                  Open MetaStrip →
+                </Link>
+              </div>
+
+              {/* Optional support */}
+              <div
+                className="rounded-3xl p-7 lg:p-8"
+                style={{
+                  background: "var(--surface)",
+                  boxShadow:
+                    "0 1px 3px rgba(31,21,48,0.04), 0 8px 24px -8px rgba(31,21,48,0.08)",
+                }}
+              >
+                <div
+                  className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3"
+                  style={{ color: "var(--accent-strong)" }}
+                >
+                  Optional support
+                </div>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span
+                    className="font-extrabold tracking-[-0.04em]"
+                    style={{ color: "var(--text)", fontSize: 56 }}
+                  >
+                    ☕
+                  </span>
+                </div>
+                <p
+                  className="text-[14px] mb-6"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Buy me a coffee on Ko-fi. Optional, appreciated, never required.
+                </p>
+                <ul
+                  className="space-y-2.5 list-none p-0 m-0 mb-7"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {[
+                    "Same tool, no extra features",
+                    "Helps fund infrastructure + new file types",
+                    "Get a thank-you email",
+                    "No login or account required",
+                  ].map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-3 text-[14px] leading-[1.55]"
+                    >
+                      <span
+                        className="shrink-0 mt-[7px]"
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "var(--accent-2)",
+                        }}
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="https://ko-fi.com/metastrip"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-6 py-3 rounded-xl text-[14px] font-semibold no-underline"
+                  style={{
+                    background: "transparent",
+                    color: "var(--text)",
+                    border: "1px solid var(--border-strong)",
+                  }}
+                >
+                  Support on Ko-fi →
+                </a>
+              </div>
             </div>
+
+            <p
+              className="text-[13px]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Questions?{" "}
+              <a
+                href="mailto:hello@metastrip.app"
+                className="underline underline-offset-2"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                hello@metastrip.app
+              </a>
+            </p>
           </div>
-
-          <Link
-            href="/"
-            className="inline-block px-8 py-3.5 rounded-xl text-white text-[15px] font-semibold no-underline transition-all duration-200 hover:-translate-y-px font-[family-name:var(--font-outfit)]"
-            style={{ background: "linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)" }}
-          >
-            Open MetaStrip →
-          </Link>
-
-          <p className="mt-8 text-[12px] text-white/35 font-[family-name:var(--font-mono)]">
-            Questions? <a href="mailto:hello@metastrip.app" className="text-white/55 hover:text-white/80 underline-offset-2">hello@metastrip.app</a>
-          </p>
-        </div>
+        </section>
       </main>
       <Footer />
     </>

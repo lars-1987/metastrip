@@ -5,6 +5,11 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "MetaStrip — Strip Hidden Metadata from Files";
 
+/**
+ * 1200×630 OG card matching the new design system:
+ * eggshell bg, warm-graphite text, terracotta redaction stamp,
+ * cool black for the wordmark.
+ */
 export default function OGImage() {
   return new ImageResponse(
     (
@@ -16,98 +21,160 @@ export default function OGImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(160deg, #0f0b1f 0%, #131033 35%, #1a1442 60%, #24113d 85%, #2a0f30 100%)",
+          background: "#efe9d9", // eggshell --bg
           fontFamily: "system-ui, sans-serif",
-          position: "relative",
+          padding: "0 80px",
         }}
       >
-        {/* Glow orbs */}
+        {/* Wordmark row — small, top-left ish */}
         <div
           style={{
             position: "absolute",
-            top: "-80px",
-            left: "-60px",
-            width: "500px",
-            height: "500px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(217,70,239,0.25) 0%, transparent 60%)",
+            top: "56px",
+            left: "80px",
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
           }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-120px",
-            right: "-40px",
-            width: "600px",
-            height: "600px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(56,189,248,0.2) 0%, transparent 60%)",
-          }}
-        />
+        >
+          {/* Logo bars — purple/cyan gradient bars (kept for brand consistency) */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 10,
+              background: "#0c0c0e",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+              border: "1px solid #c9bcb8",
+            }}
+          >
+            <div
+              style={{
+                width: 22,
+                height: 3,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
+              }}
+            />
+            <div
+              style={{
+                width: 22,
+                height: 3,
+                borderRadius: 2,
+                background: "linear-gradient(90deg, #a78bfa, transparent)",
+              }}
+            />
+            <div
+              style={{
+                width: 22,
+                height: 3,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              fontSize: 26,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: "#0c0c0e",
+            }}
+          >
+            MetaStrip
+          </div>
+        </div>
 
-        {/* Icon — 3 bars mimicking the MetaStrip logo */}
+        {/* Headline — same as the live hero */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "12px",
-            marginBottom: "36px",
+            alignItems: "center",
+            gap: 10,
+            marginTop: 30,
           }}
         >
-          <div style={{ width: "80px", height: "8px", borderRadius: "4px", background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }} />
-          <div style={{ width: "80px", height: "8px", borderRadius: "4px", background: "linear-gradient(135deg, #a78bfa, transparent)" }} />
-          <div style={{ width: "80px", height: "8px", borderRadius: "4px", background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }} />
+          <div
+            style={{
+              fontSize: 92,
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.02,
+              color: "#0c0c0e",
+              textAlign: "center",
+            }}
+          >
+            Hidden in every
+          </div>
+
+          {/* Redaction stamp — terracotta with dark text, just like the hero */}
+          <div
+            style={{
+              display: "flex",
+              padding: "10px 26px 14px",
+              background: "#d9663d",
+              color: "#0c0c0e",
+              borderRadius: 10,
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontSize: 56,
+              fontWeight: 700,
+              letterSpacing: "-0.005em",
+              textTransform: "lowercase",
+              marginTop: 6,
+              marginBottom: 6,
+            }}
+          >
+            GPS coordinate
+          </div>
+
+          <div
+            style={{
+              fontSize: 92,
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.02,
+              color: "#0c0c0e",
+              textAlign: "center",
+            }}
+          >
+            you share.
+          </div>
         </div>
 
-        {/* Title */}
+        {/* Subhead */}
         <div
           style={{
-            fontSize: "64px",
-            fontWeight: 800,
-            letterSpacing: "-2px",
-            background: "linear-gradient(135deg, #e2e8f0 30%, #a78bfa 100%)",
-            backgroundClip: "text",
-            color: "transparent",
+            fontSize: 24,
+            color: "#5a4d49",
+            marginTop: 40,
             textAlign: "center",
-            lineHeight: 1.1,
-          }}
-        >
-          MetaStrip
-        </div>
-
-        {/* Subtitle */}
-        <div
-          style={{
-            fontSize: "26px",
-            fontWeight: 400,
-            color: "rgba(255,255,255,0.6)",
-            marginTop: "16px",
-            textAlign: "center",
-            maxWidth: "700px",
+            maxWidth: 880,
+            fontWeight: 500,
             lineHeight: 1.4,
           }}
         >
-          Strip hidden metadata from your files. 100% client-side.
+          Strip metadata from photos, PDFs &amp; documents — 100% in your browser. Free.
         </div>
 
-        {/* Pill tags */}
-        <div style={{ display: "flex", gap: "12px", marginTop: "32px" }}>
-          {["EXIF", "GPS", "C2PA", "PDF", "DOCX"].map((tag) => (
-            <div
-              key={tag}
-              style={{
-                padding: "6px 16px",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.08)",
-                color: "rgba(255,255,255,0.5)",
-                fontSize: "16px",
-                fontWeight: 600,
-                letterSpacing: "0.5px",
-              }}
-            >
-              {tag}
-            </div>
-          ))}
+        {/* Domain footer */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "44px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#8a7d79",
+            fontSize: 18,
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          }}
+        >
+          metastrip.app
         </div>
       </div>
     ),

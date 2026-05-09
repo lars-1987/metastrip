@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
-import { Outfit, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { PostHogProviderWrapper } from "@/components/providers/PostHogProvider";
+import { ThemeProvider, themeInitScript } from "@/components/shared/ThemeProvider";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  display: "swap",
-});
-
+// Terminal stays JetBrains Mono. Body inherits system-ui via --font-sans (defined in globals.css).
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -46,11 +42,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${outfit.variable} ${jetbrainsMono.variable} antialiased`}>
-        <PostHogProviderWrapper>
-          {children}
-        </PostHogProviderWrapper>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Sets data-theme before hydration so we don't flash the wrong theme. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className={`${jetbrainsMono.variable} antialiased`}>
+        <ThemeProvider>
+          <PostHogProviderWrapper>{children}</PostHogProviderWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

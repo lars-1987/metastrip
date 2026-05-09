@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { TerminalApp } from "@/components/terminal/TerminalApp";
+import { TopNav } from "@/components/shared/TopNav";
+import { Hero } from "@/components/shared/Hero";
+import { HowItWorks } from "@/components/shared/HowItWorks";
+import { FAQ } from "@/components/shared/FAQ";
+import { FAQS } from "@/components/shared/faq-data";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
@@ -15,7 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
+const webAppLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "MetaStrip",
@@ -41,14 +45,41 @@ const jsonLd = {
   ],
 };
 
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
 export default function Page() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppLd) }}
       />
-      <TerminalApp />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
+      <TopNav />
+      {/* Wrapper has solid bg + z-10 so it covers the sticky footer below
+          until the user scrolls past it (creating the soft-reveal effect). */}
+      <main
+        className="relative z-10"
+        style={{ background: "var(--bg)" }}
+      >
+        <Hero />
+        <HowItWorks />
+        <FAQ />
+      </main>
       <Footer />
     </>
   );

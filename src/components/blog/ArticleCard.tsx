@@ -7,40 +7,72 @@ export default function ArticleCard({ article }: { article: BlogArticle }) {
   return (
     <Link
       href={`/blog/${article.slug}`}
-      className="group block rounded-[20px] overflow-hidden bg-white/[0.02] border border-white/[0.05] transition-all duration-300 hover:border-purple/[0.15] hover:-translate-y-[3px] animate-card-slide-in cursor-pointer"
+      className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-[3px] cursor-pointer no-underline"
+      style={{
+        background: "var(--surface)",
+        boxShadow:
+          "0 1px 3px rgba(31,21,48,0.04), 0 8px 24px -8px rgba(31,21,48,0.08)",
+      }}
     >
-      {/* Mini cover */}
+      {/* Soft cover — warm tint, terracotta icon. Lighter visual weight than dark covers. */}
       <div
-        className="h-[140px] flex items-center justify-center relative overflow-hidden"
-        style={{ background: article.coverGradient }}
+        className="h-[120px] flex items-center justify-center relative overflow-hidden"
+        style={{
+          background:
+            "color-mix(in srgb, var(--accent-strong) 10%, var(--surface))",
+        }}
       >
-        <span className="opacity-25 transition-transform duration-400 group-hover:scale-[1.15] group-hover:rotate-[3deg]">
-          <Icon name={article.coverIcon} size={48} weight="duotone" className="text-white" />
+        <span
+          className="transition-transform duration-400 group-hover:scale-[1.15]"
+          style={{ color: "var(--accent-strong)" }}
+        >
+          <Icon name={article.coverIcon} size={44} weight="duotone" />
         </span>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
       </div>
 
       {/* Content */}
-      <div className="p-[20px_22px_24px]">
-        <div className="flex items-center gap-2 mb-2.5">
-          <span className="text-[10px] px-2 py-[2px] rounded-[5px] bg-purple/[0.08] text-purple-light font-[family-name:var(--font-mono)] font-semibold uppercase tracking-[0.05em]">
+      <div className="p-5 lg:p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className="text-[10px] px-2 py-[3px] rounded-md font-[family-name:var(--font-mono)] font-bold uppercase tracking-[0.1em]"
+            style={{
+              background:
+                "color-mix(in srgb, var(--accent-strong) 14%, transparent)",
+              color: "var(--accent-strong)",
+            }}
+          >
             {getCategoryLabel(article.category)}
           </span>
-          <span className="text-[11px] text-white/30 font-[family-name:var(--font-mono)]">
+          <span
+            className="text-[11px] font-[family-name:var(--font-mono)]"
+            style={{ color: "var(--text-muted)" }}
+          >
             {article.readTime}
           </span>
         </div>
-        <h3 className="text-[17px] font-semibold text-white/95 font-[family-name:var(--font-outfit)] leading-[1.35] tracking-[-0.01em] mb-2">
+        <h3
+          className="font-bold leading-[1.3] tracking-[-0.01em] mb-2.5"
+          style={{ color: "var(--text)", fontSize: 17 }}
+        >
           {article.title}
         </h3>
-        <p className="text-[13px] text-white/45 font-[family-name:var(--font-outfit)] leading-[1.6] mb-3.5 line-clamp-3">
+        <p
+          className="text-[13px] leading-[1.6] mb-4 line-clamp-3"
+          style={{ color: "var(--text-secondary)" }}
+        >
           {article.excerpt}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-purple-light font-[family-name:var(--font-outfit)] font-semibold">
-            Read &rarr;
+          <span
+            className="text-[12px] font-semibold"
+            style={{ color: "var(--accent-strong)" }}
+          >
+            Read →
           </span>
-          <span className="text-[11px] text-white/25 font-[family-name:var(--font-mono)]">
+          <span
+            className="text-[11px] font-[family-name:var(--font-mono)]"
+            style={{ color: "var(--text-muted)" }}
+          >
             {article.date}
           </span>
         </div>

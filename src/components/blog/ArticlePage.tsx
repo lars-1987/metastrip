@@ -2,8 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
-import { AnimatedBackground } from "@/components/shared/AnimatedBackground";
-import { Nav } from "@/components/layout/Nav";
+import { TopNav } from "@/components/shared/TopNav";
 import { Footer } from "@/components/layout/Footer";
 import ReadingProgressBar from "@/components/blog/ReadingProgressBar";
 import TableOfContents from "@/components/blog/TableOfContents";
@@ -25,16 +24,17 @@ function renderInlineMarkdown(text: string): ReactNode[] {
       parts.push(text.slice(lastIndex, match.index));
     }
     if (match[1] !== undefined) {
-      parts.push(<strong key={key++} className="text-white/70 font-semibold">{match[1]}</strong>);
+      parts.push(<strong key={key++} className="text-[color:var(--text-secondary)] font-semibold">{match[1]}</strong>);
     } else if (match[2] !== undefined) {
-      parts.push(<code key={key++} className="text-[13px] px-1.5 py-0.5 rounded bg-white/[0.06] text-purple-light font-[family-name:var(--font-mono)]">{match[2]}</code>);
+      parts.push(<code key={key++} className="text-[13px] px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] text-[color:var(--accent-strong)] font-[family-name:var(--font-mono)]">{match[2]}</code>);
     } else if (match[3] !== undefined && match[4] !== undefined) {
       const isExternal = /^https?:/.test(match[4]);
       parts.push(
         <Link
           key={key++}
           href={match[4]}
-          className="text-purple-400/80 hover:text-purple-300 underline underline-offset-2 transition-colors"
+          className="underline underline-offset-2 transition-colors"
+          style={{ color: "var(--accent-strong)" }}
           {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         >
           {match[3]}
@@ -72,20 +72,19 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
   if (!content) {
     return (
       <>
-        <AnimatedBackground />
-        <Nav />
-
-        <div className="relative z-[1] max-w-[700px] mx-auto px-6 pt-[130px] pb-20 text-center">
+        <TopNav />
+        <main className="relative z-10" style={{ background: "var(--bg)" }}>
+        <div className="max-w-[700px] mx-auto px-6 pt-20 lg:pt-24 pb-20 text-center">
           <span className="block mb-5"><Icon name={article.coverIcon} size={72} weight="duotone" className="text-white/90" /></span>
-          <h1 className="text-[32px] font-bold text-white/95 font-[family-name:var(--font-outfit)] tracking-[-0.02em] mb-3">
+          <h1 className="text-[32px] font-bold text-[color:var(--text)] font-[family-name:var(--font-outfit)] tracking-[-0.02em] mb-3">
             {article.title}
           </h1>
-          <p className="text-[15px] text-white/50 font-[family-name:var(--font-outfit)] leading-[1.7] mb-8">
+          <p className="text-[15px] text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7] mb-8">
             {article.excerpt}
           </p>
 
-          <div className="p-8 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
-            <p className="text-sm text-white/40 font-[family-name:var(--font-outfit)]">
+          <div className="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
+            <p className="text-sm text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)]">
               This article is coming soon. We&apos;re working on it — check
               back shortly.
             </p>
@@ -93,14 +92,14 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
 
           <Link
             href="/blog"
-            className="inline-block mt-6 px-6 py-2.5 rounded-[10px] border border-white/10 bg-transparent text-white/70 text-sm font-medium font-[family-name:var(--font-outfit)] hover:border-purple/20 hover:text-white/90 transition-all duration-200 no-underline"
+            className="inline-block mt-6 px-6 py-2.5 rounded-[10px] border border-[var(--border-strong)] bg-transparent text-[color:var(--text-secondary)] text-sm font-medium font-[family-name:var(--font-outfit)] hover:border-[color:color-mix(in_srgb,var(--accent-strong)_40%,transparent)] hover:text-[color:var(--text)] transition-all duration-200 no-underline"
           >
             &larr; Back to blog
           </Link>
 
           <RelatedPosts currentId={article.id} />
         </div>
-
+        </main>
         <Footer />
       </>
     );
@@ -109,36 +108,36 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
   // ── Mode 1: Full Article ───────────────────────────────────
   return (
     <>
-      <AnimatedBackground />
-      <Nav />
+      <TopNav />
       <ReadingProgressBar />
+      <main className="relative z-10" style={{ background: "var(--bg)" }}>
 
       {/* Article Header */}
-      <div className="relative z-[1] max-w-[700px] mx-auto px-6 pt-[120px] animate-hero-fade-in">
+      <div className="max-w-[700px] mx-auto px-6 pt-16 lg:pt-20">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-1.5 mb-6 px-3.5 py-1.5 rounded-lg border border-white/[0.06] bg-transparent text-white/50 text-[13px] font-[family-name:var(--font-outfit)] hover:border-purple/20 hover:text-white/80 transition-all duration-200 no-underline"
+          className="inline-flex items-center gap-1.5 mb-6 px-3.5 py-1.5 rounded-lg border border-[var(--border)] bg-transparent text-[color:var(--text-secondary)] text-[13px] font-[family-name:var(--font-outfit)] hover:border-[color:color-mix(in_srgb,var(--accent-strong)_40%,transparent)] hover:text-[color:var(--text-secondary)] transition-all duration-200 no-underline"
         >
           &larr; Blog
         </Link>
 
         {/* Meta row */}
         <div className="flex items-center gap-2.5 mb-4">
-          <span className="text-[11px] px-2.5 py-[3px] rounded-md bg-purple/10 text-purple-light font-[family-name:var(--font-mono)] font-semibold uppercase tracking-[0.05em]">
+          <span className="text-[11px] px-2.5 py-[3px] rounded-md bg-[color:color-mix(in_srgb,var(--accent-strong)_18%,transparent)] text-[color:var(--accent-strong)] font-[family-name:var(--font-mono)] font-semibold uppercase tracking-[0.05em]">
             {getCategoryLabel(article.category)}
           </span>
-          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
+          <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
             {article.date}
           </span>
-          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
+          <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
             &middot;
           </span>
-          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
+          <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
             {article.readTime}
           </span>
         </div>
 
-        <h1 className="text-[38px] font-extrabold leading-[1.2] tracking-[-0.03em] font-[family-name:var(--font-outfit)] text-white/95 mb-5">
+        <h1 className="text-[38px] font-extrabold leading-[1.2] tracking-[-0.03em] font-[family-name:var(--font-outfit)] text-[color:var(--text)] mb-5">
           {article.title}
         </h1>
 
@@ -147,7 +146,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
           {article.tags.map((tag) => (
             <span
               key={tag}
-              className="text-[11px] px-2.5 py-[3px] rounded-md bg-white/[0.03] border border-white/[0.06] text-white/45 font-[family-name:var(--font-mono)]"
+              className="text-[11px] px-2.5 py-[3px] rounded-md bg-[var(--surface)] text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]"
             >
               {tag}
             </span>
@@ -156,7 +155,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
       </div>
 
       {/* Body with Sidebar TOC */}
-      <div className="relative z-[1] max-w-[1000px] mx-auto px-6 pb-20 grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-12">
+      <div className="max-w-[1000px] mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-12">
         {/* TOC — hidden on mobile */}
         <div className="hidden lg:block">
           <TableOfContents
@@ -168,7 +167,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
         {/* Content column */}
         <div className="max-w-[680px]">
           {/* Intro */}
-          <p className="text-lg text-white/65 italic border-l-[3px] border-purple/30 pl-5 leading-relaxed mb-9 font-[family-name:var(--font-outfit)]">
+          <p className="text-lg text-[color:var(--text-secondary)] italic border-l-[3px] border-[color:var(--accent-strong)] pl-5 leading-relaxed mb-9 font-[family-name:var(--font-outfit)]">
             {content.intro}
           </p>
 
@@ -179,13 +178,13 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
               id={`section-${i}`}
               className="mb-10 scroll-mt-[100px]"
             >
-              <h2 className="text-[22px] font-bold text-white/95 font-[family-name:var(--font-outfit)] tracking-[-0.02em] mb-4">
+              <h2 className="text-[22px] font-bold text-[color:var(--text)] font-[family-name:var(--font-outfit)] tracking-[-0.02em] mb-4">
                 {section.heading}
               </h2>
               {section.body.split("\n\n").map((para, j) => (
                 <p
                   key={j}
-                  className="text-[15px] text-white/55 font-[family-name:var(--font-outfit)] leading-[1.85] mb-4"
+                  className="text-[15px] text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.85] mb-4"
                 >
                   {renderInlineMarkdown(para)}
                 </p>
@@ -194,24 +193,43 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
             </div>
           ))}
 
-          {/* Bottom CTA */}
-          <div className="p-8 px-7 rounded-[20px] mt-4 text-center bg-gradient-to-br from-purple/[0.06] to-cyan/[0.03] border border-purple/[0.1]">
-            <h3 className="text-xl font-bold text-white/95 font-[family-name:var(--font-outfit)] mb-2">
-              Strip metadata from your files now
+          {/* Bottom CTA — dark card */}
+          <div
+            className="p-8 lg:p-10 rounded-3xl mt-6 text-center"
+            style={{
+              background: "var(--card-inverse-bg)",
+              color: "var(--card-inverse-text)",
+              boxShadow:
+                "0 12px 32px -8px rgba(31,21,48,0.18), 0 2px 8px -2px rgba(31,21,48,0.08)",
+            }}
+          >
+            <div
+              className="text-[12px] font-bold uppercase tracking-[0.18em] mb-3"
+              style={{ color: "var(--accent-strong)" }}
+            >
+              Try it now
+            </div>
+            <h3
+              className="font-extrabold tracking-[-0.02em] mb-3"
+              style={{ color: "var(--card-inverse-text)", fontSize: 24 }}
+            >
+              Strip metadata from your files.
             </h3>
-            <p className="text-sm text-white/50 font-[family-name:var(--font-outfit)] mb-5">
-              Free for single files. No account, no upload, no tracking.
+            <p
+              className="mb-6"
+              style={{ color: "var(--card-inverse-muted)", fontSize: 14 }}
+            >
+              Free, no account, no upload, no tracking.
             </p>
             <Link
               href="/"
-              className="inline-block px-9 py-3.5 rounded-xl border-none text-white text-[15px] font-semibold font-[family-name:var(--font-outfit)] no-underline transition-all duration-200 hover:-translate-y-px"
+              className="inline-flex items-center px-7 py-3 rounded-xl text-[14px] font-semibold no-underline transition-all hover:-translate-y-px"
               style={{
-                background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
-                boxShadow:
-                  "0 0 25px rgba(124,58,237,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                background: "var(--accent)",
+                color: "var(--accent-fg)",
               }}
             >
-              Open MetaStrip &rarr;
+              Open MetaStrip →
             </Link>
           </div>
 
@@ -219,7 +237,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
           <RelatedPosts currentId={article.id} />
         </div>
       </div>
-
+      </main>
       <Footer />
     </>
   );

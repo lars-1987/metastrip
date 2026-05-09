@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AnimatedBackground } from "@/components/shared/AnimatedBackground";
+import { TopNav } from "@/components/shared/TopNav";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
@@ -13,34 +13,59 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <>
-      <AnimatedBackground />
-      <main className="relative z-[1] min-h-screen flex items-center justify-center px-6 py-24">
-        <div className="max-w-xl text-center">
-          <div className="text-[14px] font-[family-name:var(--font-mono)] text-white/35 mb-3 tracking-wider">
-            ERROR 404
-          </div>
-          <h1 className="text-[44px] md:text-[56px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white/95 font-[family-name:var(--font-outfit)] mb-5">
-            Page not found.
-          </h1>
-          <p className="text-[17px] text-white/60 leading-[1.6] font-[family-name:var(--font-outfit)] mb-10">
-            The page you&apos;re looking for doesn&apos;t exist — or it was stripped
-            of its metadata so thoroughly we can&apos;t find it either.
-          </p>
+      <TopNav />
+      <main
+        className="relative z-10"
+        style={{ background: "var(--bg)" }}
+      >
+        <div className="min-h-[80vh] flex items-center justify-center px-6 py-24">
+          <div className="max-w-xl text-center">
+            <div
+              className="text-[12px] font-bold uppercase tracking-[0.18em] mb-4"
+              style={{ color: "var(--accent-strong)" }}
+            >
+              Error 404
+            </div>
+            <h1
+              className="font-extrabold leading-[1.05] tracking-[-0.03em] mb-5"
+              style={{
+                color: "var(--text)",
+                fontSize: "clamp(40px, 5.5vw, 60px)",
+              }}
+            >
+              Page not found.
+            </h1>
+            <p
+              className="leading-[1.6] mb-10"
+              style={{ color: "var(--text-secondary)", fontSize: 17 }}
+            >
+              The page you&apos;re looking for doesn&apos;t exist — or it was stripped
+              of its metadata so thoroughly we can&apos;t find it either.
+            </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/"
-              className="inline-block px-7 py-3 rounded-xl text-white text-[14px] font-semibold no-underline transition-all duration-200 hover:-translate-y-px font-[family-name:var(--font-outfit)]"
-              style={{ background: "linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)" }}
-            >
-              Open MetaStrip →
-            </Link>
-            <Link
-              href="/blog"
-              className="inline-block px-7 py-3 rounded-xl text-white/80 text-[14px] font-semibold no-underline border border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-colors font-[family-name:var(--font-outfit)]"
-            >
-              Read the blog
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/"
+                className="inline-flex items-center px-7 py-3 rounded-xl text-[14px] font-semibold no-underline transition-all hover:-translate-y-px"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--accent-fg)",
+                }}
+              >
+                Open MetaStrip →
+              </Link>
+              <Link
+                href="/blog"
+                className="inline-flex items-center px-7 py-3 rounded-xl text-[14px] font-semibold no-underline transition-colors"
+                style={{
+                  background: "transparent",
+                  color: "var(--text-secondary)",
+                  border: "1px solid var(--border-strong)",
+                }}
+              >
+                Read the blog
+              </Link>
+            </div>
           </div>
         </div>
       </main>

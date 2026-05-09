@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AnimatedBackground } from "@/components/shared/AnimatedBackground";
-import { Nav } from "@/components/layout/Nav";
+import { TopNav } from "@/components/shared/TopNav";
 import { Footer } from "@/components/layout/Footer";
 import { Icon } from "@/components/shared/Icon";
 
@@ -21,16 +20,28 @@ function LegalSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-9 border-b border-white/[0.04] pb-9 last:border-b-0 last:mb-0 last:pb-0">
+    <div
+      className="mb-9 pb-9 last:mb-0 last:pb-0"
+      style={{ borderBottom: "1px solid var(--card-inverse-muted)" }}
+    >
       <div className="flex items-baseline gap-2.5 mb-3">
-        <span className="text-xs font-semibold text-purple-light font-[family-name:var(--font-mono)]">
+        <span
+          className="text-xs font-bold font-[family-name:var(--font-mono)]"
+          style={{ color: "var(--accent-strong)" }}
+        >
           {number}.
         </span>
-        <h2 className="text-lg font-semibold text-white/95 font-[family-name:var(--font-outfit)] tracking-[-0.02em]">
+        <h2
+          className="text-lg font-bold tracking-[-0.02em]"
+          style={{ color: "var(--card-inverse-text)" }}
+        >
           {title}
         </h2>
       </div>
-      <div className="text-sm text-white/55 font-[family-name:var(--font-outfit)] leading-[1.85] pl-7">
+      <div
+        className="text-sm leading-[1.85] pl-7"
+        style={{ color: "var(--card-inverse-muted)" }}
+      >
         {children}
       </div>
     </div>
@@ -45,14 +56,14 @@ function PrivacyPolicyContent() {
   return (
     <>
       {/* Short version box */}
-      <div className="mb-10 p-5 px-6 rounded-[14px] bg-success/[0.04] border border-success/[0.08]">
+      <div className="mb-10 p-5 px-6 rounded-[14px] bg-[color:color-mix(in_srgb,var(--accent-2)_15%,transparent)] border border-[color:color-mix(in_srgb,var(--accent-2)_25%,transparent)]">
         <div className="flex items-center gap-2 mb-2">
-          <Icon name="Lock" size={16} weight="duotone" className="text-success" />
-          <span className="text-sm font-semibold text-success font-[family-name:var(--font-outfit)]">
+          <Icon name="Lock" size={16} weight="duotone" className="text-[color:var(--accent-2)]" />
+          <span className="text-sm font-semibold text-[color:var(--accent-2)] font-[family-name:var(--font-outfit)]">
             The short version
           </span>
         </div>
-        <p className="text-sm text-white/60 font-[family-name:var(--font-outfit)] leading-[1.7]">
+        <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7]">
           Your files are processed entirely in your browser. We never see,
           store, or transmit your files. We don&apos;t track individual users.
           We collect minimal analytics data that cannot identify you. MetaStrip
@@ -91,7 +102,7 @@ function PrivacyPolicyContent() {
           We collect the minimum information necessary to operate the service:
         </p>
         <p className="mb-3">
-          <span className="text-white/75 font-semibold">Analytics data:</span>{" "}
+          <span className="font-semibold">Analytics data:</span>{" "}
           We use PostHog for product analytics, configured to use localStorage
           instead of cookies and to respect the Do Not Track browser setting.
           PostHog collects page views, click interactions, referral sources,
@@ -100,7 +111,7 @@ function PrivacyPolicyContent() {
           users.
         </p>
         <p>
-          <span className="text-white/75 font-semibold">
+          <span className="font-semibold">
             Tips via Ko-fi:
           </span>{" "}
           If you choose to leave a tip, payment is processed entirely by Ko-fi.
@@ -153,20 +164,20 @@ function PrivacyPolicyContent() {
 
       <LegalSection number="5" title="Third-Party Services">
         <p className="mb-2">
-          <span className="text-white/75 font-semibold">Ko-fi</span> processes
+          <span className="font-semibold">Ko-fi</span> processes
           optional tips. See{" "}
           <Link
             href="https://more.ko-fi.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             ko-fi.com/privacy
           </Link>
           .
         </p>
         <p className="mb-2">
-          <span className="text-white/75 font-semibold">
+          <span className="font-semibold">
             PostHog
           </span>{" "}
           provides product analytics. See{" "}
@@ -174,20 +185,20 @@ function PrivacyPolicyContent() {
             href="https://posthog.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             posthog.com/privacy
           </Link>
           .
         </p>
         <p>
-          <span className="text-white/75 font-semibold">Vercel</span> hosts
+          <span className="font-semibold">Vercel</span> hosts
           MetaStrip&apos;s website. See{" "}
           <Link
             href="https://vercel.com/legal/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             vercel.com/legal/privacy-policy
           </Link>
@@ -217,7 +228,7 @@ function PrivacyPolicyContent() {
           If you have any privacy concerns, please contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -245,7 +256,7 @@ function PrivacyPolicyContent() {
           For privacy-related questions or concerns, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -264,14 +275,14 @@ function TermsContent() {
   return (
     <>
       {/* Short version box */}
-      <div className="mb-10 p-5 px-6 rounded-[14px] bg-purple/[0.04] border border-purple/[0.08]">
+      <div className="mb-10 p-5 px-6 rounded-[14px] bg-[color:color-mix(in_srgb,var(--accent-strong)_15%,transparent)] border border-[color:color-mix(in_srgb,var(--accent-strong)_25%,transparent)]">
         <div className="flex items-center gap-2 mb-2">
-          <Icon name="ClipboardText" size={16} weight="duotone" className="text-purple-light" />
-          <span className="text-sm font-semibold text-purple-light font-[family-name:var(--font-outfit)]">
+          <Icon name="ClipboardText" size={16} weight="duotone" className="text-[color:var(--accent-strong)]" />
+          <span className="text-sm font-semibold text-[color:var(--accent-strong)] font-[family-name:var(--font-outfit)]">
             The short version
           </span>
         </div>
-        <p className="text-sm text-white/60 font-[family-name:var(--font-outfit)] leading-[1.7]">
+        <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7]">
           MetaStrip is a free metadata removal tool provided as-is. You&apos;re
           responsible for the files you process. Don&apos;t use the service for
           anything illegal.
@@ -319,7 +330,7 @@ function TermsContent() {
           For any questions, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -433,7 +444,7 @@ function TermsContent() {
           For questions about these Terms, contact us at{" "}
           <Link
             href="mailto:hello@metastrip.app"
-            className="text-purple-light hover:text-white/80 transition-colors duration-200 underline decoration-purple-light/30 underline-offset-2"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
             hello@metastrip.app
           </Link>
@@ -458,96 +469,138 @@ export function PrivacyPage() {
 
   return (
     <>
-      <AnimatedBackground />
-      <Nav />
-
-      <div className="relative z-[1] max-w-[760px] mx-auto px-6 pt-[110px] pb-20">
-        {/* Header */}
-        <div className="text-center mb-10 animate-hero-fade-in">
-          <h1
-            className="text-[40px] font-extrabold leading-[1.15] tracking-[-0.04em] font-[family-name:var(--font-outfit)] mb-3 bg-clip-text text-transparent animate-gradient-shift"
-            style={{
-              backgroundImage:
-                "linear-gradient(135deg, #f8fafc 0%, #a78bfa 60%, #06b6d4 100%)",
-              backgroundSize: "200% 200%",
-            }}
-          >
-            Legal
-          </h1>
-          <p className="text-[15px] text-white/50 font-[family-name:var(--font-outfit)] leading-relaxed">
-            Boring but important. Here&apos;s how we handle your data (spoiler:
-            we don&apos;t).
-          </p>
-        </div>
-
-        {/* Tab switcher */}
-        <div className="flex gap-1.5 mb-9 p-1 rounded-[14px] bg-white/[0.02] border border-white/[0.05] animate-card-slide-in [animation-delay:150ms]">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 px-4 rounded-[10px] border-none cursor-pointer flex items-center justify-center gap-2 transition-all duration-[250ms] ${
-                activeTab === tab.id
-                  ? "bg-white/[0.05]"
-                  : "bg-transparent hover:bg-white/[0.03]"
-              }`}
+      <TopNav />
+      <main className="relative z-10" style={{ background: "var(--bg)" }}>
+        <div className="max-w-[800px] mx-auto px-6 lg:px-8 pt-20 lg:pt-28 pb-24">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div
+              className="text-[12px] font-bold uppercase tracking-[0.18em] mb-4"
+              style={{ color: "var(--accent-strong)" }}
             >
-              <Icon name={tab.id === "privacy" ? "Lock" : "ClipboardText"} size={15} weight="duotone" className={activeTab === tab.id ? "text-white/95" : "text-white/45"} />
-              <span
-                className={`text-sm font-semibold font-[family-name:var(--font-outfit)] transition-colors duration-[250ms] ${
-                  activeTab === tab.id ? "text-white/95" : "text-white/45"
-                }`}
-              >
-                {tab.label}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Effective date */}
-        <div className="flex items-center gap-2 mb-8 animate-card-slide-in [animation-delay:200ms]">
-          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
-            Effective: March 1, 2026
-          </span>
-          <span className="text-xs text-white/[0.12] font-[family-name:var(--font-mono)]">
-            |
-          </span>
-          <span className="text-xs text-white/35 font-[family-name:var(--font-mono)]">
-            Last updated: March 1, 2026
-          </span>
-        </div>
-
-        {/* Content */}
-        <div
-          key={activeTab}
-          className="p-8 sm:p-9 rounded-3xl bg-white/[0.015] border border-white/[0.04] animate-card-slide-in"
-        >
-          {activeTab === "privacy" ? (
-            <PrivacyPolicyContent />
-          ) : (
-            <TermsContent />
-          )}
-        </div>
-
-        {/* Contact bar */}
-        <div className="mt-8 py-5 px-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-between animate-card-slide-in [animation-delay:300ms]">
-          <div>
-            <p className="text-sm font-semibold text-white/80 font-[family-name:var(--font-outfit)]">
-              Questions about our policies?
-            </p>
-            <p className="text-[13px] text-white/45 font-[family-name:var(--font-outfit)] mt-0.5">
-              We&apos;re happy to clarify anything.
+              Legal
+            </div>
+            <h1
+              className="font-extrabold leading-[1.05] tracking-[-0.04em] mb-4"
+              style={{
+                color: "var(--text)",
+                fontSize: "clamp(40px, 5.5vw, 60px)",
+              }}
+            >
+              Privacy &amp; Terms.
+            </h1>
+            <p
+              className="leading-[1.6] mx-auto"
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: 17,
+                maxWidth: 480,
+              }}
+            >
+              Boring but important. Here&apos;s how we handle your data (spoiler:
+              we don&apos;t).
             </p>
           </div>
-          <Link
-            href="mailto:hello@metastrip.app"
-            className="py-2.5 px-[22px] rounded-[10px] border border-purple/20 bg-purple/[0.06] hover:bg-purple/[0.12] cursor-pointer text-purple-light text-[13px] font-semibold font-[family-name:var(--font-outfit)] transition-all duration-200 no-underline"
-          >
-            hello@metastrip.app
-          </Link>
-        </div>
-      </div>
 
+          {/* Tab switcher */}
+          <div
+            className="flex gap-1.5 mb-8 p-1 rounded-2xl"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
+                style={{
+                  background:
+                    activeTab === tab.id
+                      ? "var(--card-inverse-bg)"
+                      : "transparent",
+                  color:
+                    activeTab === tab.id
+                      ? "var(--card-inverse-text)"
+                      : "var(--text-muted)",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <Icon
+                  name={tab.id === "privacy" ? "Lock" : "ClipboardText"}
+                  size={15}
+                  weight="duotone"
+                />
+                <span className="text-[13px] font-semibold">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Effective date */}
+          <div
+            className="flex items-center gap-2 mb-6 text-xs font-[family-name:var(--font-mono)]"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <span>Effective: March 1, 2026</span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>Last updated: March 1, 2026</span>
+          </div>
+
+          {/* Content — dark card */}
+          <div
+            key={activeTab}
+            className="p-8 sm:p-9 rounded-3xl"
+            style={{
+              background: "var(--card-inverse-bg)",
+              color: "var(--card-inverse-text)",
+              boxShadow:
+                "0 12px 32px -8px rgba(31,21,48,0.18), 0 2px 8px -2px rgba(31,21,48,0.08)",
+            }}
+          >
+            {activeTab === "privacy" ? (
+              <PrivacyPolicyContent />
+            ) : (
+              <TermsContent />
+            )}
+          </div>
+
+          {/* Contact bar */}
+          <div
+            className="mt-8 py-5 px-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            <div>
+              <p
+                className="text-sm font-bold"
+                style={{ color: "var(--text)" }}
+              >
+                Questions about our policies?
+              </p>
+              <p
+                className="text-[13px] mt-0.5"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                We&apos;re happy to clarify anything.
+              </p>
+            </div>
+            <Link
+              href="mailto:hello@metastrip.app"
+              className="py-2.5 px-5 rounded-xl text-[13px] font-semibold no-underline transition-all hover:-translate-y-px"
+              style={{
+                background: "var(--accent)",
+                color: "var(--accent-fg)",
+              }}
+            >
+              hello@metastrip.app
+            </Link>
+          </div>
+        </div>
+      </main>
       <Footer />
     </>
   );

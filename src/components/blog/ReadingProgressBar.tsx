@@ -18,7 +18,7 @@ export default function ReadingProgressBar() {
   }, []);
 
   return (
-    <div className="fixed top-16 left-0 right-0 h-[3px] z-[49] bg-white/[0.03]">
+    <div className="fixed top-16 left-0 right-0 h-[3px] z-[49] bg-[var(--surface)]">
       <div
         className="h-full transition-[width] duration-100 ease-linear"
         style={{

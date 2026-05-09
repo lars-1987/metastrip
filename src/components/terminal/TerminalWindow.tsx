@@ -6,9 +6,18 @@ interface TerminalWindowProps {
 
 export function TerminalWindow({ children }: TerminalWindowProps) {
   return (
-    <div data-terminal-window className="w-full md:max-w-6xl md:mx-auto md:mt-6 md:mb-10 md:rounded-xl overflow-hidden border border-white/[0.08] bg-[#0c0c0e] flex flex-col min-h-[80vh] md:min-h-0 md:h-[75vh] pointer-events-auto"
+    <div
+      data-terminal-window
+      className="w-full md:rounded-2xl overflow-hidden flex flex-col pointer-events-auto"
       style={{
-        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)",
+        background: "var(--terminal-bg)",
+        color: "var(--terminal-text)",
+        border: "1px solid color-mix(in srgb, var(--terminal-bg) 70%, var(--text) 30%)",
+        // Locked height (no min/max) so the terminal doesn't resize when files
+        // are dropped and the log area grows. Inner regions handle their own scroll.
+        height: "min(85vh, 720px)",
+        // Soft drop shadow that reads on cream + transparent on dark
+        boxShadow: "0 24px 60px -12px rgba(31,21,48,0.18), 0 4px 16px -4px rgba(31,21,48,0.08)",
       }}
     >
       {children}

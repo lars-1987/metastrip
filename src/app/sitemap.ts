@@ -9,7 +9,7 @@ export const dynamic = "force-static";
  * lastModified rather than ticking forward during generation.
  * For blog posts we use the article's own date when available.
  */
-const BUILD_DATE = new Date("2026-05-05");
+const BUILD_DATE = new Date("2026-05-10");
 
 function parseArticleDate(dateStr: string): Date {
   // Article dates are like "May 5, 2026" or "Feb 22, 2026"
