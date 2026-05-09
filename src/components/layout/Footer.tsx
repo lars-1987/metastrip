@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ARTICLES } from "@/lib/blog-data";
 import { MetaStripIcon } from "@/components/shared/Logo";
+import { useTheme } from "@/components/shared/ThemeProvider";
 
 const TOOLS = [
   { label: "Remove metadata from photos", href: "/remove-metadata-from-photos" },
@@ -28,6 +29,7 @@ const FOOTER_HEIGHT = 600;
 export function Footer() {
   const ref = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!ref.current) return;
@@ -94,6 +96,39 @@ export function Footer() {
                     <IconButton href="mailto:hello@metastrip.app" label="Email">
                       <MailIcon />
                     </IconButton>
+                  </div>
+
+                  {/* Directory badges — both theme-aware. Stacked because they
+                      won't fit side-by-side in the brand column. */}
+                  <div className="mt-6 flex flex-col gap-3 items-start">
+                    <a
+                      href="https://www.producthunt.com/products/metastrip-remove-metadata-from-files/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-metastrip-remove-metadata-from-files"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1185710&theme=${theme === "dark" ? "dark" : "neutral"}`}
+                        alt="MetaStrip on Product Hunt"
+                        width={250}
+                        height={54}
+                      />
+                    </a>
+                    <a
+                      href="https://postyourstartup.co/startup/metastrip?ref=badge"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://postyourstartup.co/api/badge/metastrip?theme=${theme === "dark" ? "dark" : "neutral"}`}
+                        alt="Featured on PostYourStartup"
+                        width={212}
+                        height={55}
+                      />
+                    </a>
                   </div>
                 </FadeIn>
 
