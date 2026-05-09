@@ -49,3 +49,31 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  notify-search-engines:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit sitemap URLs to IndexNow (Bing, Yandex, Seznam, DuckDuckGo)
+        env:
+          INDEXNOW_KEY: cba41c8dc9636e5850ce267857373744
+        run: |
+          # Wait briefly for the new deploy to be reachable
+          sleep 20
+          # Pull current sitemap, extract URLs
+          URLS_JSON=$(curl -fsSL https://metastrip.app/sitemap.xml \
+            | grep -oE '<loc>[^<]+</loc>' \
+            | sed -E 's:</?loc>::g' \
+            | jq -R . | jq -sc .)
+          # Build IndexNow payload
+          PAYLOAD=$(jq -nc \
+            --arg host "metastrip.app" \
+            --arg key "$INDEXNOW_KEY" \
+            --arg keyLocation "https://metastrip.app/$INDEXNOW_KEY.txt" \
+            --argjson urlList "$URLS_JSON" \
+            '{host: $host, key: $key, keyLocation: $keyLocation, urlList: $urlList}')
+          echo "Submitting $(echo "$URLS_JSON" | jq 'length') URLs to IndexNow..."
+          curl -fsSL -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$PAYLOAD" \
+            -w "HTTP %{http_code}\n"
