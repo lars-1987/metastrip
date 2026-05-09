@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TerminalApp } from "@/components/terminal/TerminalApp";
+import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "MetaStrip — Strip Hidden Metadata from Files",
@@ -48,6 +49,7 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <TerminalApp />
+      <Footer />
     </>
   );
 }
