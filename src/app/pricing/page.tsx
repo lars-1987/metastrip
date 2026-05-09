@@ -4,7 +4,7 @@ import { AnimatedBackground } from "@/components/shared/AnimatedBackground";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Pricing — Free Metadata Removal",
+  title: "Pricing — Free Metadata Removal | MetaStrip",
   description:
     "MetaStrip is free. Remove metadata from photos, PDFs, and documents in your browser — no signup, no upload, no cost. Optional Ko-fi support if you'd like to help.",
   alternates: { canonical: "https://metastrip.app/pricing" },

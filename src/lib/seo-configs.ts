@@ -227,7 +227,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     metaTitle:
       "Remove Metadata from Photos Online \u2014 Free, No Upload | MetaStrip",
     metaDescription:
-      "Strip GPS coordinates, camera info, timestamps, and AI tags from photos instantly in your browser. No upload, no account, 100% private.",
+      "Remove GPS, EXIF, camera info, and AI tags from photos in your browser. JPG, PNG, WebP, HEIC. No upload, no account, no cost.",
   },
 
   "remove-author-from-pdf": {
@@ -375,9 +375,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Author from PDF Online \u2014 Free, Private | MetaStrip",
+      "Remove Metadata from PDFs \u2014 Author, Dates & More | MetaStrip",
     metaDescription:
-      "Strip author names, company info, creator apps, and hidden properties from PDF files. 100% browser-based, no upload required.",
+      "Strip author names, creator app, timestamps, and hidden properties from PDF files. Free, browser-based, no upload required.",
   },
 
   "strip-exif-data": {
@@ -549,9 +549,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Strip EXIF Data Online \u2014 Free EXIF Remover | MetaStrip",
+      "EXIF Remover \u2014 View & Strip Photo Metadata Online | MetaStrip",
     metaDescription:
-      "Remove EXIF, IPTC, XMP, GPS, and all embedded metadata from photos. Free, private, 100% browser-based. No upload required.",
+      "Remove EXIF, IPTC, XMP, and GPS metadata from photos. See what's embedded, then strip it. Free, in your browser, no upload.",
   },
 
   "remove-ai-metadata": {
@@ -717,9 +717,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove AI Metadata from Images \u2014 Strip C2PA & XMP | MetaStrip",
+      "Remove AI Image Tags \u2014 DALL\u00b7E, Midjourney, ChatGPT | MetaStrip",
     metaDescription:
-      "Strip C2PA content credentials, XMP AI tags, and generation markers from Midjourney, DALL-E, and Stable Diffusion images. Free, private, browser-based.",
+      "Strip C2PA content credentials and AI generation tags from Midjourney, DALL\u00b7E, ChatGPT, and Firefly images. Free, no upload, no signup.",
   },
 
   "strip-metadata-from-word-document": {
@@ -869,9 +869,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Strip Metadata from Word Documents \u2014 Free DOCX Cleaner | MetaStrip",
+      "Remove Metadata from Word Documents (.docx) \u2014 Free | MetaStrip",
     metaDescription:
-      "Remove author names, tracked changes, comments, and hidden properties from Word documents. Browser-based, no upload, no account needed.",
+      "Remove author names, tracked changes, comments, and hidden properties from Word .docx files. Browser-based, no upload, no signup.",
   },
 
   "remove-gps-location-from-photos": {
@@ -1017,7 +1017,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     metaTitle:
       "Remove GPS Location from Photos \u2014 Free & Private | MetaStrip",
     metaDescription:
-      "Strip GPS coordinates, altitude, and location data from photos before sharing. 100% browser-based, no upload. Protect your privacy.",
+      "Strip GPS coordinates, altitude, and timezone from photos before sharing. 100% in your browser. Free, no upload, no account.",
   },
 
   "remove-metadata-before-sharing": {
@@ -1214,9 +1214,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Metadata Before Sharing Online \u2014 Free Tool | MetaStrip",
+      "Remove Metadata Before Sharing \u2014 Photos, PDFs & Docs | MetaStrip",
     metaDescription:
-      "Clean hidden metadata from photos and documents before sharing. Strip GPS, author names, timestamps, and more. 100% browser-based, no upload.",
+      "Clean hidden metadata from photos, PDFs, and Office docs before sharing. GPS, author, timestamps \u2014 gone in seconds. Free, browser-based.",
   },
 };
 
