@@ -2,6 +2,7 @@ import { TopNav } from "@/components/shared/TopNav";
 import { Footer } from "@/components/layout/Footer";
 import { Icon } from "@/components/shared/Icon";
 import type { IconName } from "@/components/shared/Icon";
+import { FounderPill } from "@/components/shared/FounderPill";
 
 const stats = [
   { value: "0", unit: "bytes", label: "uploaded to any server" },
@@ -153,58 +154,37 @@ export function AboutPage() {
             ))}
           </div>
 
-          {/* ── Origin Story ── */}
-          <section
-            className="rounded-3xl p-8 lg:p-10 mb-20"
-            style={{
-              background: "var(--card-inverse-bg)",
-              color: "var(--card-inverse-text)",
-              boxShadow:
-                "0 12px 32px -8px rgba(31,21,48,0.18), 0 2px 8px -2px rgba(31,21,48,0.08)",
-            }}
-          >
+          {/* ── Why MetaStrip exists / Founder bio ── */}
+          <section className="mb-20">
             <div
-              className="text-[12px] font-bold uppercase tracking-[0.18em] mb-4"
+              className="text-[12px] font-bold uppercase tracking-[0.18em] mb-4 text-center"
               style={{ color: "var(--accent-strong)" }}
             >
               Why MetaStrip exists
             </div>
-            <div
-              className="text-[15px] leading-[1.85]"
-              style={{ color: "var(--card-inverse-muted)" }}
-            >
-              <p className="mb-4">
-                It started the way most side projects do — I had a problem and
-                nothing solved it properly. I needed to strip metadata from a
-                batch of files and went looking for a tool. What I found was
-                bleak: half-abandoned web apps plastered with ads, sketchy
-                services that wanted me to upload my files to their servers, or
-                CLI tools that worked fine but required a terminal and a manual.
+            <FounderPill>
+              <p className="mb-3">
+                MetaStrip is built by Lars Holmstrom — an indie developer and
+                cyber security graduate based in Melbourne, Australia.
               </p>
-              <p className="mb-4">
-                None of it felt right. A privacy tool shouldn&apos;t require
-                trusting a stranger&apos;s server with your files, and it
-                shouldn&apos;t look like it was last updated when Ubuntu still
-                shipped with Unity.
+              <p className="mb-3">
+                The cyber security background is why I care about this problem
+                in the first place. Most people have no idea what&apos;s
+                embedded in the files they share every day, and the tools
+                meant to help them either upload your files to someone
+                else&apos;s server or look like they were last updated when
+                Ubuntu still shipped with Unity. I wanted something better, so
+                I built it.
               </p>
-              <p className="mb-4">
-                So I built the clean, modern version I actually wanted to use —
-                everything runs in your browser, no uploads, no accounts, no
-                nonsense. Then I looked at it and thought: this works, but
-                it&apos;s boring. The best CLI tools I use every day are the ones
-                that feel alive — the ones with personality.
+              <p className="mb-3">
+                I&apos;m a believer in FOSS for privacy tools — keeping big
+                tech out of personal information shouldn&apos;t require
+                trusting another company. The whole tool is on GitHub under
+                MIT licence. Audit it, fork it, run it locally, contribute.
+                The code is the proof.
               </p>
-              <p className="mb-4">
-                So I scrapped the generic landing page and rebuilt the whole
-                thing inside a terminal. If the only good metadata tools were CLI
-                programs, why not make one that lives in the browser? Same power,
-                zero setup, and a bit of fun baked in.
-              </p>
-              <p>
-                Built in Melbourne by a dev who likes privacy, terminals, and not
-                uploading files to random servers.
-              </p>
-            </div>
+              <p>Also a fan of dogs and tacos.</p>
+            </FounderPill>
           </section>
 
           {/* ── Principles ── */}

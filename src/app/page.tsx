@@ -4,6 +4,7 @@ import { Hero } from "@/components/shared/Hero";
 import { HowItWorks } from "@/components/shared/HowItWorks";
 import { FAQ } from "@/components/shared/FAQ";
 import { FAQS } from "@/components/shared/faq-data";
+import { FounderPill } from "@/components/shared/FounderPill";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
@@ -79,6 +80,14 @@ export default function Page() {
         <Hero />
         <HowItWorks />
         <FAQ />
+        <section className="px-6 lg:px-8 pb-20 lg:pb-28">
+          <FounderPill>
+            My name is Lars, I&apos;m from Melbourne, Australia. I&apos;m a
+            cyber security graduate from the University of Tasmania, now an
+            indie dev who likes privacy — the tool you&apos;re using right
+            now is the tool I built for myself first.
+          </FounderPill>
+        </section>
       </main>
       <Footer />
     </>
