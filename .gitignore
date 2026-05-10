@@ -35,9 +35,8 @@ yarn-error.log*
 
 # build docs
 *.md
-
-# vercel
-.vercel
+!README.md
+!LICENSE.md
 
 # typescript
 *.tsbuildinfo

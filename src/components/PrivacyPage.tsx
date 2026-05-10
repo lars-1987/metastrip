@@ -134,9 +134,21 @@ function PrivacyPolicyContent() {
           PDF files are processed using pdf-lib, a pure JavaScript PDF library
           that runs in your browser.
         </p>
-        <p className="mb-3">
+        <p className="mb-2">
           Office documents (DOCX, XLSX, PPTX) are processed using JSZip, which
           unpacks and modifies files entirely in browser memory.
+        </p>
+        <p className="mb-2">
+          Video files (MP4, MOV, M4V) are processed using a custom in-browser
+          MP4 atom walker that locates and overwrites metadata atoms (udta,
+          meta, ©xyz, loci, and similar) without touching audio or video
+          stream data.
+        </p>
+        <p className="mb-3">
+          Audio files (MP3, M4A, FLAC, WAV) are processed using custom
+          in-browser parsers for ID3v1/v2 tags, Vorbis comments, RIFF
+          LIST/INFO chunks, and Broadcast Wave (bext) extensions. All parsing
+          and rewriting happens in browser memory.
         </p>
         <p className="mb-3">
           At no point during processing are your files or any part of their
@@ -192,15 +204,17 @@ function PrivacyPolicyContent() {
           .
         </p>
         <p>
-          <span className="font-semibold">Vercel</span> hosts
-          MetaStrip&apos;s website. See{" "}
+          <span className="font-semibold">GitHub Pages</span> hosts
+          MetaStrip&apos;s website as static files. GitHub may collect
+          standard server access logs (IP address, user agent) when serving
+          the site. See{" "}
           <Link
-            href="https://vercel.com/legal/privacy-policy"
+            href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
-            vercel.com/legal/privacy-policy
+            GitHub&apos;s privacy statement
           </Link>
           .
         </p>
@@ -300,11 +314,13 @@ function TermsContent() {
 
       <LegalSection number="2" title="Description of Service">
         <p className="mb-3">
-          MetaStrip is a web-based tool that removes metadata from digital files
-          including images (JPEG, PNG, WebP, GIF), PDF documents, and Microsoft
-          Office documents (DOCX, XLSX, PPTX). All file processing occurs in
-          your web browser using client-side JavaScript. Files are not uploaded
-          to our servers.
+          MetaStrip is a web-based tool that removes metadata from digital
+          files including images (JPEG, PNG, WebP), PDF documents, Microsoft
+          Office documents (DOCX, XLSX, PPTX), video files (MP4, MOV, M4V),
+          and audio files (MP3, M4A, FLAC, WAV). All file processing occurs
+          in your web browser using client-side JavaScript. Files are not
+          uploaded to any server — MetaStrip&apos;s site is served as static
+          files from GitHub Pages and has no backend.
         </p>
         <p>
           The Service is completely free with support for batch processing of up
