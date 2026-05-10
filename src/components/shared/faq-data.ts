@@ -12,12 +12,12 @@ export const FAQS: FAQItem[] = [
   {
     question: "What metadata does MetaStrip remove?",
     answer:
-      "Photos: GPS coordinates, EXIF (camera make, model, serial number, settings), IPTC, XMP, C2PA content credentials, AI generation tags, embedded thumbnails, and timestamps. PDFs: author, creator app, producer, title, subject, keywords, custom properties, and timestamps. Word/Excel/PowerPoint: author, last-modified-by, company, tracked changes, comments, revision history, and template metadata. The full per-file-type breakdown is on the privacy page.",
+      "Photos: GPS coordinates, EXIF (camera make, model, serial number, settings), IPTC, XMP, C2PA content credentials, AI generation tags, embedded thumbnails, and timestamps. PDFs: author, creator app, producer, title, subject, keywords, custom properties, and timestamps. Word/Excel/PowerPoint: author, last-modified-by, company, tracked changes, comments, revision history, and template metadata. Video (MP4/MOV/M4V): GPS coordinates, device make/model/software, handler vendor IDs, creation and track timestamps, and tool fingerprints in udta/meta atoms. Audio (MP3/M4A/FLAC/WAV): ID3v1 and ID3v2 tags, Vorbis comments, embedded album art, RIFF LIST/INFO chunks, Broadcast Wave (bext) extensions, and iXML metadata. The full per-file-type breakdown is on the privacy page.",
   },
   {
     question: "What file types are supported?",
     answer:
-      "Images: JPEG, PNG, WebP, HEIC, TIFF, GIF. Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx). Audio and video support is on the roadmap.",
+      "Images: JPEG, PNG, WebP. Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx). Video: MP4, MOV, M4V. Audio: MP3, M4A, FLAC, WAV. HEIC, TIFF, GIF, and additional document formats are on the roadmap.",
   },
   {
     question: "Is MetaStrip really free?",
