@@ -71,9 +71,13 @@ export type SupportedFileType =
   | "xlsx"
   | "pptx"
   | "mp4"
-  | "mov";
+  | "mov"
+  | "m4a"
+  | "mp3"
+  | "flac"
+  | "wav";
 
-export type FileCategory = "image" | "document" | "video";
+export type FileCategory = "image" | "document" | "video" | "audio";
 
 export interface FileEntry {
   file: File;

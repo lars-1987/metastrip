@@ -23,10 +23,24 @@ export const SUPPORTED_VIDEO_TYPES = [
   "video/x-m4v",
 ];
 
+export const SUPPORTED_AUDIO_TYPES = [
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/aac",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/flac",
+  "audio/x-flac",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/wave",
+];
+
 export const ALL_SUPPORTED_TYPES = [
   ...SUPPORTED_IMAGE_TYPES,
   ...SUPPORTED_DOCUMENT_TYPES,
   ...SUPPORTED_VIDEO_TYPES,
+  ...SUPPORTED_AUDIO_TYPES,
 ];
 
 // Phase 2: All supported types
@@ -41,6 +55,16 @@ export const ACCEPTED_TYPES = [
   "video/mp4",
   "video/quicktime",
   "video/x-m4v",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/aac",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/flac",
+  "audio/x-flac",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/wave",
 ];
 
 export const BATCH_LIMIT = 20;

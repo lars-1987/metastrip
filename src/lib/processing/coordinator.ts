@@ -7,6 +7,9 @@ import { processDocx } from "./document/docx";
 import { processXlsx } from "./document/xlsx";
 import { processPptx } from "./document/pptx";
 import { processMp4, processMov } from "./video/mp4";
+import { processMp3 } from "./audio/mp3";
+import { processFlac } from "./audio/flac";
+import { processWav } from "./audio/wav";
 import type {
   SupportedFileType,
   StripOptions,
@@ -30,6 +33,11 @@ const processors: Partial<Record<SupportedFileType, Processor>> = {
   pptx: processPptx,
   mp4: processMp4,
   mov: processMov,
+  // M4A files are MP4 containers (audio-only) — same atom structure, same processor.
+  m4a: processMp4,
+  mp3: processMp3,
+  flac: processFlac,
+  wav: processWav,
 };
 
 export async function processFile(

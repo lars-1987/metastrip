@@ -14,6 +14,16 @@ const MIME_TO_TYPE: Record<string, SupportedFileType> = {
   "video/mp4": "mp4",
   "video/quicktime": "mov",
   "video/x-m4v": "mp4",
+  "audio/mp4": "m4a",
+  "audio/x-m4a": "m4a",
+  "audio/aac": "m4a",
+  "audio/mpeg": "mp3",
+  "audio/mp3": "mp3",
+  "audio/flac": "flac",
+  "audio/x-flac": "flac",
+  "audio/wav": "wav",
+  "audio/x-wav": "wav",
+  "audio/wave": "wav",
 };
 
 export function detectFileType(file: File): SupportedFileType | null {
@@ -22,10 +32,12 @@ export function detectFileType(file: File): SupportedFileType | null {
 
 const IMAGE_TYPES: SupportedFileType[] = ["jpeg", "png", "webp", "heic", "tiff", "gif"];
 const VIDEO_TYPES: SupportedFileType[] = ["mp4", "mov"];
+const AUDIO_TYPES: SupportedFileType[] = ["m4a", "mp3", "flac", "wav"];
 
 export function getFileCategory(type: SupportedFileType): FileCategory {
   if (IMAGE_TYPES.includes(type)) return "image";
   if (VIDEO_TYPES.includes(type)) return "video";
+  if (AUDIO_TYPES.includes(type)) return "audio";
   return "document";
 }
 
@@ -55,6 +67,16 @@ const TYPE_LABELS: Record<string, string> = {
   "video/mp4": "MP4",
   "video/quicktime": "MOV",
   "video/x-m4v": "M4V",
+  "audio/mp4": "M4A",
+  "audio/x-m4a": "M4A",
+  "audio/aac": "AAC",
+  "audio/mpeg": "MP3",
+  "audio/mp3": "MP3",
+  "audio/flac": "FLAC",
+  "audio/x-flac": "FLAC",
+  "audio/wav": "WAV",
+  "audio/x-wav": "WAV",
+  "audio/wave": "WAV",
 };
 
 export function getFileTypeLabel(mimeType: string): string {
