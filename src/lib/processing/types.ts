@@ -69,9 +69,11 @@ export type SupportedFileType =
   | "pdf"
   | "docx"
   | "xlsx"
-  | "pptx";
+  | "pptx"
+  | "mp4"
+  | "mov";
 
-export type FileCategory = "image" | "document";
+export type FileCategory = "image" | "document" | "video";
 
 export interface FileEntry {
   file: File;

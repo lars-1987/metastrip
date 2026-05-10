@@ -6,6 +6,7 @@ import { processPdf } from "./document/pdf";
 import { processDocx } from "./document/docx";
 import { processXlsx } from "./document/xlsx";
 import { processPptx } from "./document/pptx";
+import { processMp4, processMov } from "./video/mp4";
 import type {
   SupportedFileType,
   StripOptions,
@@ -27,6 +28,8 @@ const processors: Partial<Record<SupportedFileType, Processor>> = {
   docx: processDocx,
   xlsx: processXlsx,
   pptx: processPptx,
+  mp4: processMp4,
+  mov: processMov,
 };
 
 export async function processFile(

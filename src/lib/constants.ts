@@ -17,9 +17,16 @@ export const SUPPORTED_DOCUMENT_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ];
 
+export const SUPPORTED_VIDEO_TYPES = [
+  "video/mp4",
+  "video/quicktime",
+  "video/x-m4v",
+];
+
 export const ALL_SUPPORTED_TYPES = [
   ...SUPPORTED_IMAGE_TYPES,
   ...SUPPORTED_DOCUMENT_TYPES,
+  ...SUPPORTED_VIDEO_TYPES,
 ];
 
 // Phase 2: All supported types
@@ -31,9 +38,17 @@ export const ACCEPTED_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "video/mp4",
+  "video/quicktime",
+  "video/x-m4v",
 ];
 
 export const BATCH_LIMIT = 20;
+
+/** Soft warning threshold — videos above this take longer + use more memory */
+export const VIDEO_SIZE_WARN_BYTES = 250 * 1024 * 1024; // 250 MB
+/** Hard cap to prevent browser tab crashes on very large files */
+export const VIDEO_SIZE_HARD_CAP_BYTES = 1.5 * 1024 * 1024 * 1024; // 1.5 GB
 
 export interface CategoryConfig {
   label: string;

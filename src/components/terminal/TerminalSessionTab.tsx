@@ -182,7 +182,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
                 {isDragOver ? "drop files here..." : "drag & drop files or click to browse"}
               </div>
               <div className="font-[family-name:var(--font-mono)] text-[11px] text-white/30 mt-1.5">
-                jpeg, png, webp, pdf, docx, xlsx, pptx
+                jpeg, png, webp, pdf, docx, xlsx, pptx, mp4, mov
               </div>
             </div>
 
