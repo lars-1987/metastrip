@@ -3,8 +3,13 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 import { useFileProcessor } from "@/hooks/useFileProcessor";
 import { useDropZone } from "@/hooks/useDropZone";
-import { ACCEPTED_TYPES, BATCH_LIMIT } from "@/lib/constants";
+import {
+  ACCEPTED_TYPES,
+  BATCH_LIMIT,
+  RELEVANT_CATEGORIES_BY_FILE_CATEGORY,
+} from "@/lib/constants";
 import type { MetadataCategory } from "@/lib/processing/types";
+import { detectFileType, getFileCategory } from "@/lib/file-utils";
 import { TerminalPrompt } from "./TerminalPrompt";
 import { TerminalFileList } from "./TerminalFileList";
 import { TerminalStripTags } from "./TerminalStripTags";
@@ -92,6 +97,19 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
   const doneFiles = files.filter((f) => f.status === "done" && f.result);
   const hasDone = doneFiles.length > 0;
 
+  // Union of metadata categories relevant to any file in the batch.
+  // Hides toggles like "GPS" when only audio files are queued, etc.
+  const relevantCategories = (() => {
+    const union = new Set<MetadataCategory>();
+    for (const f of files) {
+      const type = detectFileType(f.file);
+      if (!type) continue;
+      const cat = getFileCategory(type);
+      for (const m of RELEVANT_CATEGORIES_BY_FILE_CATEGORY[cat]) union.add(m);
+    }
+    return union;
+  })();
+
   const handleExecute = useCallback(async () => {
     await processAll(stripOptions);
   }, [processAll, stripOptions]);
@@ -115,20 +133,20 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
   );
 
   const handleToggleAll = useCallback(() => {
-    const allSelected = Object.values(stripOptions).every((v) => v);
+    // Only consider categories actually visible to the user — toggling "all"
+    // shouldn't flip hidden categories the user can't see.
+    const visible: MetadataCategory[] =
+      relevantCategories.size > 0
+        ? (Array.from(relevantCategories) as MetadataCategory[])
+        : ["gps", "device", "dates", "author", "software", "copyright", "ai", "comments", "custom"];
+    const allSelected = visible.every((c) => stripOptions[c]);
     const newValue = !allSelected;
-    setStripOptions({
-      gps: newValue,
-      device: newValue,
-      dates: newValue,
-      author: newValue,
-      software: newValue,
-      copyright: newValue,
-      ai: newValue,
-      comments: newValue,
-      custom: newValue,
+    setStripOptions((prev) => {
+      const next = { ...prev };
+      for (const c of visible) next[c] = newValue;
+      return next;
     });
-  }, [stripOptions, setStripOptions]);
+  }, [stripOptions, setStripOptions, relevantCategories]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -212,6 +230,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
               stripOptions={stripOptions}
               onToggle={handleToggle}
               onToggleAll={handleToggleAll}
+              relevantCategories={relevantCategories}
             />
           </div>
         )}

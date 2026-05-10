@@ -7,14 +7,29 @@ interface TerminalStripTagsProps {
   stripOptions: StripOptions;
   onToggle: (key: MetadataCategory) => void;
   onToggleAll: () => void;
+  /**
+   * Categories to render. If omitted, all categories show. Categories not
+   * in this set are hidden — the underlying stripOptions value is left
+   * untouched so user preferences persist when files of a different type
+   * are added later.
+   */
+  relevantCategories?: ReadonlySet<MetadataCategory>;
 }
 
 const CATEGORIES: MetadataCategory[] = [
   "gps", "device", "dates", "author", "software", "ai", "copyright", "comments", "custom",
 ];
 
-export function TerminalStripTags({ stripOptions, onToggle, onToggleAll }: TerminalStripTagsProps) {
-  const allSelected = CATEGORIES.every((c) => stripOptions[c]);
+export function TerminalStripTags({
+  stripOptions,
+  onToggle,
+  onToggleAll,
+  relevantCategories,
+}: TerminalStripTagsProps) {
+  const visible = relevantCategories
+    ? CATEGORIES.filter((c) => relevantCategories.has(c))
+    : CATEGORIES;
+  const allSelected = visible.every((c) => stripOptions[c]);
 
   return (
     <div className="flex flex-wrap gap-1.5 py-2">
@@ -30,7 +45,7 @@ export function TerminalStripTags({ stripOptions, onToggle, onToggleAll }: Termi
         all
       </button>
 
-      {CATEGORIES.map((cat) => {
+      {visible.map((cat) => {
         const active = stripOptions[cat];
         return (
           <button

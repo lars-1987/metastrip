@@ -1,4 +1,4 @@
-import type { MetadataCategory } from "./processing/types";
+import type { MetadataCategory, FileCategory } from "./processing/types";
 import type { IconName } from "@/components/shared/Icon";
 
 export const SUPPORTED_IMAGE_TYPES = [
@@ -79,6 +79,31 @@ export interface CategoryConfig {
   icon: IconName;
   color: string;
 }
+
+/**
+ * Which metadata categories are meaningfully present in each file category.
+ * Used to hide irrelevant toggles from the UI — e.g. an MP3 has no GPS
+ * data, a PDF has no AI generation tags. Each processor already ignores
+ * irrelevant categories, so this is purely a UX layer.
+ */
+export const RELEVANT_CATEGORIES_BY_FILE_CATEGORY: Record<
+  FileCategory,
+  ReadonlySet<MetadataCategory>
+> = {
+  image: new Set([
+    "gps", "device", "dates", "author", "software",
+    "copyright", "ai", "comments", "custom",
+  ]),
+  document: new Set([
+    "dates", "author", "software", "copyright", "comments", "custom",
+  ]),
+  video: new Set([
+    "gps", "device", "dates", "software", "custom",
+  ]),
+  audio: new Set([
+    "dates", "author", "software", "copyright", "comments", "custom",
+  ]),
+};
 
 export const CATEGORY_CONFIG: Record<MetadataCategory, CategoryConfig> = {
   gps: { label: "GPS & Location", icon: "MapPin", color: "#ff4d6a" },
