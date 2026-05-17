@@ -11,9 +11,13 @@ export default function BlogIndex() {
   const [activeCategory, setActiveCategory] = useState("all");
 
   const featured = getFeaturedArticle();
+  // Exclude only the single article shown in the featured card — NOT every
+  // post with featured:true. Multiple posts can carry featured:true (it also
+  // bumps sitemap priority); all of them except the one in the featured card
+  // must still appear in the grid below.
   const filtered = ARTICLES.filter(
     (a) =>
-      !a.featured &&
+      a.id !== featured?.id &&
       (activeCategory === "all" || a.category === activeCategory)
   );
 
