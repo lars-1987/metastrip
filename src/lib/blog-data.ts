@@ -140,8 +140,8 @@ export const ARTICLES: BlogArticle[] = [
   {
     id: "ai-detection-2026-update",
     slug: "ai-image-detection-2026-update",
-    title: "AI Image Detection Just Got Much Better — Here’s What That Means for Creators",
-    excerpt: "C2PA is now an ISO standard, the EU AI Act kicks in August 2026, and platforms are getting serious about labelling AI content. Here’s what’s actually changed and what it means if you create with AI.",
+    title: "AI Image Detection in 2026: C2PA, the EU AI Act, and What Changed",
+    excerpt: "C2PA is now ISO/IEC 22144, the EU AI Act enforces August 2, 2026, and every major AI generator embeds provenance markers by default. What changed and what it means for creators.",
     category: "news",
     date: "May 5, 2026",
     readTime: "9 min read",
@@ -295,9 +295,9 @@ export const ARTICLES: BlogArticle[] = [
     id: "ai-metadata-guide",
     slug: "ai-metadata-c2pa-explained",
     title:
-      "C2PA and AI Image Tagging: What Creators Need to Know in 2026",
+      "What Is C2PA? Content Credentials for AI Images Explained",
     excerpt:
-      "AI-generated images now carry invisible content credentials. Here\u2019s how C2PA works, who\u2019s checking for it, and what it means for your content.",
+      "AI-generated images now carry cryptographic content credentials identifying which tool made them. How C2PA works, who\u2019s checking, and what creators need to know in 2026.",
     category: "technical",
     date: "Feb 22, 2026",
     readTime: "10 min read",

@@ -717,9 +717,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove AI Image Tags \u2014 DALL\u00b7E, Midjourney, ChatGPT | MetaStrip",
+      "Remove C2PA Metadata & AI Tags from Images \u2014 Free | MetaStrip",
     metaDescription:
-      "Strip C2PA content credentials and AI generation tags from Midjourney, DALL\u00b7E, ChatGPT, and Firefly images. Free, no upload, no signup.",
+      "Strip C2PA content credentials and AI generation tags from Midjourney, DALL\u00b7E, ChatGPT, and Firefly images. 100% browser-based. No upload, no signup.",
   },
 
   "strip-metadata-from-word-document": {
@@ -869,9 +869,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Metadata from Word Documents (.docx) \u2014 Free | MetaStrip",
+      "Word Metadata Remover (.docx) \u2014 Free | MetaStrip",
     metaDescription:
-      "Remove author names, tracked changes, comments, and hidden properties from Word .docx files. Browser-based, no upload, no signup.",
+      "Remove author names, company info, tracked changes, comments, and revision history from Microsoft Word (.docx) files. Browser-based, no upload, no signup.",
   },
 
   "remove-gps-location-from-photos": {
