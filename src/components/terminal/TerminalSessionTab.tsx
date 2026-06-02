@@ -17,6 +17,7 @@ import { TerminalOutput } from "./TerminalOutput";
 import { TerminalActions } from "./TerminalActions";
 import { trackFileDownloaded } from "@/lib/analytics";
 import { useClock } from "@/hooks/useClock";
+import { isChunkLoadError, reloadForStaleChunk } from "@/lib/chunk-reload";
 
 function SystemClockPill() {
   const now = useClock();
@@ -115,13 +116,21 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
   }, [processAll, stripOptions]);
 
   const handleDownload = useCallback(async () => {
-    if (doneFiles.length === 1 && doneFiles[0].result) {
-      const r = doneFiles[0].result;
-      const { saveAs } = await import("file-saver");
-      saveAs(r.cleanedBlob, `cleaned_${r.report.fileName}`);
-      trackFileDownloaded({ file_type: r.originalFile.type });
-    } else {
-      await downloadZip();
+    try {
+      if (doneFiles.length === 1 && doneFiles[0].result) {
+        const r = doneFiles[0].result;
+        const { saveAs } = await import("file-saver");
+        saveAs(r.cleanedBlob, `cleaned_${r.report.fileName}`);
+        trackFileDownloaded({ file_type: r.originalFile.type });
+      } else {
+        await downloadZip();
+      }
+    } catch (err) {
+      // Most likely a stale dynamic-import chunk after a deploy — reload to
+      // fetch fresh chunks. If it's something else, surface it gently rather
+      // than letting it bubble to the error boundary.
+      if (isChunkLoadError(err) && reloadForStaleChunk()) return;
+      setAddError("Download failed — please reload the page and try again.");
     }
   }, [doneFiles, downloadZip]);
 

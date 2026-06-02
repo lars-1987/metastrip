@@ -1,6 +1,7 @@
 "use client";
 
 import { useTerminalTabs } from "@/hooks/useTerminalTabs";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { TerminalWindow } from "./TerminalWindow";
 import { TerminalTitleBar } from "./TerminalTitleBar";
 import { TerminalTabBar } from "./TerminalTabBar";
@@ -33,20 +34,27 @@ export function TerminalApp() {
           onNewTab={createTab}
         />
 
-        {/* Tab content — each metastrip tab gets its own key for independent state */}
-        {activeTab?.type === "metastrip" && (
-          <TerminalSessionTab
-            key={activeTab.id}
-            onOpenSupport={() => {
-              const kofiTab = tabs.find((t) => t.type === "kofi");
-              if (kofiTab) setActiveTabId(kofiTab.id);
-            }}
-          />
-        )}
-        {activeTab?.type === "kofi" && <KofiTab />}
-        {activeTab?.type === "privacy" && <PrivacyTab />}
-        {activeTab?.type === "about" && <AboutTab />}
-        {activeTab?.type === "blog" && <BlogTab />}
+        {/* Tab content — each metastrip tab gets its own key for independent
+            state. Wrapped in an ErrorBoundary keyed by the active tab so a
+            render/processing throw in one tab shows a contained, recoverable
+            fallback inside the terminal chrome instead of white-screening the
+            whole page. Re-keying on tab id resets the boundary when the user
+            switches tabs. */}
+        <ErrorBoundary key={`boundary-${activeTabId}`} label="this tab">
+          {activeTab?.type === "metastrip" && (
+            <TerminalSessionTab
+              key={activeTab.id}
+              onOpenSupport={() => {
+                const kofiTab = tabs.find((t) => t.type === "kofi");
+                if (kofiTab) setActiveTabId(kofiTab.id);
+              }}
+            />
+          )}
+          {activeTab?.type === "kofi" && <KofiTab />}
+          {activeTab?.type === "privacy" && <PrivacyTab />}
+          {activeTab?.type === "about" && <AboutTab />}
+          {activeTab?.type === "blog" && <BlogTab />}
+        </ErrorBoundary>
       </TerminalWindow>
     </div>
   );
