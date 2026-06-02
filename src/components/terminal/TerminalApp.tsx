@@ -23,7 +23,15 @@ export function TerminalApp() {
   const activeTab = tabs.find((t) => t.id === activeTabId);
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    // translate="no" + notranslate: the terminal is a live React surface with
+    // constant text-node churn (animated execution log, ticking clock, status
+    // swaps, conditional renders). Browser auto-translation (Google Translate,
+    // Chrome, Safari) rewrites text nodes in place, which then makes React's
+    // removeChild/insertBefore throw "node is not a child of this node" and —
+    // before the error boundary — white-screened the whole app. Exempting the
+    // terminal from translation prevents the crash at its source; the marketing
+    // copy, blog, and FAQ outside this subtree stay fully translatable.
+    <div className="w-full max-w-5xl mx-auto notranslate" translate="no">
       <TerminalWindow>
         <TerminalTitleBar />
         <TerminalTabBar
