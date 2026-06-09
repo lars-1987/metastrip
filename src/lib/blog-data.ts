@@ -52,6 +52,57 @@ export const CATEGORIES: BlogCategory[] = [
 
 export const ARTICLES: BlogArticle[] = [
   {
+    id: "remove-pdf-metadata-adobe-acrobat",
+    slug: "remove-pdf-metadata-adobe-acrobat",
+    title: "How to Remove Metadata from PDFs in Adobe Acrobat (and a Faster Free Way)",
+    excerpt:
+      "Adobe Acrobat has three different ways to strip PDF metadata, and they don’t all remove the same things. Here’s exactly how each works, how to handle batches, and when a free browser tool does the job faster.",
+    category: "guides",
+    date: "Jun 9, 2026",
+    readTime: "8 min read",
+    featured: true,
+    tags: ["PDF", "Adobe Acrobat", "metadata", "how-to", "batch"],
+    coverGradient: "linear-gradient(135deg, #dc2626 0%, #ea580c 100%)",
+    coverIcon: "FileText",
+    content: {
+      intro: "If you’ve got Adobe Acrobat and need to strip metadata from a PDF, there isn’t one button that does it. There are three different methods, and they don’t remove the same things. One clears the basic fields but leaves hidden metadata behind. One lets you pick what to remove. One nukes everything. Knowing which is which matters, because “I removed the author name” and “I removed everything that could identify this document” are very different outcomes.\n\nHere’s exactly how each Acrobat method works, how to deal with the batch problem (which Acrobat handles poorly), and when reaching for a free browser tool is the faster call.",
+      sections: [
+        {
+          heading: "First: what’s actually in a PDF’s metadata",
+          body: "A PDF stores metadata in two separate places, and this is the root of why Acrobat has multiple removal tools.\n\n**The Document Information dictionary** holds the basic fields: Title, Author, Subject, Keywords, Creator (the app that made the content, e.g. Microsoft Word), and Producer (the app that generated the PDF, often revealing your OS). Plus creation and modification dates.\n\n**The XMP metadata stream** is a separate, more extensive metadata block in Adobe’s Extensible Metadata Platform format. It can carry copies of the Doc Info fields plus much more: edit history, tool-specific data, and custom properties.\n\nThe catch: clearing the Document Properties fields does **not** automatically clear the XMP stream. This is the single most common mistake people make removing PDF metadata in Acrobat. They clear the Author field, see it’s blank, and assume they’re done, while the same author name may still sit in the XMP block where casual inspection doesn’t show it.",
+        },
+        {
+          heading: "Method 1: Document Properties (basic, fast, incomplete)",
+          body: "This is the quickest method and fine for low-stakes files.\n\nOpen the PDF in Acrobat. Go to the top-left **Menu** (Windows) or **File** (macOS), then **Document Properties**. On the **Description** tab, you’ll see Title, Author, Subject, and Keywords. Clear the fields you don’t want. For the deeper fields, click **Additional Metadata**, then **Advanced**, to see and clear the XMP entries too. Press **OK** and save the PDF as a new file.\n\n**What it removes:** the standard Document Info fields, plus XMP if you go into Additional Metadata and clear it there too.\n\n**What it misses:** if you only clear the Description tab and skip Additional Metadata, the XMP stream survives. It also doesn’t touch comments, hidden text, attachments, or form data.\n\n**Use it for:** casual, low-risk documents where you just want the author and title gone. Not for legal, HR, journalism, or anything where hidden remnants matter.",
+        },
+        {
+          heading: "Method 2: Remove Hidden Information (selective)",
+          body: "This scans the whole document and lets you choose what to strip.\n\nGo to **Tools → Redact → Remove Hidden Information**. Acrobat scans the file and returns a checklist of everything it found: metadata, comments, hidden text, attachments, form fields, deleted content, and more. Review the list, check what you want gone, and click **Remove**. Save the file.\n\n**What it removes:** whatever you select from the full inventory of hidden content, including both Doc Info and XMP metadata.\n\n**Use it for:** when you want control, like keeping form fields but removing metadata, or reviewing exactly what’s hidden before deciding. Good for professional files where you need to see what’s there before cleaning.",
+        },
+        {
+          heading: "Method 3: Sanitize Document (the nuclear option)",
+          body: "This is Acrobat’s most aggressive cleanup and removes everything in one pass.\n\nGo to **Tools → Redact → Sanitize Document** (in some versions, **Remove Hidden Information** and **Sanitize Document** sit together in the Redact tool group). Confirm the dialog, and Acrobat strips Doc Info, XMP, annotations, comments, form data, hidden text, JavaScript, embedded files, and, importantly, digital signatures, all at once. You’ll be prompted to save a new sanitized copy.\n\n**What it removes:** essentially everything that isn’t visible page content. It’s the closest thing to a digital reset for a PDF.\n\n**What to watch for:** because it removes digital signatures and form data, don’t sanitize a document whose signature or interactive fields you need to keep. And keep your original, because sanitization can’t be undone.\n\n**Use it for:** any file leaving your organization for a counterparty, or anything sensitive where you want zero hidden remnants. This is the right choice for legal, journalism, and source-protection contexts.",
+        },
+        {
+          heading: "The batch problem",
+          body: "Here’s where Acrobat gets frustrating, and it’s the thing a lot of people are actually searching for: removing metadata from *many* PDFs at once.\n\nAcrobat can batch-process via **Action Wizard** (Tools → Action Wizard), where you can build an action that applies Remove Hidden Information or Sanitize across a folder of files. It works, but it’s fiddly to set up, requires Acrobat Pro (not Reader, not the free tier), and the Action Wizard interface is one of the less intuitive corners of Acrobat. For a one-time batch of a dozen files, building and debugging an Action often takes longer than the cleanup itself.\n\nSo if your actual need is “I have 20 PDFs and I want the metadata gone from all of them,” Acrobat’s batch path is heavier than the job warrants, especially if you’re paying for a Pro subscription mainly to do this.",
+        },
+        {
+          heading: "The faster free way",
+          body: "If you don’t have Acrobat Pro, don’t want to pay for it just to strip metadata, or just want batches done without wrestling Action Wizard, a browser-based tool does the same core job faster.\n\nMetaStrip removes PDF metadata, both the Document Info dictionary (Author, Producer, Creator, Title, Subject, Keywords, dates and custom properties) and the entire XMP metadata stream, entirely in your browser. Drop the PDF (or several), see exactly what’s embedded, strip it, and download the clean file. No Acrobat subscription, no install, no Action Wizard.\n\nThe part that matters most for PDFs specifically: because it’s client-side, your file never leaves your device. That’s the whole reason to be wary of the typical “upload your PDF to our server” online metadata tools. You’re handing a potentially sensitive document (a contract, a filing, a financial statement) to someone else’s infrastructure to remove the very data you were trying to keep private. MetaStrip processes locally; you can verify zero network activity in your browser’s developer tools.\n\nIt’s built on pdf-lib, it’s open source under MIT licence, and the code is on GitHub if you want to audit exactly what it does to your file. For the broader picture beyond Acrobat, including the command-line route and how to verify a clean file, see our [complete guide to removing metadata from PDFs](/blog/how-to-remove-metadata-from-pdf).",
+        },
+        {
+          heading: "Which method should you use?",
+          body: "**You have Acrobat Pro and the file has comments, attachments, or signatures to consider:** use Remove Hidden Information (selective) or Sanitize Document (everything). Acrobat’s strength is handling hidden content beyond metadata.\n\n**You just need author/title/producer gone from a low-risk file:** Document Properties is fine, but remember to clear Additional Metadata → Advanced for the XMP stream too.\n\n**You have a batch of PDFs, or you don’t have Acrobat Pro:** a browser tool like MetaStrip is faster and free, and handles multiple files without Action Wizard setup.\n\n**The document is sensitive and going to a counterparty:** whichever tool you use, verify afterward. Reopen the cleaned file and check Document Properties; the Author, Producer, and other fields should be empty. For the highest-stakes files, professionals often run more than one tool and confirm with a separate metadata viewer.",
+        },
+        {
+          heading: "Always verify",
+          body: "This applies regardless of method. After cleaning, reopen the PDF and check its properties, in Acrobat, any PDF reader, or by dropping it back into a metadata viewer. If the cleanup worked, the Author, Creator, Producer, and custom fields should read empty. The reason to verify is exactly the XMP-stream gotcha from earlier: a file can look clean in the basic properties view while still carrying metadata in the XMP block. Checking takes ten seconds and is the difference between “I think it’s clean” and “I confirmed it’s clean.”\n\nWhether you use Acrobat’s Sanitize Document or strip it in the browser, the goal is the same: the file that leaves your hands should carry your content and nothing else.\n\nDrop a PDF into MetaStrip to see exactly what metadata it’s carrying right now, and remove it without an Acrobat subscription.",
+        },
+      ],
+    },
+  },
+  {
     id: "content-credentials-vs-watermarking-vs-metadata",
     slug: "content-credentials-vs-watermarking-vs-metadata",
     title: "Content Credentials vs Watermarking vs Metadata Tags: How AI Images Get Marked in 2026",
