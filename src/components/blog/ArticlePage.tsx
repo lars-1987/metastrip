@@ -92,9 +92,10 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
 
           <Link
             href="/blog"
-            className="inline-block mt-6 px-6 py-2.5 rounded-[10px] border border-[var(--border-strong)] bg-transparent text-[color:var(--text-secondary)] text-sm font-medium font-[family-name:var(--font-outfit)] hover:border-[color:color-mix(in_srgb,var(--accent-strong)_40%,transparent)] hover:text-[color:var(--text)] transition-all duration-200 no-underline"
+            className="group mt-6 inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] bg-[var(--card-elevated)] px-5 py-2 text-[14px] font-medium text-[var(--text)] no-underline transition-colors duration-200 hover:bg-[var(--primary)] hover:text-[var(--on-primary)]"
           >
-            &larr; Back to blog
+            <span aria-hidden className="inline-block transition-transform duration-300 ease-out group-hover:-translate-x-1">&larr;</span>
+            Back to blog
           </Link>
 
           <RelatedPosts currentId={article.id} />
@@ -116,9 +117,10 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
       <div className="max-w-[700px] mx-auto px-6 pt-16 lg:pt-20">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-1.5 mb-6 px-3.5 py-1.5 rounded-lg border border-[var(--border)] bg-transparent text-[color:var(--text-secondary)] text-[13px] font-[family-name:var(--font-outfit)] hover:border-[color:color-mix(in_srgb,var(--accent-strong)_40%,transparent)] hover:text-[color:var(--text-secondary)] transition-all duration-200 no-underline"
+          className="group mb-6 inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] bg-[var(--card-elevated)] px-5 py-2 text-[14px] font-medium text-[var(--text)] no-underline transition-colors duration-200 hover:bg-[var(--primary)] hover:text-[var(--on-primary)]"
         >
-          &larr; Blog
+          <span aria-hidden className="inline-block transition-transform duration-300 ease-out group-hover:-translate-x-1">&larr;</span>
+          Blog
         </Link>
 
         {/* Meta row */}

@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { TopNav } from "@/components/v3/ui/TopNav";
 import { Footer } from "@/components/v3/ui/Footer";
+import { Button } from "@/components/v3/ui/Button";
+import { EmailButton } from "@/components/v3/ui/EmailButton";
+import { OG_IMAGE } from "@/lib/og";
+
+const ArrowRight = (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 export const metadata: Metadata = {
   title: "Pricing, Free Metadata Removal | MetaStrip",
@@ -13,6 +21,7 @@ export const metadata: Metadata = {
     description:
       "MetaStrip is free to use. All processing happens in your browser; nothing is uploaded. Optional Ko-fi tips welcome.",
     url: "https://metastrip.app/pricing",
+    images: [OG_IMAGE],
   },
 };
 
@@ -129,16 +138,9 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/"
-                  className="inline-flex items-center px-6 py-3 rounded-xl text-[14px] font-semibold no-underline"
-                  style={{
-                    background: "var(--accent)",
-                    color: "var(--accent-fg)",
-                  }}
-                >
-                  Open MetaStrip →
-                </Link>
+                <Button href="/" variant="inverse" size="lg" hoverIcon={ArrowRight}>
+                  Open MetaStrip
+                </Button>
               </div>
 
               {/* Optional support */}
@@ -197,35 +199,16 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="https://ko-fi.com/metastrip"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 rounded-xl text-[14px] font-semibold no-underline"
-                  style={{
-                    background: "transparent",
-                    color: "var(--text)",
-                    border: "1px solid var(--border-strong)",
-                  }}
-                >
-                  Support on Ko-fi →
-                </a>
+                <Button href="https://ko-fi.com/metastrip" external variant="soft" size="lg" hoverIcon={ArrowRight}>
+                  Support on Ko-fi
+                </Button>
               </div>
             </div>
 
-            <p
-              className="text-[13px]"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Questions?{" "}
-              <a
-                href="mailto:hello@metastrip.app"
-                className="underline underline-offset-2"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                hello@metastrip.app
-              </a>
-            </p>
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>Questions?</p>
+              <EmailButton />
+            </div>
           </div>
         </section>
       </main>

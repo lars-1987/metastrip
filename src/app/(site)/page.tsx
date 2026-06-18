@@ -7,6 +7,7 @@ import { HowItWorks } from "@/components/v3/sections/HowItWorks";
 import { Faq } from "@/components/v3/sections/Faq";
 import { ScrollReveals } from "@/components/v3/ScrollReveals";
 import { FAQS } from "@/components/shared/faq-data";
+import { OG_IMAGE } from "@/lib/og";
 
 export const metadata: Metadata = {
   title: "MetaStrip, strip hidden metadata from files",
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
     description:
       "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from your files. 100% client-side; files never leave your device.",
     url: "https://metastrip.app",
+    images: [OG_IMAGE],
   },
 };
 

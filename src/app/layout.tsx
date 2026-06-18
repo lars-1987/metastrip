@@ -6,6 +6,7 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import "./v3-theme.css";
 import { PostHogProviderWrapper } from "@/components/providers/PostHogProvider";
+import { OG_IMAGE } from "@/lib/og";
 
 // JetBrains Mono stays the global --font-mono (used by the terminal at /terminal and the
 // Tailwind font-mono utility). The V3 site overrides --font-mono with Geist inside .v3-root.
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "MetaStrip",
     locale: "en_US",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "MetaStrip, strip hidden metadata from files" }],
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",

@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SEOTerminalPage } from "@/components/seo/SEOTerminalPage";
 import { getSEOConfig, SEO_SLUGS } from "@/lib/seo-configs";
+import { OG_IMAGE } from "@/lib/og";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -27,6 +28,7 @@ export async function generateMetadata({
       url: `https://metastrip.app/${config.slug}`,
       siteName: "MetaStrip",
       type: "website",
+      images: [OG_IMAGE],
     },
     alternates: {
       canonical: `https://metastrip.app/${config.slug}`,

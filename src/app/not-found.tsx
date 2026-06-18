@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className={`v3-root ${generalSans.variable} ${geistMono.variable}`}>
+    <div className={`v3-root ${generalSans.variable} ${geistMono.variable}`} data-theme="dark">
       <TopNav />
       <main
         className="relative z-10"

@@ -2,7 +2,7 @@
 
 import type { MouseEventHandler, ReactNode } from "react";
 
-type Variant = "primary" | "ghost" | "soft";
+type Variant = "primary" | "ghost" | "soft" | "inverse";
 type Size = "md" | "lg";
 
 interface ButtonProps {
@@ -31,6 +31,8 @@ const variants: Record<Variant, string> = {
   primary: "bg-[var(--primary)] text-[var(--on-primary)] hover:bg-[var(--primary-hover)]",
   soft: "bg-[var(--card-elevated)] text-[var(--text)] hover:bg-[var(--primary)] hover:text-[var(--on-primary)]",
   ghost: "bg-transparent text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--card)]",
+  // light fill for use on the always-dark "inverse" cards (pricing free tier, etc.)
+  inverse: "bg-[var(--card-inverse-text)] text-[var(--card-inverse-bg)] hover:opacity-90",
 };
 
 const sizes: Record<Size, string> = {

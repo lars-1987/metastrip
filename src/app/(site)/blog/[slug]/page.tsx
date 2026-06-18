@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ArticlePage from "@/components/blog/ArticlePage";
 import { getArticleBySlug, BLOG_SLUGS } from "@/lib/blog-data";
+import { OG_IMAGE } from "@/lib/og";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -27,6 +28,7 @@ export async function generateMetadata({
       url: `https://metastrip.app/blog/${slug}`,
       siteName: "MetaStrip",
       type: "article",
+      images: [OG_IMAGE],
     },
     alternates: { canonical: `https://metastrip.app/blog/${slug}` },
   };

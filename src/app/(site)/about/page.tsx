@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { AboutPage } from "@/components/AboutPage";
+import { OG_IMAGE } from "@/lib/og";
 
 export const metadata: Metadata = {
   title: "About, MetaStrip",
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     url: "https://metastrip.app/about",
     siteName: "MetaStrip",
     type: "website",
+    images: [OG_IMAGE],
   },
   alternates: { canonical: "https://metastrip.app/about" },
 };
