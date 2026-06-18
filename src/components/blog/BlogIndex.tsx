@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { TopNav } from "@/components/shared/TopNav";
-import { Footer } from "@/components/layout/Footer";
+import { TopNav } from "@/components/v3/ui/TopNav";
+import { Footer } from "@/components/v3/ui/Footer";
 import FeaturedCard from "@/components/blog/FeaturedCard";
 import ArticleCard from "@/components/blog/ArticleCard";
 import { CATEGORIES, ARTICLES, getFeaturedArticle } from "@/lib/blog-data";
@@ -110,8 +110,8 @@ export default function BlogIndex() {
               }}
             >
               MetaStrip is free, no ads, no accounts, no tracking. If
-              an article helped you understand what your files were leaking
-              — or you used the tool to fix it — I&apos;d genuinely
+              an article helped you understand what your files were leaking,
+              or you used the tool to fix it, I&apos;d genuinely
               appreciate a coffee.{" "}
               <a
                 href="https://ko-fi.com/metastrip"

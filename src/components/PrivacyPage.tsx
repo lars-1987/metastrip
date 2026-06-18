@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { TopNav } from "@/components/shared/TopNav";
-import { Footer } from "@/components/layout/Footer";
+import { TopNav } from "@/components/v3/ui/TopNav";
+import { Footer } from "@/components/v3/ui/Footer";
 import { Icon } from "@/components/shared/Icon";
 
 /* ------------------------------------------------------------------ */
@@ -319,7 +319,7 @@ function TermsContent() {
           Office documents (DOCX, XLSX, PPTX), video files (MP4, MOV, M4V),
           and audio files (MP3, M4A, FLAC, WAV). All file processing occurs
           in your web browser using client-side JavaScript. Files are not
-          uploaded to any server — MetaStrip&apos;s site is served as static
+          uploaded to any server; MetaStrip&apos;s site is served as static
           files from GitHub Pages and has no backend.
         </p>
         <p>

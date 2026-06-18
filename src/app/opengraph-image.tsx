@@ -3,12 +3,13 @@ import { ImageResponse } from "next/og";
 export const dynamic = "force-static";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "MetaStrip — Strip Hidden Metadata from Files";
+export const alt = "MetaStrip, strip hidden metadata from files";
 
 /**
- * 1200×630 OG card matching the new design system:
- * eggshell bg, warm-graphite text, terracotta redaction stamp,
- * cool black for the wordmark.
+ * 1200×630 OG card matching the V3 design system: light-silver bg, near-black
+ * type, a charcoal redaction bar, and the purple→cyan brand mark as the single
+ * pop of colour. Built at build time (static export). Uses system fonts, since
+ * next/og can't load the self-hosted woff2.
  */
 export default function OGImage() {
   return new ImageResponse(
@@ -21,12 +22,12 @@ export default function OGImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#efe9d9", // eggshell --bg
-          fontFamily: "system-ui, sans-serif",
+          background: "#e3e2de", // V3 --bg (light silver)
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
           padding: "0 80px",
         }}
       >
-        {/* Wordmark row — small, top-left ish */}
+        {/* Wordmark — top-left. The gradient bars are the one colour accent. */}
         <div
           style={{
             position: "absolute",
@@ -37,128 +38,61 @@ export default function OGImage() {
             gap: "14px",
           }}
         >
-          {/* Logo bars — purple/cyan gradient bars (kept for brand consistency) */}
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 10,
-              background: "#0c0c0e",
+              width: 46,
+              height: 46,
+              borderRadius: 11,
+              background: "#09090b",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               gap: 5,
-              border: "1px solid #c9bcb8",
             }}
           >
-            <div
-              style={{
-                width: 22,
-                height: 3,
-                borderRadius: 2,
-                background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
-              }}
-            />
-            <div
-              style={{
-                width: 22,
-                height: 3,
-                borderRadius: 2,
-                background: "linear-gradient(90deg, #a78bfa, transparent)",
-              }}
-            />
-            <div
-              style={{
-                width: 22,
-                height: 3,
-                borderRadius: 2,
-                background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
-              }}
-            />
+            <div style={{ width: 23, height: 3, borderRadius: 2, background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }} />
+            <div style={{ width: 23, height: 3, borderRadius: 2, background: "linear-gradient(90deg, #a78bfa, transparent)" }} />
+            <div style={{ width: 23, height: 3, borderRadius: 2, background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }} />
           </div>
-          <div
-            style={{
-              fontSize: 26,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "#0c0c0e",
-            }}
-          >
+          <div style={{ fontSize: 27, fontWeight: 700, letterSpacing: "-0.02em", color: "#0e0f10" }}>
             MetaStrip
           </div>
         </div>
 
-        {/* Headline — same as the live hero */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 10,
-            marginTop: 30,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 92,
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.02,
-              color: "#0c0c0e",
-              textAlign: "center",
-            }}
-          >
+        {/* Headline */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginTop: 30 }}>
+          <div style={{ fontSize: 92, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.02, color: "#0e0f10", textAlign: "center" }}>
             Hidden in every
           </div>
 
-          {/* Redaction stamp — terracotta with dark text, just like the hero */}
+          {/* Charcoal redaction bar with light text */}
           <div
             style={{
               display: "flex",
               padding: "10px 26px 14px",
-              background: "#d9663d",
-              color: "#0c0c0e",
-              borderRadius: 10,
+              background: "#16171a",
+              color: "#f3f2ef",
+              borderRadius: 12,
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
               fontSize: 56,
               fontWeight: 700,
               letterSpacing: "-0.005em",
-              textTransform: "lowercase",
               marginTop: 6,
               marginBottom: 6,
             }}
           >
-            GPS coordinate
+            gps coordinate
           </div>
 
-          <div
-            style={{
-              fontSize: 92,
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.02,
-              color: "#0c0c0e",
-              textAlign: "center",
-            }}
-          >
+          <div style={{ fontSize: 92, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.02, color: "#0e0f10", textAlign: "center" }}>
             you share.
           </div>
         </div>
 
         {/* Subhead */}
-        <div
-          style={{
-            fontSize: 24,
-            color: "#5a4d49",
-            marginTop: 40,
-            textAlign: "center",
-            maxWidth: 880,
-            fontWeight: 500,
-            lineHeight: 1.4,
-          }}
-        >
-          Strip metadata from photos, PDFs &amp; documents — 100% in your browser. Free.
+        <div style={{ fontSize: 24, color: "#45464a", marginTop: 40, textAlign: "center", maxWidth: 880, fontWeight: 500, lineHeight: 1.4 }}>
+          Strip metadata from photos, PDFs &amp; documents, 100% in your browser. Free.
         </div>
 
         {/* Domain footer */}
@@ -168,8 +102,7 @@ export default function OGImage() {
             bottom: "44px",
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            color: "#8a7d79",
+            color: "#86868a",
             fontSize: 18,
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
           }}

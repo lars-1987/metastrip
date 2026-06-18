@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TopNav } from "@/components/shared/TopNav";
-import { Footer } from "@/components/layout/Footer";
+import { TopNav } from "@/components/v3/ui/TopNav";
+import { Footer } from "@/components/v3/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Pricing — Free Metadata Removal | MetaStrip",
+  title: "Pricing, Free Metadata Removal | MetaStrip",
   description:
-    "MetaStrip is free. Remove metadata from photos, PDFs, and documents in your browser — no signup, no upload, no cost. Optional Ko-fi support if you'd like to help.",
+    "MetaStrip is free. Remove metadata from photos, PDFs, and documents in your browser: no signup, no upload, no cost. Optional Ko-fi support if you'd like to help.",
   alternates: { canonical: "https://metastrip.app/pricing" },
   openGraph: {
-    title: "MetaStrip Pricing — Free, Forever",
+    title: "MetaStrip Pricing, Free, Forever",
     description:
       "MetaStrip is free to use. All processing happens in your browser; nothing is uploaded. Optional Ko-fi tips welcome.",
     url: "https://metastrip.app/pricing",
@@ -67,7 +67,7 @@ export default function PricingPage() {
               }}
             >
               Every feature, every file type, every time. No signup, no account,
-              no upload — because your files never leave your device.
+              no upload, because your files never leave your device.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-14 text-left">
@@ -109,7 +109,7 @@ export default function PricingPage() {
                     "EXIF, GPS, IPTC, XMP, C2PA removal",
                     "Photos, PDFs, Word, Excel, PowerPoint",
                     "Batch processing up to 20 files",
-                    "100% client-side — nothing uploaded",
+                    "100% client-side; nothing uploaded",
                     "Open source under MIT licence",
                   ].map((f) => (
                     <li

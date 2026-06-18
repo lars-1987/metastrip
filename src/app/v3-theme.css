@@ -1,0 +1,200 @@
+/* ============================================================
+   MetaStrip V3 — greyscale "silver" theme.
+   Light silver page, super-dark tool, monochrome. Reads as a serious
+   privacy utility. Two scoped token sets: light on .v3-root (page), dark on
+   .v3-card-row (the tool).
+   Palette: 0E0F10 · 868384 · 9C9C9C · BDBDBD · E3E2DE
+   ============================================================ */
+
+.v3-root {
+  /* page — light silver */
+  --bg: #e3e2de;
+  --surface: #edece9;
+  --card: #f7f6f3;
+  --card-elevated: #e6e5e1;
+
+  --primary: #16171a; /* near-black button on the light page */
+  --primary-hover: #2b2d31;
+  --on-primary: #f3f2ef;
+
+  --text: #0e0f10;
+  --text-body: #45464a;
+  --text-muted: #86868a;
+
+  --border: rgba(14, 15, 16, 0.12);
+  --border-strong: rgba(14, 15, 16, 0.2);
+  --ring: #86868a;
+
+  --success: #4a4f4c;
+  --danger: #6a6063;
+
+  /* aliases so the recycled V2 sections + migrated pages map onto greyscale.
+     These reference V3 tokens, so they adapt automatically in dark mode. */
+  --accent-strong: #8f8f92;
+  --text-secondary: var(--text-body);
+  --card-inverse-bg: #141518; /* near-black cards on the silver page */
+  --card-inverse-text: #f3f2ef;
+  --card-inverse-muted: #b4b4b7;
+  --accent: var(--primary);
+  --accent-fg: var(--on-primary);
+  --accent-2: var(--accent-strong);
+  --surface-elevated: var(--card-elevated);
+  --font-outfit: var(--font-display);
+
+  --radius: 28px;
+  --radius-sm: 16px;
+  --radius-pill: 999px;
+
+  background: var(--bg);
+  color: var(--text-body);
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.v3-root ::selection {
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+  color: var(--text);
+}
+
+.v3-mono {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-feature-settings: "tnum";
+}
+
+/* ---- Dark variant ----
+   A charcoal page (clearly lighter than the #0b0b0d tool, so the tool still
+   reads as a distinct object), section cards lifted ABOVE the page so they pop,
+   and the tool gets a hairline + drop shadow to separate it from the charcoal. */
+.v3-root[data-theme="dark"] {
+  --bg: #1b1b21;
+  --surface: #232329;
+  --card: #2b2b33;
+  --card-elevated: #35353e;
+
+  --primary: #e6e5e1;
+  --primary-hover: #f4f3f0;
+  --on-primary: #16161a;
+
+  --text: #f4f3f0;
+  --text-body: #bdbdbf;
+  --text-muted: #84848b;
+
+  --border: rgba(243, 242, 239, 0.12);
+  --border-strong: rgba(243, 242, 239, 0.22);
+  --ring: #9c9c9c;
+
+  --success: #8fbf9a;
+  --danger: #d98a76;
+
+  --accent-strong: #9c9c9c;
+  --card-inverse-bg: #26262e; /* lifted above the charcoal page */
+  --card-inverse-text: #f4f3f0;
+  --card-inverse-muted: #b4b4b7;
+}
+.v3-root[data-theme="dark"] .v3-card-row {
+  /* Drop shadow only for lift. A full inset white hairline bloomed along the
+     top edge against the dark page and read as a glowing band — dropped it;
+     the card already separates from the page by contrast. */
+  box-shadow: 0 28px 80px -40px rgba(0, 0, 0, 0.9);
+}
+
+/* ---- The tool: a super-dark panel. Dark tokens cascade to its cards. ---- */
+.v3-card-row {
+  --bg: #0b0b0d; /* super dark */
+  --surface: #131316;
+  --card: #1a1a1e;
+  --card-elevated: #25252a;
+
+  --primary: #e3e2de; /* light silver button on dark */
+  --primary-hover: #f3f2ef;
+  --on-primary: #0e0f10;
+
+  --text: #f3f2ef;
+  --text-body: #b9b9bb;
+  --text-muted: #7c7c80;
+
+  --border: rgba(227, 226, 222, 0.1);
+  --border-strong: rgba(227, 226, 222, 0.2);
+  --ring: #9c9c9c;
+
+  --success: #cfcfce;
+  --danger: #ffffff; /* the location marker pops white on the dark map */
+
+  background: var(--bg);
+  color: var(--text-body);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.v3-card-slot {
+  width: 100%;
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .v3-card-row {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    height: calc(100svh - 232px);
+    min-height: 460px;
+  }
+  .v3-card-slot {
+    width: var(--w, 0%);
+    box-sizing: border-box;
+    padding: 0 7px;
+    min-height: 0;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 767px) {
+  .v3-card-slot[data-active="false"] {
+    display: none;
+  }
+}
+
+/* scroll-reveal: visible by default (no-JS / reduced-motion safe). The hidden
+   "from" state is only armed once .gsap-ready is added by the motion layer. */
+.v3-root.gsap-ready [data-reveal],
+.v3-root.gsap-ready [data-reveal-item] {
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v3-root,
+  .v3-root * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .v3-root [data-reveal],
+  .v3-root [data-reveal-item] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* processing tick pop */
+@keyframes v3-tick-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.v3-tick-pop { animation: v3-tick-pop 0.3s ease-out; }
+
+/* faint neutral wash behind the hero */
+.v3-aurora {
+  background: radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 70%);
+  pointer-events: none;
+}
+/* On dark, even a faint white wash reads as a glow above the tool — remove it
+   entirely (display:none, so there's nothing to paint in any engine). */
+.v3-root[data-theme="dark"] .v3-aurora {
+  display: none;
+}

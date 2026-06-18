@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import { AboutPage } from "@/components/AboutPage";
 
 export const metadata: Metadata = {
-  title: "About — MetaStrip",
+  title: "About, MetaStrip",
   description:
-    "MetaStrip is a privacy-first metadata removal tool. Files are processed entirely in your browser — we never see, store, or transmit them.",
+    "MetaStrip is a privacy-first metadata removal tool. Files are processed entirely in your browser; we never see, store, or transmit them.",
   openGraph: {
-    title: "About — MetaStrip",
+    title: "About, MetaStrip",
     description:
       "MetaStrip is a privacy-first metadata removal tool. Files are processed entirely in your browser.",
     url: "https://metastrip.app/about",

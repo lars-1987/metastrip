@@ -215,7 +215,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
 
             <div className="font-[family-name:var(--font-mono)] text-sm space-y-1.5 mb-4 animate-card-slide-in [animation-delay:100ms]">
               <div className="text-white/65">
-                metastrip v2.0 — client-side metadata removal
+                metastrip v3.0 — client-side metadata removal
               </div>
               <div className="text-white/65">
                 batch limit: {BATCH_LIMIT} files | all processing happens in your browser
@@ -277,7 +277,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
         {/* tmux-style status bar */}
         {files.length === 0 && (
           <div className="flex flex-wrap items-center gap-1.5 mt-6 pt-3 border-t border-white/[0.04] font-[family-name:var(--font-mono)] text-[11px] animate-card-slide-in [animation-delay:200ms]">
-            <span className="px-2 py-0.5 rounded bg-purple/20 text-purple-light">v2.0</span>
+            <span className="px-2 py-0.5 rounded bg-purple/20 text-purple-light">v3.0</span>
             <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">client-side</span>
             <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">no tracking</span>
             <a

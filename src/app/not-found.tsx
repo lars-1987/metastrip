@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TopNav } from "@/components/shared/TopNav";
-import { Footer } from "@/components/layout/Footer";
+import { TopNav } from "@/components/v3/ui/TopNav";
+import { Footer } from "@/components/v3/ui/Footer";
+import { generalSans, geistMono } from "./v3-fonts";
 
 export const metadata: Metadata = {
-  title: "Page Not Found — MetaStrip",
+  title: "Page Not Found, MetaStrip",
   description:
     "The page you're looking for doesn't exist. Try the homepage or one of MetaStrip's metadata removal tools.",
   robots: { index: false, follow: false },
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <>
+    <div className={`v3-root ${generalSans.variable} ${geistMono.variable}`}>
       <TopNav />
       <main
         className="relative z-10"
@@ -39,7 +40,7 @@ export default function NotFound() {
               className="leading-[1.6] mb-10"
               style={{ color: "var(--text-secondary)", fontSize: 17 }}
             >
-              The page you&apos;re looking for doesn&apos;t exist — or it was stripped
+              The page you&apos;re looking for doesn&apos;t exist; or it was stripped
               of its metadata so thoroughly we can&apos;t find it either.
             </p>
 
@@ -70,6 +71,6 @@ export default function NotFound() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

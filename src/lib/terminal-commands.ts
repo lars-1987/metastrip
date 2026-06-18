@@ -45,7 +45,7 @@ function getNeofetchMeta(): Record<string, string> {
   return {
     os,
     browser,
-    shell: "metastrip v2.0",
+    shell: "metastrip v3.0",
     uptime: formatUptime(),
     packages: "piexifjs, pdf-lib, jszip",
     privacy: "100% client-side",
@@ -142,7 +142,7 @@ export function executeCommand(input: string): CommandResult {
   if (cmd === "version" || lower === "--version" || lower === "-v") {
     return {
       command: trimmed,
-      output: ["metastrip v2.0.0 — client-side metadata removal"],
+      output: ["metastrip v3.0.0 — client-side metadata removal"],
       style: "info",
     };
   }

@@ -19,7 +19,7 @@ export function FounderPill({ children }: FounderPillProps) {
       href="https://x.com/larsitodev"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Lars Holmstrom on X — @larsitodev"
+      aria-label="Lars Holmstrom on X, @larsitodev"
       className="group block max-w-3xl mx-auto rounded-3xl overflow-hidden no-underline transition-all duration-300 ease-out hover:-translate-y-0.5"
       style={{
         background: "var(--card-inverse-bg)",

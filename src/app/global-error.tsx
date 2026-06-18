@@ -33,42 +33,42 @@ export default function GlobalError({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#14101f",
-          color: "#e8e6f0",
+          background: "#1b1b21", // V3 dark --bg
+          color: "#f4f3f0",
           fontFamily:
-            "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
           padding: "24px",
         }}
       >
-        <div style={{ textAlign: "center", maxWidth: 420 }}>
-          <div style={{ fontSize: 28, marginBottom: 12 }}>⚠</div>
-          <h1 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>
+        <div style={{ textAlign: "center", maxWidth: 440 }}>
+          <div style={{ fontSize: 30, marginBottom: 14, opacity: 0.7 }}>⚠</div>
+          <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 10px" }}>
             Something went wrong
           </h1>
           <p
             style={{
-              fontSize: 13,
+              fontSize: 15,
               lineHeight: 1.6,
-              color: "rgba(232,230,240,0.55)",
-              margin: "0 0 24px",
+              color: "#bdbdbf",
+              margin: "0 0 28px",
             }}
           >
-            Your files were never uploaded — all processing happens in your
+            Your files were never uploaded; all processing happens in your
             browser, so nothing left your device. Reloading the page usually
             fixes this.
           </p>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <button
               onClick={() => window.location.reload()}
               style={{
-                padding: "8px 18px",
-                borderRadius: 8,
-                fontSize: 13,
+                padding: "11px 22px",
+                borderRadius: 999,
+                fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",
-                background: "rgba(124,58,237,0.2)",
-                color: "#c4b5fd",
-                border: "1px solid rgba(124,58,237,0.3)",
+                background: "#e6e5e1",
+                color: "#16161a",
+                border: "none",
               }}
             >
               Reload page
@@ -76,14 +76,14 @@ export default function GlobalError({
             <button
               onClick={() => reset()}
               style={{
-                padding: "8px 18px",
-                borderRadius: 8,
-                fontSize: 13,
+                padding: "11px 22px",
+                borderRadius: 999,
+                fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",
-                background: "rgba(255,255,255,0.04)",
-                color: "rgba(232,230,240,0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "transparent",
+                color: "#bdbdbf",
+                border: "1px solid rgba(244,243,240,0.22)",
               }}
             >
               Try again

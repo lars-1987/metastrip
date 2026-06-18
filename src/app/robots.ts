@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/_not-found", "/_next/"],
+        disallow: ["/_not-found", "/_next/", "/terminal"],
       },
     ],
     sitemap: "https://metastrip.app/sitemap.xml",

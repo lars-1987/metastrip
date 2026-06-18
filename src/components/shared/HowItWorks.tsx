@@ -27,7 +27,7 @@ const FEATURES: Feature[] = [
     title: "Drop a file. See what's exposed. Strip it.",
     body: "MetaStrip runs entirely in your browser. There is no upload, no server, no temporary cache. You drop the file in, the tool reads its metadata locally with libraries like piexifjs and pdf-lib, shows you exactly what's embedded, and writes a clean copy back out.",
     bullets: [
-      "Files never leave your device — verifiable in DevTools",
+      "Files never leave your device, verifiable in DevTools",
       "Batch up to 20 files at once",
       "Open source under MIT. The code is on GitHub.",
       "Works on mobile and desktop, online or offline",
@@ -41,7 +41,7 @@ const FEATURES: Feature[] = [
       "Before posting photos taken at home",
       "Before sending a Word doc with revision history to a client",
       "Before submitting AI-assisted work where disclosure changes acceptance",
-      "Before publishing anything anonymously — devices fingerprint themselves",
+      "Before publishing anything anonymously; devices fingerprint themselves",
     ],
   },
 ];

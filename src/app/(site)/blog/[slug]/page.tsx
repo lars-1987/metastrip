@@ -19,7 +19,7 @@ export async function generateMetadata({
   if (!article) return {};
 
   return {
-    title: `${article.title} — MetaStrip Blog`,
+    title: `${article.title}, MetaStrip Blog`,
     description: article.excerpt,
     openGraph: {
       title: article.title,

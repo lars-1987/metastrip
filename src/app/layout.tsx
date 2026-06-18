@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
+// Order matters: globals.css defines the V2 :root tokens + Tailwind base + keyframes;
+// v3-theme.css then layers the .v3-root-scoped greyscale tokens on top. Anything inside
+// .v3-root gets V3; the terminal (outside .v3-root) keeps the V2 :root tokens.
 import "./globals.css";
+import "./v3-theme.css";
 import { PostHogProviderWrapper } from "@/components/providers/PostHogProvider";
-import { ThemeProvider, themeInitScript } from "@/components/shared/ThemeProvider";
 
-// Terminal stays JetBrains Mono. Body inherits system-ui via --font-sans (defined in globals.css).
+// JetBrains Mono stays the global --font-mono (used by the terminal at /terminal and the
+// Tailwind font-mono utility). The V3 site overrides --font-mono with Geist inside .v3-root.
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -13,14 +17,14 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://metastrip.app"),
-  title: "MetaStrip — Strip Hidden Metadata from Files",
+  title: "MetaStrip, strip hidden metadata from files",
   description:
-    "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from your files. 100% client-side — files never leave your device.",
+    "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from your files. 100% client-side; files never leave your device.",
   openGraph: {
     type: "website",
     siteName: "MetaStrip",
     locale: "en_US",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "MetaStrip — Strip Hidden Metadata from Files" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "MetaStrip, strip hidden metadata from files" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -43,14 +47,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Sets data-theme before hydration so we don't flash the wrong theme. */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className={`${jetbrainsMono.variable} antialiased`}>
-        <ThemeProvider>
-          <PostHogProviderWrapper>{children}</PostHogProviderWrapper>
-        </ThemeProvider>
+        <PostHogProviderWrapper>{children}</PostHogProviderWrapper>
       </body>
     </html>
   );

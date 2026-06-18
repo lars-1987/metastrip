@@ -135,7 +135,7 @@ export default function InlineTool({ config }: InlineToolProps) {
             Drop a file here to try it
           </p>
           <p className="text-[13px] text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)]">
-            {config.acceptedLabel} — max 25 MB — free, no account
+            {config.acceptedLabel}, max 25 MB, free, no account
           </p>
         </div>
       </div>

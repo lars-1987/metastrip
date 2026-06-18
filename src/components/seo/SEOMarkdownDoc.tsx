@@ -143,7 +143,7 @@ export function SEOMarkdownDoc({ config }: SEOMarkdownDocProps) {
         {/* Footer */}
         <hr className="border-[var(--border)] my-6" />
         <div className="text-[11px] text-[color:var(--text-muted)] text-center">
-          metastrip v2.0 — privacy-first metadata removal — all processing happens in your browser
+          metastrip v3.0; privacy-first metadata removal; all processing happens in your browser
         </div>
       </div>
     </div>

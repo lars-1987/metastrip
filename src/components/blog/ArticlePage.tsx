@@ -2,8 +2,8 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
-import { TopNav } from "@/components/shared/TopNav";
-import { Footer } from "@/components/layout/Footer";
+import { TopNav } from "@/components/v3/ui/TopNav";
+import { Footer } from "@/components/v3/ui/Footer";
 import ReadingProgressBar from "@/components/blog/ReadingProgressBar";
 import TableOfContents from "@/components/blog/TableOfContents";
 import InlineCTA from "@/components/blog/InlineCTA";
@@ -85,7 +85,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
 
           <div className="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
             <p className="text-sm text-[color:var(--text-muted)] font-[family-name:var(--font-outfit)]">
-              This article is coming soon. We&apos;re working on it — check
+              This article is coming soon. We&apos;re working on it; check
               back shortly.
             </p>
           </div>

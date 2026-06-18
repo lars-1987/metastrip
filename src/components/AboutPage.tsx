@@ -1,5 +1,5 @@
-import { TopNav } from "@/components/shared/TopNav";
-import { Footer } from "@/components/layout/Footer";
+import { TopNav } from "@/components/v3/ui/TopNav";
+import { Footer } from "@/components/v3/ui/Footer";
 import { Icon } from "@/components/shared/Icon";
 import type { IconName } from "@/components/shared/Icon";
 import { FounderPill } from "@/components/shared/FounderPill";
@@ -15,14 +15,14 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
   {
     icon: "Lock",
     title: "Your files never leave your device",
-    body: "MetaStrip processes files entirely in your browser using client-side JavaScript. We don't upload, store, transmit, or even see your files. There is no server that receives your data — the processing engine runs locally in your browser tab.",
+    body: "MetaStrip processes files entirely in your browser using client-side JavaScript. We don't upload, store, transmit, or even see your files. There is no server that receives your data; the processing engine runs locally in your browser tab.",
     tech: "Zero network requests during file processing",
   },
   {
     icon: "Ghost",
     title: "No accounts, no tracking, no profiles",
     body: "We don't ask for your name, email, or any identifying information. There are no accounts, no sign-ups, and no tracking. We don't build user profiles or track individual behavior.",
-    tech: "PostHog Analytics — cookieless, Do Not Track respected",
+    tech: "PostHog Analytics: cookieless, Do Not Track respected",
   },
   {
     icon: "Prohibit",
@@ -33,7 +33,7 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
   {
     icon: "MagnifyingGlass",
     title: "Verifiably private",
-    body: "Because MetaStrip runs client-side, you can verify our privacy claims yourself. Open your browser's network inspector while using the tool — you'll see zero outbound file transfers. We don't ask you to trust us blindly; we've built the tool so trust isn't required.",
+    body: "Because MetaStrip runs client-side, you can verify our privacy claims yourself. Open your browser's network inspector while using the tool; you'll see zero outbound file transfers. We don't ask you to trust us blindly; we've built the tool so trust isn't required.",
     tech: "Open DevTools → Network tab → process a file → zero outbound requests",
   },
 ];
@@ -42,7 +42,7 @@ const techSteps = [
   {
     label: "Your browser",
     description:
-      "You drag a file into MetaStrip. It's read as an ArrayBuffer entirely within your browser tab. The file never leaves this context — it exists only in local memory.",
+      "You drag a file into MetaStrip. It's read as an ArrayBuffer entirely within your browser tab. The file never leaves this context; it exists only in local memory.",
   },
   {
     label: "Processing engine",
@@ -60,7 +60,7 @@ const libraries = [
   {
     name: "pdf-lib",
     description:
-      "Pure JavaScript PDF manipulation. Reads and clears all standard PDF metadata fields — author, creator, producer, dates, keywords, and custom properties.",
+      "Pure JavaScript PDF manipulation. Reads and clears all standard PDF metadata fields: author, creator, producer, dates, keywords, and custom properties.",
     url: "https://github.com/Hopding/pdf-lib",
   },
   {
@@ -164,7 +164,7 @@ export function AboutPage() {
             </div>
             <FounderPill>
               <p className="mb-3">
-                MetaStrip is built by Lars Holmstrom — an indie developer and
+                MetaStrip is built by Lars Holmstrom, an indie developer and
                 cyber security graduate based in Melbourne, Australia.
               </p>
               <p className="mb-3">
@@ -177,7 +177,7 @@ export function AboutPage() {
                 I built it.
               </p>
               <p className="mb-3">
-                I&apos;m a believer in FOSS for privacy tools — keeping big
+                I&apos;m a believer in FOSS for privacy tools; keeping big
                 tech out of personal information shouldn&apos;t require
                 trusting another company. The whole tool is on GitHub under
                 MIT licence. Audit it, fork it, run it locally, contribute.
@@ -203,7 +203,7 @@ export function AboutPage() {
                   fontSize: "clamp(28px, 3.5vw, 40px)",
                 }}
               >
-                Not just promises — architectural guarantees.
+                Not just promises, architectural guarantees.
               </h2>
             </div>
             <div className="space-y-4">

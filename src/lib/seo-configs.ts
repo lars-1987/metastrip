@@ -72,8 +72,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "remove metadata from photos",
     title: "Remove Metadata from Photos",
     subtitle:
-      "Strip GPS coordinates, camera info, AI generation tags, and hidden data from your images — instantly, privately, for free.",
-    heroLabel: "FREE TOOL — NO UPLOAD REQUIRED",
+      "Strip GPS coordinates, camera info, AI generation tags, and hidden data from your images, instantly, privately, for free.",
+    heroLabel: "FREE TOOL, NO UPLOAD REQUIRED",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
     fileIcon: "ImageSquare",
@@ -160,9 +160,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
           "Camera make, model, lens info, and sometimes serial numbers are embedded in every shot. This creates a unique fingerprint that can link anonymous photos back to your device.",
         example: {
           label: "What's hidden",
-          value: "iPhone 15 Pro Max \u2014 S/N: DNQXK4F...",
+          value: "iPhone 15 Pro Max, S/N: DNQXK4F...",
         },
-        risk: "Multiple 'anonymous' photos can be linked to the same device \u2014 and therefore to you.",
+        risk: "Multiple 'anonymous' photos can be linked to the same device, and therefore to you.",
       },
       {
         id: "timestamps",
@@ -171,7 +171,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#38bdf8",
         title: "When you were there",
         description:
-          "Creation dates, modification dates, and timezone offsets reveal not just when a photo was taken, but your patterns \u2014 when you're home, at work, or traveling.",
+          "Creation dates, modification dates, and timezone offsets reveal not just when a photo was taken, but your patterns: when you're home, at work, or traveling.",
         example: {
           label: "What's hidden",
           value: "2025-01-15 14:23:07 +11:00 (AEDT)",
@@ -196,10 +196,10 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     seoContent: {
       heading: "Why remove metadata from your photos?",
       paragraphs: [
-        "Every photo taken with a modern smartphone or digital camera contains hidden metadata \u2014 GPS coordinates, camera details, timestamps, and sometimes even your name. This data is embedded automatically and most people never realize it's there.",
+        "Every photo taken with a modern smartphone or digital camera contains hidden metadata: GPS coordinates, camera details, timestamps, and sometimes even your name. This data is embedded automatically and most people never realize it's there.",
         "When you share photos by email, cloud storage, messaging apps, or upload them to websites, this metadata often travels with the image. While some social media platforms strip metadata on upload, many sharing methods preserve it completely.",
         "The privacy implications are significant. A photo taken at home reveals your home address. Photos over time reveal your daily patterns. For journalists, activists, and domestic abuse survivors, this data can be genuinely dangerous.",
-        "MetaStrip removes all hidden metadata from your photos instantly, directly in your browser. Your files are never uploaded to any server \u2014 processing happens entirely on your device.",
+        "MetaStrip removes all hidden metadata from your photos instantly, directly in your browser. Your files are never uploaded to any server; processing happens entirely on your device.",
       ],
     },
     supportedFormats: [
@@ -225,7 +225,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Metadata from Photos Online \u2014 Free, No Upload | MetaStrip",
+      "Remove Metadata from Photos Online: Free, No Upload | MetaStrip",
     metaDescription:
       "Remove GPS, EXIF, camera info, and AI tags from photos in your browser. JPG, PNG, WebP, HEIC. No upload, no account, no cost.",
   },
@@ -235,8 +235,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "remove author from PDF",
     title: "Remove Author from PDF",
     subtitle:
-      "Strip author names, creator applications, company info, and hidden document properties from PDF files \u2014 instantly, in your browser.",
-    heroLabel: "FREE TOOL \u2014 FILES STAY ON YOUR DEVICE",
+      "Strip author names, creator applications, company info, and hidden document properties from PDF files, instantly, in your browser.",
+    heroLabel: "FREE TOOL: FILES STAY ON YOUR DEVICE",
     acceptedTypes: ["application/pdf"],
     acceptedLabel: "PDF files",
     fileIcon: "FileText",
@@ -250,7 +250,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
           { label: "Author", value: "Sarah Mitchell" },
           {
             label: "Title",
-            value: "Q4 Revenue Forecast \u2014 CONFIDENTIAL",
+            value: "Q4 Revenue Forecast: CONFIDENTIAL",
           },
           { label: "Subject", value: "Internal Finance Review" },
           {
@@ -299,7 +299,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#f472b6",
         title: "Your name is in every PDF",
         description:
-          "PDF files embed the author name from your computer's user account or the application that created them. When you send a PDF externally, the recipient can see exactly who created it \u2014 and every person who edited it.",
+          "PDF files embed the author name from your computer's user account or the application that created them. When you send a PDF externally, the recipient can see exactly who created it, and every person who edited it.",
         example: {
           label: "What's hidden",
           value:
@@ -335,7 +335,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
           value:
             "Created: Jan 8, 2025 09:14 | Modified: Feb 18, 2025 16:42",
         },
-        risk: "Timestamps can contradict claims about when work was done \u2014 risky in legal and compliance contexts.",
+        risk: "Timestamps can contradict claims about when work was done, risky in legal and compliance contexts.",
       },
       {
         id: "company",
@@ -356,10 +356,10 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     seoContent: {
       heading: "Why remove author information from PDFs?",
       paragraphs: [
-        "PDF documents store author names, company information, and creation details in hidden metadata fields. This data is set automatically by your operating system and the software used to create the file \u2014 most people never realize it's there.",
+        "PDF documents store author names, company information, and creation details in hidden metadata fields. This data is set automatically by your operating system and the software used to create the file; most people never realize it's there.",
         "When sharing PDFs with clients, partners, or the public, this metadata can reveal sensitive information: who wrote the document, which company produced it, what software was used, and exactly when it was created and last modified.",
         "For legal professionals, this is particularly critical. Court filings, contracts, and privileged documents should never carry metadata that could reveal work product or privileged communications. For businesses, leaked company names in recycled templates can be embarrassing or even breach confidentiality agreements.",
-        "MetaStrip removes all author and document metadata from PDFs instantly, directly in your browser. Your files are never uploaded \u2014 processing happens entirely on your device using pdf-lib, an open-source JavaScript PDF library.",
+        "MetaStrip removes all author and document metadata from PDFs instantly, directly in your browser. Your files are never uploaded; processing happens entirely on your device using pdf-lib, an open-source JavaScript PDF library.",
       ],
     },
     supportedFormats: [
@@ -375,7 +375,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Metadata from PDFs \u2014 Author, Dates & More | MetaStrip",
+      "Remove Metadata from PDFs: Author, Dates & More | MetaStrip",
     metaDescription:
       "Strip author names, creator app, timestamps, and hidden properties from PDF files. Free, browser-based, no upload required.",
   },
@@ -385,8 +385,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "strip EXIF data online",
     title: "Strip EXIF Data Online",
     subtitle:
-      "Remove EXIF, IPTC, XMP, and all embedded metadata from photos \u2014 free, private, no upload required.",
-    heroLabel: "FREE EXIF REMOVER \u2014 100% CLIENT-SIDE",
+      "Remove EXIF, IPTC, XMP, and all embedded metadata from photos, free, private, no upload required.",
+    heroLabel: "FREE EXIF REMOVER: 100% CLIENT-SIDE",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
     fileIcon: "ImageSquare",
@@ -463,7 +463,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#a78bfa",
         title: "The full EXIF specification",
         description:
-          "EXIF (Exchangeable Image File Format) is the most comprehensive metadata standard in photography. It stores camera settings, GPS coordinates, orientation, color space, thumbnails, and dozens of technical parameters \u2014 all embedded invisibly in your image file.",
+          "EXIF (Exchangeable Image File Format) is the most comprehensive metadata standard in photography. It stores camera settings, GPS coordinates, orientation, color space, thumbnails, and dozens of technical parameters, all embedded invisibly in your image file.",
         example: {
           label: "Typical EXIF payload",
           value:
@@ -512,9 +512,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         example: {
           label: "What's hidden",
           value:
-            "160\u00d7120 JPEG thumbnail \u2014 may show original uncropped image",
+            "160\u00d7120 JPEG thumbnail, may show original uncropped image",
         },
-        risk: "The infamous 'Cat Schwartz incident' \u2014 a cropped photo still contained the full uncropped thumbnail.",
+        risk: "The infamous 'Cat Schwartz incident': a cropped photo still contained the full uncropped thumbnail.",
       },
     ],
     seoContent: {
@@ -522,8 +522,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       paragraphs: [
         "EXIF data is a metadata standard that stores technical and contextual information inside image files. Originally designed to help photographers organize their work, EXIF has become a significant privacy concern in the age of smartphone photography and social sharing.",
         "Every photo taken with a modern smartphone or digital camera contains EXIF data. This typically includes GPS coordinates accurate to a few meters, the exact date and time, camera make and model, serial numbers, lens information, and exposure settings. For edited photos, the software used and editing history may also be stored.",
-        "While some social media platforms strip EXIF data on upload, many do not \u2014 and email, messaging apps, cloud storage, and websites often preserve metadata completely. Once a photo is shared with its EXIF intact, anyone who downloads it can extract your location, device identity, and personal information.",
-        "MetaStrip provides comprehensive EXIF removal for JPEG, PNG, and WebP files. All processing happens in your browser \u2014 your photos are never uploaded to any server, making MetaStrip the most private EXIF stripping tool available.",
+        "While some social media platforms strip EXIF data on upload, many do not; and email, messaging apps, cloud storage, and websites often preserve metadata completely. Once a photo is shared with its EXIF intact, anyone who downloads it can extract your location, device identity, and personal information.",
+        "MetaStrip provides comprehensive EXIF removal for JPEG, PNG, and WebP files. All processing happens in your browser; your photos are never uploaded to any server, making MetaStrip the most private EXIF stripping tool available.",
       ],
     },
     supportedFormats: [
@@ -549,7 +549,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "EXIF Remover \u2014 View & Strip Photo Metadata Online | MetaStrip",
+      "EXIF Remover: View & Strip Photo Metadata Online | MetaStrip",
     metaDescription:
       "Remove EXIF, IPTC, XMP, and GPS metadata from photos. See what's embedded, then strip it. Free, in your browser, no upload.",
   },
@@ -560,7 +560,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove AI Metadata",
     subtitle:
       "Strip C2PA content credentials, XMP AI generation tags, and tool fingerprints from Midjourney, DALL-E, Stable Diffusion, and Adobe Firefly images.",
-    heroLabel: "STRIP AI FINGERPRINTS \u2014 100% CLIENT-SIDE",
+    heroLabel: "STRIP AI FINGERPRINTS: 100% CLIENT-SIDE",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
     fileIcon: "Robot",
@@ -680,7 +680,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         example: {
           label: "Growing enforcement",
           value:
-            "Google, Meta, Adobe, Getty, Shutterstock \u2014 all checking",
+            "Google, Meta, Adobe, Getty, Shutterstock, all checking",
         },
         risk: "Content flagged as AI-generated may be demoted in search, labeled on social media, or rejected by platforms.",
       },
@@ -690,7 +690,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       paragraphs: [
         "AI image generators including Midjourney, DALL-E, Stable Diffusion, and Adobe Firefly now embed metadata that identifies images as AI-generated. This includes C2PA content credentials, XMP AI tags, IPTC digital source type markers, and tool-specific generation parameters.",
         "As platforms increasingly detect and label AI content, this metadata has real consequences. Google is testing AI image labels in search results. Meta displays 'AI Generated' tags on Instagram and Facebook. Stock photo platforms reject AI-tagged submissions. Some job boards and academic institutions check for AI generation markers.",
-        "MetaStrip removes all metadata-based AI identification tags from your images. This includes C2PA manifests, XMP AI markers, IPTC DigitalSourceType fields, and embedded generation parameters. Processing happens entirely in your browser \u2014 no upload required.",
+        "MetaStrip removes all metadata-based AI identification tags from your images. This includes C2PA manifests, XMP AI markers, IPTC DigitalSourceType fields, and embedded generation parameters. Processing happens entirely in your browser; no upload required.",
         "Important note: MetaStrip removes metadata tags, not steganographic watermarks. Some AI tools embed invisible pixel-level watermarks (like Google's SynthID) that survive metadata removal. For most use cases, metadata removal is sufficient, as the majority of automated detection systems rely on metadata rather than pixel analysis.",
       ],
     },
@@ -717,7 +717,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove C2PA Metadata & AI Tags from Images \u2014 Free | MetaStrip",
+      "Remove C2PA Metadata & AI Tags from Images: Free | MetaStrip",
     metaDescription:
       "Strip C2PA content credentials and AI generation tags from Midjourney, DALL\u00b7E, ChatGPT, and Firefly images. 100% browser-based. No upload, no signup.",
   },
@@ -727,8 +727,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "strip metadata from Word document",
     title: "Strip Metadata from Word Documents",
     subtitle:
-      "Remove author names, tracked changes, comments, company info, and hidden properties from DOCX files \u2014 privately, in your browser.",
-    heroLabel: "FREE TOOL \u2014 NO UPLOAD, NO ACCOUNT",
+      "Remove author names, tracked changes, comments, company info, and hidden properties from DOCX files, privately, in your browser.",
+    heroLabel: "FREE TOOL: NO UPLOAD, NO ACCOUNT",
     acceptedTypes: [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ],
@@ -793,7 +793,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#fbbf24",
         title: "Deleted text isn't really deleted",
         description:
-          "Tracked changes in Word documents preserve every edit \u2014 including text that was deleted. If you 'Accept All Changes' before sharing, the visible text is clean, but the revision history may still be embedded in the XML. A simple unzip reveals everything.",
+          "Tracked changes in Word documents preserve every edit, including text that was deleted. If you 'Accept All Changes' before sharing, the visible text is clean, but the revision history may still be embedded in the XML. A simple unzip reveals everything.",
         example: {
           label: "What's hidden",
           value:
@@ -838,7 +838,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#06b6d4",
         title: "Template metadata leaks",
         description:
-          "Documents created from templates inherit the template's metadata \u2014 including the original author and company who created the template. Law firms and consultancies frequently discover they're sending documents with another firm's metadata baked in.",
+          "Documents created from templates inherit the template's metadata, including the original author and company who created the template. Law firms and consultancies frequently discover they're sending documents with another firm's metadata baked in.",
         example: {
           label: "What's hidden",
           value:
@@ -853,7 +853,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Microsoft Word documents (DOCX) store extensive hidden metadata in XML files inside the document package. This includes author names, company information, editing time, revision history, comments, tracked changes, and details about every person who contributed to the document.",
         "For legal professionals, this is a well-known hazard. Court rules in many jurisdictions require metadata scrubbing before filing or exchange. The American Bar Association has issued ethics opinions emphasizing lawyers' duty to remove metadata from documents shared with opposing parties.",
         "Beyond legal contexts, any business sharing Word documents externally risks exposing internal author names, company structure, editing timelines, and deleted content that may still exist in the revision history. Templates inherited from previous employers or partners can embed their metadata into your documents.",
-        "MetaStrip opens your DOCX file directly in the browser using JSZip, removes or sanitizes the metadata XML files, and repackages the clean document \u2014 all without your file ever leaving your device.",
+        "MetaStrip opens your DOCX file directly in the browser using JSZip, removes or sanitizes the metadata XML files, and repackages the clean document, all without your file ever leaving your device.",
       ],
     },
     supportedFormats: [
@@ -869,7 +869,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Word Metadata Remover (.docx) \u2014 Free | MetaStrip",
+      "Word Metadata Remover (.docx): Free | MetaStrip",
     metaDescription:
       "Remove author names, company info, tracked changes, comments, and revision history from Microsoft Word (.docx) files. Browser-based, no upload, no signup.",
   },
@@ -880,7 +880,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove GPS Location from Photos",
     subtitle:
       "Strip embedded GPS coordinates, altitude, speed, and direction data from your photos before sharing them online.",
-    heroLabel: "PROTECT YOUR LOCATION \u2014 FREE & PRIVATE",
+    heroLabel: "PROTECT YOUR LOCATION: FREE & PRIVATE",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
     fileIcon: "MapPin",
@@ -933,7 +933,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
           "Smartphone GPS data embedded in photos is typically accurate to within 3-5 meters. That's enough to identify your exact home address, workplace, gym, school, or any other location you photograph. A single photo can reveal where you live.",
         example: {
           label: "What's hidden",
-          value: "34.0522\u00b0 N, 118.2437\u00b0 W \u2014 accurate to ~3 meters",
+          value: "34.0522\u00b0 N, 118.2437\u00b0 W, accurate to ~3 meters",
         },
         risk: "A photo of your pet, your cooking, or your hobby taken at home reveals your home address to anyone who checks.",
       },
@@ -944,7 +944,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#f97316",
         title: "Multiple photos map your life",
         description:
-          "One photo reveals one location. A dozen photos reveal your daily routine \u2014 where you live, work, eat, exercise, and socialize. Combined with timestamps, they create a detailed timeline of your movements.",
+          "One photo reveals one location. A dozen photos reveal your daily routine: where you live, work, eat, exercise, and socialize. Combined with timestamps, they create a detailed timeline of your movements.",
         example: {
           label: "What 10 photos reveal",
           value:
@@ -986,10 +986,10 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     seoContent: {
       heading: "Why remove GPS location data from your photos?",
       paragraphs: [
-        "Every photo taken with a smartphone contains embedded GPS coordinates that pinpoint exactly where the photo was taken \u2014 often accurate to within a few meters. This data is stored in the EXIF metadata of the image file and travels with the photo when you share it.",
+        "Every photo taken with a smartphone contains embedded GPS coordinates that pinpoint exactly where the photo was taken, often accurate to within a few meters. This data is stored in the EXIF metadata of the image file and travels with the photo when you share it.",
         "While major social media platforms like Instagram and Facebook strip location data on upload, many other sharing methods do not. Email attachments, messaging apps (when sending as files), cloud storage links, forum posts, and personal websites all preserve GPS coordinates by default.",
-        "The privacy implications are significant. A photo taken at home reveals your home address. Photos taken over time reveal your daily patterns \u2014 where you work, eat, exercise, and socialize. For public figures, journalists, activists, and domestic abuse survivors, this data can be genuinely dangerous.",
-        "MetaStrip removes all GPS and location data from your photos before you share them. Processing happens entirely in your browser \u2014 your photos and location data are never uploaded anywhere. It's the most private way to strip location metadata from images.",
+        "The privacy implications are significant. A photo taken at home reveals your home address. Photos taken over time reveal your daily patterns: where you work, eat, exercise, and socialize. For public figures, journalists, activists, and domestic abuse survivors, this data can be genuinely dangerous.",
+        "MetaStrip removes all GPS and location data from your photos before you share them. Processing happens entirely in your browser; your photos and location data are never uploaded anywhere. It's the most private way to strip location metadata from images.",
       ],
     },
     supportedFormats: [
@@ -1015,7 +1015,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove GPS Location from Photos \u2014 Free & Private | MetaStrip",
+      "Remove GPS Location from Photos: Free & Private | MetaStrip",
     metaDescription:
       "Strip GPS coordinates, altitude, and timezone from photos before sharing. 100% in your browser. Free, no upload, no account.",
   },
@@ -1025,8 +1025,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "remove metadata before sharing online",
     title: "Remove Metadata Before Sharing Online",
     subtitle:
-      "Clean hidden data from photos and documents before uploading, emailing, or posting \u2014 protect your privacy in seconds.",
-    heroLabel: "CLEAN YOUR FILES \u2014 SHARE SAFELY",
+      "Clean hidden data from photos and documents before uploading, emailing, or posting; protect your privacy in seconds.",
+    heroLabel: "CLEAN YOUR FILES: SHARE SAFELY",
     acceptedTypes: [
       "image/jpeg",
       "image/png",
@@ -1161,7 +1161,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         example: {
           label: "Regulatory context",
           value:
-            "GDPR Art. 5(1)(c) \u2014 data minimization principle",
+            "GDPR Art. 5(1)(c), data minimization principle",
         },
         risk: "Sharing documents with unnecessary personal metadata can constitute a GDPR compliance failure.",
       },
@@ -1170,10 +1170,10 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       heading:
         "Why should you remove metadata before sharing files online?",
       paragraphs: [
-        "Every digital file carries hidden metadata \u2014 information about who created it, when, where, and with what tools. For photos, this includes GPS coordinates and camera details. For documents, it includes author names, company information, editing history, and sometimes deleted content that was never meant to be shared.",
+        "Every digital file carries hidden metadata: information about who created it, when, where, and with what tools. For photos, this includes GPS coordinates and camera details. For documents, it includes author names, company information, editing history, and sometimes deleted content that was never meant to be shared.",
         "When you share files by email, cloud storage, messaging apps, or upload them to websites, this metadata typically travels with the file. While some social media platforms strip certain metadata, most sharing methods preserve it completely.",
         "The risks range from privacy concerns (your home address extracted from a photo's GPS data) to professional embarrassment (a client discovering your document was originally created by a competitor) to legal liability (tracked changes revealing privileged negotiation strategy).",
-        "MetaStrip is a universal metadata removal tool that handles photos, PDFs, and Office documents. All processing happens in your browser \u2014 your files are never uploaded anywhere. Strip metadata from any file in seconds before sharing it with the world.",
+        "MetaStrip is a universal metadata removal tool that handles photos, PDFs, and Office documents. All processing happens in your browser; your files are never uploaded anywhere. Strip metadata from any file in seconds before sharing it with the world.",
       ],
     },
     supportedFormats: [
@@ -1214,9 +1214,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Metadata Before Sharing \u2014 Photos, PDFs & Docs | MetaStrip",
+      "Remove Metadata Before Sharing: Photos, PDFs & Docs | MetaStrip",
     metaDescription:
-      "Clean hidden metadata from photos, PDFs, and Office docs before sharing. GPS, author, timestamps \u2014 gone in seconds. Free, browser-based.",
+      "Clean hidden metadata from photos, PDFs, and Office docs before sharing. GPS, author, timestamps, gone in seconds. Free, browser-based.",
   },
 };
 

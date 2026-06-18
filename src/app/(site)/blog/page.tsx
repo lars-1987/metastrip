@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import BlogIndex from "@/components/blog/BlogIndex";
 
 export const metadata: Metadata = {
-  title: "Blog — MetaStrip",
+  title: "Blog, MetaStrip",
   description:
     "Privacy guides, metadata explainers, and digital self-defense tips from MetaStrip.",
   openGraph: {
-    title: "Blog — MetaStrip",
+    title: "Blog, MetaStrip",
     description:
       "Privacy guides, metadata explainers, and digital self-defense tips.",
     url: "https://metastrip.app/blog",

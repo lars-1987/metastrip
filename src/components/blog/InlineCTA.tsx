@@ -16,7 +16,7 @@ export default function InlineCTA() {
           className="text-[15px] font-bold mb-1"
           style={{ color: "var(--card-inverse-text)" }}
         >
-          Try MetaStrip — it&apos;s free.
+          Try MetaStrip; it&apos;s free.
         </p>
         <p
           className="text-[13px]"

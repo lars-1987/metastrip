@@ -4,7 +4,7 @@ export default function HowItWorks() {
       number: "1",
       title: "Drop your file",
       description:
-        "Drag and drop or click to select. Your file stays in your browser — nothing gets uploaded anywhere.",
+        "Drag and drop or click to select. Your file stays in your browser; nothing gets uploaded anywhere.",
       stroke: "#a78bfa",
       icon: (
         <svg
@@ -26,7 +26,7 @@ export default function HowItWorks() {
       number: "2",
       title: "See what's hidden",
       description:
-        "MetaStrip scans and displays every piece of metadata — GPS, device info, timestamps, AI tags, author data.",
+        "MetaStrip scans and displays every piece of metadata: GPS, device info, timestamps, AI tags, author data.",
       stroke: "#06b6d4",
       icon: (
         <svg
@@ -47,7 +47,7 @@ export default function HowItWorks() {
       number: "3",
       title: "Download clean",
       description:
-        "One click strips all metadata. Download your clean file instantly — no watermarks, no quality loss.",
+        "One click strips all metadata. Download your clean file instantly, no watermarks, no quality loss.",
       stroke: "#4ade80",
       icon: (
         <svg

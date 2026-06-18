@@ -22,7 +22,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "Is MetaStrip really free?",
     answer:
-      "Yes. No ads, no tracking, no signup, no upload limits, no premium tier. The source is open on GitHub under MIT license. If the tool helps you, you can buy me a coffee on Ko-fi — completely optional, never required to use anything.",
+      "Yes. No ads, no tracking, no signup, no upload limits, no premium tier. The source is open on GitHub under MIT license. If the tool helps you, you can buy me a coffee on Ko-fi, completely optional, never required to use anything.",
   },
   {
     question: "Will stripping metadata change how my file looks?",
@@ -32,22 +32,22 @@ export const FAQS: FAQItem[] = [
   {
     question: "How is this different from my phone's built-in 'remove location' option?",
     answer:
-      "iPhone and Android photo apps remove GPS coordinates but keep most other metadata: device model, serial number, software version, edit history, camera settings, AI generation tags, and timestamps. MetaStrip removes all of it — and works on PDFs and Office documents too, not just photos. It also shows you exactly what was embedded before you strip it, so you can see what your files were leaking.",
+      "iPhone and Android photo apps remove GPS coordinates but keep most other metadata: device model, serial number, software version, edit history, camera settings, AI generation tags, and timestamps. MetaStrip removes all of it, and works on PDFs and Office documents too, not just photos. It also shows you exactly what was embedded before you strip it, so you can see what your files were leaking.",
   },
   {
     question: "What about AI-generated images?",
     answer:
-      "AI tools like DALL·E, Midjourney, ChatGPT image generation, and Adobe Firefly embed C2PA 'content credentials' that cryptographically identify images as AI-generated. MetaStrip strips these alongside the rest of the metadata. Worth knowing: this removes metadata-based AI markers but does not remove pixel-level steganographic watermarks like Google's SynthID — those are embedded in the image data itself, not in the metadata, and require different techniques.",
+      "AI tools like DALL·E, Midjourney, ChatGPT image generation, and Adobe Firefly embed C2PA 'content credentials' that cryptographically identify images as AI-generated. MetaStrip strips these alongside the rest of the metadata. Worth knowing: this removes metadata-based AI markers but does not remove pixel-level steganographic watermarks like Google's SynthID; those are embedded in the image data itself, not in the metadata, and require different techniques.",
   },
   {
     question: "Is MetaStrip open source?",
     answer:
-      "Yes — MIT licensed, source code on GitHub. You can audit the code, run it locally, fork it, or contribute. The whole tool is built with public libraries (piexifjs, pdf-lib, jszip) so you can verify exactly what it does to your files.",
+      "Yes: MIT licensed, source code on GitHub. You can audit the code, run it locally, fork it, or contribute. The whole tool is built with public libraries (piexifjs, pdf-lib, jszip) so you can verify exactly what it does to your files.",
   },
   {
     question: "Can I batch process multiple files?",
     answer:
-      "Yes — drop up to 20 files at once. Each is processed independently in the browser, and you can download them individually or as a single zip. Batch limits exist purely because browser memory is finite, not because we're holding back features.",
+      "Yes: drop up to 20 files at once. Each is processed independently in the browser, and you can download them individually or as a single zip. Batch limits exist purely because browser memory is finite, not because we're holding back features.",
   },
   {
     question: "Does it work on mobile?",
