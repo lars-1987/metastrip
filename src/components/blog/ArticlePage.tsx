@@ -15,7 +15,7 @@ import { Icon } from "@/components/shared/Icon";
 function renderInlineMarkdown(text: string): ReactNode[] {
   const parts: ReactNode[] = [];
   // Match **bold**, `code`, and [text](url) inline markers
-  const regex = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
+  const regex = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*([^*\n]+)\*/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let key = 0;
@@ -40,6 +40,8 @@ function renderInlineMarkdown(text: string): ReactNode[] {
           {match[3]}
         </Link>
       );
+    } else if (match[5] !== undefined) {
+      parts.push(<em key={key++} className="italic">{match[5]}</em>);
     }
     lastIndex = match.index + match[0].length;
   }
@@ -47,6 +49,50 @@ function renderInlineMarkdown(text: string): ReactNode[] {
     parts.push(text.slice(lastIndex));
   }
   return parts;
+}
+
+/** Render one paragraph-or-table block from a section body. */
+function renderBlock(block: string, key: number): ReactNode {
+  const trimmed = block.trim();
+  // Markdown table: starts with "|" and has a "|---|" separator on the 2nd line.
+  if (trimmed.startsWith("|") && /\n\s*\|[\s:|-]+\|/.test(trimmed)) {
+    const rows = trimmed.split("\n").map((r) => r.trim()).filter(Boolean);
+    const toCells = (row: string) =>
+      row.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+    const head = toCells(rows[0]);
+    const bodyRows = rows.slice(2).map(toCells);
+    return (
+      <div key={key} className="my-6 overflow-x-auto">
+        <table className="w-full border-collapse text-[14px] font-[family-name:var(--font-outfit)]">
+          <thead>
+            <tr>
+              {head.map((c, ci) => (
+                <th key={ci} className="border-b border-[var(--border-strong)] px-3 py-2.5 text-left font-semibold text-[color:var(--text)]">
+                  {renderInlineMarkdown(c)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {bodyRows.map((cells, ri) => (
+              <tr key={ri}>
+                {cells.map((c, ci) => (
+                  <td key={ci} className="border-b border-[var(--border)] px-3 py-2.5 align-top text-[color:var(--text-secondary)]">
+                    {renderInlineMarkdown(c)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  return (
+    <p key={key} className="text-[15px] text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.85] mb-4">
+      {renderInlineMarkdown(block)}
+    </p>
+  );
 }
 
 export default function ArticlePage({ article }: { article: BlogArticle }) {
@@ -183,14 +229,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
               <h2 className="text-[22px] font-bold text-[color:var(--text)] font-[family-name:var(--font-outfit)] tracking-[-0.02em] mb-4">
                 {section.heading}
               </h2>
-              {section.body.split("\n\n").map((para, j) => (
-                <p
-                  key={j}
-                  className="text-[15px] text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.85] mb-4"
-                >
-                  {renderInlineMarkdown(para)}
-                </p>
-              ))}
+              {section.body.split("\n\n").map((block, j) => renderBlock(block, j))}
               {i === 1 && <InlineCTA />}
             </div>
           ))}
