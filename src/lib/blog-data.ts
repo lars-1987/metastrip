@@ -52,6 +52,55 @@ export const CATEGORIES: BlogCategory[] = [
 
 export const ARTICLES: BlogArticle[] = [
   {
+    id: "check-pdf-metadata-confirm-removed",
+    slug: "check-pdf-metadata-confirm-removed",
+    title:
+      "How to Check What Metadata Your PDF Contains (and Confirm It’s Actually Gone)",
+    excerpt:
+      "Clearing a PDF’s Author field doesn’t mean the metadata is gone; it often survives in the XMP stream, comments, and hidden layers. Here’s how to actually check what’s in your PDF, and how to confirm it’s clean before you send it.",
+    category: "guides",
+    date: "Jun 30, 2026",
+    readTime: "9 min read",
+    featured: true,
+    tags: ["PDF", "metadata", "verification", "Adobe Acrobat", "privacy"],
+    coverGradient: "linear-gradient(135deg, #06b6d4 0%, #10b981 100%)",
+    coverIcon: "MagnifyingGlass",
+    content: {
+      intro:
+        "Most guides tell you how to remove metadata from a PDF. Far fewer tell you how to *check* that it worked, which is the step that actually matters, because the most common way people leak data isn’t failing to remove it, it’s *thinking* they removed it when they didn’t.\n\nThe classic example: in 2019, lawyers for Paul Manafort filed a court document with sensitive passages hidden under thick black bars. The underlying text had never been deleted from the file, only visually covered. A reporter highlighted the blacked-out sections, copied them, and pasted them into a blank document. The hidden content appeared instantly, and it was front-page news within hours.\n\nThat’s the gap between “looks clean” and “is clean.” Here’s how to check what’s actually in your PDF, and how to confirm it’s gone before you share it.",
+      sections: [
+        {
+          heading: "Why clearing the Author field isn’t enough",
+          body: "A PDF stores metadata in more than one place, and clearing the obvious field doesn’t touch the others. There are really four distinct layers to check:\n\n**The Document Information dictionary**, the basic fields: Title, Author, Subject, Keywords, Creator (the app that made the content), Producer (the app that wrote the PDF), and dates. This is what you see in the “Properties” panel.\n\n**The XMP metadata stream**, a separate, more extensive metadata block in Adobe’s XMP format. It can hold copies of the Doc Info fields plus edit history and custom properties. Critically, **clearing the Description fields does not automatically clear the XMP stream.** This is the single most common reason a PDF looks clean but isn’t: the Author field reads blank while the same name still sits in the XMP block.\n\n**Hidden content**, comments, annotations, tracked-change remnants, cropped-but-not-deleted objects, overlapping layers, form-field data, and failed redactions (the Manafort problem). This isn’t “metadata” in the strict sense, but it’s hidden data that leaks the same way.\n\n**OS-level file metadata**, the creation/modification dates and author your operating system shows in the file’s properties. This is separate from the PDF’s *internal* metadata, and confusing the two is a common mistake: a blank Author in Windows Explorer tells you nothing about what’s inside the PDF.\n\nVerification means checking all four, not just the first.",
+        },
+        {
+          heading: "How to check metadata in Adobe Acrobat",
+          body: "If you have Acrobat, here’s the full verification pass.\n\n**Basic fields:** Open the PDF, go to the top-left **Menu** (or **File**) → **Document Properties** (shortcut Ctrl+D / Cmd+D). The **Description** tab shows Title, Author, Subject, Keywords, plus Creator and Producer. This is the first thing anyone receiving your file can see in seconds.\n\n**The XMP stream:** In that same Description tab, click **Additional Metadata** → **Advanced**. This exposes the XMP entries, which is where data hides after a basic field-clear. If you cleared the Description fields but skipped this, anything in here survived.\n\n**Hidden content:** Go to **Tools → Redact → Remove Hidden Information**. Acrobat scans the whole file and returns a checklist of everything it found: metadata, comments, hidden text, attachments, bookmarks, overlapping objects, form data. You don’t have to remove anything to *check*; running the scan tells you what’s actually in there. If it reports comments, hidden text, or attachments you thought were gone, the file isn’t clean yet.\n\nThat three-part pass, Description, Additional Metadata/XMP, Remove Hidden Information scan, is the difference between assuming and confirming.",
+        },
+        {
+          heading: "How to check without Acrobat",
+          body: "You don’t need a paid Acrobat licence to inspect a PDF.\n\n**Any PDF reader’s properties panel** shows the basic Document Info fields. Free readers expose File → Properties / Document Properties. This covers the first layer but not XMP or hidden content.\n\n**A browser-based metadata viewer** reads the full property set, Doc Info and XMP, without installing anything. This is the fastest way to see what’s embedded, and a client-side one keeps the file on your device. MetaStrip does exactly this: drop the PDF in and it shows you what metadata is present (Author, Producer, Creator, Title, Subject, Keywords, dates, and the XMP/custom properties) before you decide to remove anything. Because it runs entirely in your browser, the file never gets uploaded, which matters when the whole point is checking a sensitive document for leaks.\n\n**ExifTool** (command line) reads everything for technical users: `exiftool document.pdf` dumps the full metadata set, including fields some GUI tools don’t surface.",
+        },
+        {
+          heading: "The verification workflow: check, clean, check again",
+          body: "The reliable pattern is to inspect before *and* after removal, because “I ran a remover” isn’t proof the file is clean.\n\n**1. Check first.** See what’s actually in the file. You may find things you didn’t expect: a previous employee’s name in Author, your software version in Producer, a location, a custom property from your template, or comments you thought were deleted.\n\n**2. Remove.** Strip what you found, using whatever tool you prefer. (MetaStrip removes the Doc Info dictionary and the entire XMP stream client-side; Acrobat’s Sanitize Document or Remove Hidden Information handles hidden content like comments and attachments too.)\n\n**3. Check again; this is the step people skip.** Reopen the cleaned file and re-inspect. The Author, Creator, Producer, and custom fields should read empty, and a hidden-information scan should come back clear. This catches the XMP-survival problem and any hidden content the first pass missed.\n\nThe reason step 3 matters so much: the failure modes are silent. Nothing warns you that the XMP stream still has your name, or that a comment survived. The only way to know is to look.",
+        },
+        {
+          heading: "“Should I even remove PDF metadata?”",
+          body: "A fair question, and the answer is: it depends on where the file is going.\n\n**Remove it when** the PDF is leaving your organization, going to a counterparty, a client, a court, a public website, anywhere outside your control. Producer/Creator fields reveal your software and OS; Author reveals names; custom properties can leak template origins and internal data; and comments or tracked-change remnants can expose your editing process or things you meant to delete.\n\n**Keep it when** metadata serves a purpose: internal document management, searchability, accessibility (screen readers use some fields), archiving, and compliance contexts where provenance is required. Metadata isn’t inherently bad; it’s a privacy risk specifically when a file crosses a trust boundary carrying data you didn’t mean to share.\n\nThe practical rule: inspect every PDF before it leaves your hands, and remove what shouldn’t travel with it. Inspection is cheap; the leak is not.",
+        },
+        {
+          heading: "A note on “does downloading change the metadata?”",
+          body: "One genuine point of confusion: some workflows (re-saving, printing-to-PDF, exporting from certain tools) *do* alter or strip metadata as a side effect, and others preserve it exactly. Printing to PDF, for instance, strips most metadata but not always all of it. If you need a file’s metadata to stay intact (for provenance or recordkeeping) or to be reliably gone (for privacy), don’t assume the download/export did what you want; verify the resulting file with one of the checks above. The output of a “Save As” or “Print to PDF” is a new file, and its metadata is whatever that operation produced, not necessarily what the original had.",
+        },
+        {
+          heading: "The bottom line",
+          body: "Removing PDF metadata is easy. *Confirming* it’s gone is the part that actually protects you, and it takes three checks, not one: the basic Description fields, the XMP stream behind Additional Metadata, and a hidden-information scan for comments and buried content. A file that’s blank in the Properties panel can still carry your name in XMP or your deleted text in a hidden layer, and you’ll never know unless you look.\n\nDrop a PDF into MetaStrip to see exactly what it’s carrying right now, across both the standard fields and the XMP stream, then remove what shouldn’t be there, in your browser, and check again to confirm it’s clean before you send it.",
+        },
+      ],
+    },
+  },
+  {
     id: "remove-c2pa-content-credentials-from-image",
     slug: "remove-c2pa-content-credentials-from-image",
     title: "How to Remove C2PA Content Credentials from an Image (and What Happens When You Do)",

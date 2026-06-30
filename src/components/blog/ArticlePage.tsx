@@ -214,10 +214,17 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
 
         {/* Content column */}
         <div className="max-w-[680px]">
-          {/* Intro */}
-          <p className="text-lg text-[color:var(--text-secondary)] italic border-l-[3px] border-[color:var(--accent-strong)] pl-5 leading-relaxed mb-9 font-[family-name:var(--font-outfit)]">
-            {content.intro}
-          </p>
+          {/* Intro — bordered lead block, supports multiple paragraphs + inline markdown */}
+          <div className="border-l-[3px] border-[color:var(--accent-strong)] pl-5 mb-9">
+            {content.intro.split("\n\n").map((para, j) => (
+              <p
+                key={j}
+                className="text-lg text-[color:var(--text-secondary)] italic leading-relaxed mb-4 last:mb-0 font-[family-name:var(--font-outfit)]"
+              >
+                {renderInlineMarkdown(para)}
+              </p>
+            ))}
+          </div>
 
           {/* Sections */}
           {content.sections.map((section, i) => (
