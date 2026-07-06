@@ -52,6 +52,92 @@ export const CATEGORIES: BlogCategory[] = [
 
 export const ARTICLES: BlogArticle[] = [
   {
+    id: "check-c2pa-content-credential-image",
+    slug: "check-c2pa-content-credential-image",
+    title:
+      "What Is a C2PA Content Credential? How to Check If Your Image Has One",
+    excerpt:
+      "C2PA content credentials are the invisible signed record that tells Instagram and Google your photo was AI-generated or edited. Here’s how to check whether an image has one, what it reveals, and what to do next.",
+    category: "guides",
+    date: "Jul 6, 2026",
+    readTime: "9 min read",
+    featured: true,
+    tags: ["C2PA", "content credentials", "verify", "metadata", "AI"],
+    coverGradient: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
+    coverIcon: "ShieldCheck",
+    content: {
+      intro:
+        "Before you can decide whether to keep or remove a C2PA content credential, you need to know whether your image even has one, and most people have no way to see it, because it’s invisible in normal use. Here’s what a content credential actually is, exactly how to check for one, and how to read what it tells you.",
+      sections: [
+        {
+          heading: "TL;DR",
+          body: "A C2PA content credential is a cryptographically signed record embedded in an image that states who made it, what tool was used, and whether AI was involved. To check if an image has one, upload it to a free verifier like **verify.contentauthenticity.org** or **c2paviewer.com**, or install the **Content Credentials Chrome extension** to spot the “CR” icon as you browse. If a credential is present, the tool shows the creator, software, edit history, and any AI-generation flag. If you want to remove it before sharing, a client-side metadata tool strips the manifest, though note it won’t touch a pixel-level watermark, which is a separate layer.",
+        },
+        {
+          heading: "What a C2PA content credential is",
+          body: "A C2PA content credential (also called “Content Credentials,” the consumer-facing brand) is a cryptographically signed manifest embedded in an image file. It records the provenance of the image: who or what created it, the software or device used, a timestamp, the edit history, and, critically for 2026, whether generative AI was involved.\n\nThe thing that separates it from ordinary EXIF metadata is the signature. EXIF is plain text that any free tool can edit or strip, so it’s a *claim*, not a guarantee. A content credential is cryptographically signed: change a single field in the recorded history, or even a single pixel of the image, and the signature no longer validates. That makes it *tamper-evident* rather than merely asserted. The current published standard is C2PA 2.3 (dated January 5, 2026).\n\nThree terms often get used interchangeably but mean different things: **C2PA** is the standard (from the Coalition for Content Provenance and Authenticity), the **Content Authenticity Initiative (CAI)** is the industry community that promotes adoption, and **Content Credentials** is what you actually see on a signed image.",
+        },
+        {
+          heading: "Why your image might have one",
+          body: "In 2026, content credentials are embedded automatically by a growing list of sources, so there’s a good chance an image you’re working with carries one:\n\nAdobe Firefly, Photoshop, and Lightroom sign exports. OpenAI signs DALL-E and Sora output. Google Gemini and Imagen sign AI images. The **Google Pixel 10 signs every native-camera photo by default.** Camera makers including Sony, Nikon, and Leica sign photos at capture. And professional platforms increasingly sign on export.\n\nNot everything carries one, though: Stable Diffusion, Midjourney (as of early 2026), and most open-source AI models don’t embed C2PA data. And if you got the image from social media or a messaging app, the credential was very likely stripped during upload, which we’ll come back to.",
+        },
+        {
+          heading: "How to check if an image has a content credential",
+          body: "There are three practical methods, from easiest to most technical.\n\n**1. A free online verifier (easiest).** The two most useful are **verify.contentauthenticity.org** (the official CAI tool) and **c2paviewer.com** (shows more raw technical detail). Both run entirely in your browser; your file is never uploaded to a server. Drag your image in, and the tool immediately reports whether a manifest is present and, if so, displays a human-readable summary: creator, software, AI involvement, and edit history.\n\n**2. The Content Credentials Chrome extension (best for browsing).** The official extension (from Digimarc/CAI) overlays a small **“CR” icon** on any image on a web page that carries an intact credential. You can also right-click an image and choose “Verify Content Credentials.” Hovering the CR pin shows a summary. The limitation: it can only detect credentials on images still served with C2PA data intact, and most platforms strip it (again, more below).\n\n**3. c2patool (for developers).** The official command-line tool reads, validates, and displays manifests. Point it at a file and it returns the full JSON: claim generator, assertions, signature info, and validation status. An empty `validation_status` array means the signature is valid and the content hasn’t been tampered with; error codes mean something broke after signing. Available at github.com/contentauth/c2patool.\n\n**One important rule for all three:** use the *original* file. Not a screenshot, not a re-saved copy, and not a version that’s passed through WhatsApp, iMessage, or a social platform. Those re-encode the image and strip the manifest, so you’ll get a false “no credential found” on an image that originally had one.",
+        },
+        {
+          heading: "How to read what it shows",
+          body: "If a manifest is present, here’s what the fields mean:\n\n**Claim generator / software**, the tool or device that created or last edited the image (e.g. “Adobe Photoshop 26.0”, “Google Pixel 10”).\n\n**AI assertions**, whether generative AI was involved, which model, and sometimes whether the creator has restricted AI-training use. This is the flag social platforms read to apply “Made with AI” labels.\n\n**Edit history (actions)**, a list of what was done: opened, color-adjusted, exported, and so on.\n\n**Signature / issuer**, who signed the manifest (e.g. “Adobe Inc.”), verified through an X.509 certificate chain.\n\n**Validation status**, valid means untampered since signing; invalid means the file was modified after signing.\n\nIf the tool reports *no* manifest, that doesn’t mean the image is fake or manipulated; it simply means provenance wasn’t recorded (or was stripped later). Absence of a credential is not evidence of anything.",
+        },
+        {
+          heading: "The hard-binding vs soft-binding wrinkle",
+          body: "Here’s a subtlety worth understanding, because it connects to the question people always ask next (“can I just remove it?”). C2PA defines two ways a credential binds to an image:\n\nA **hard binding** is a cryptographic hash tying the manifest to the exact bytes of the file: change one pixel and it breaks. This lives in the metadata.\n\nA **soft binding** is an invisible watermark or content fingerprint that can help *rediscover* the associated credential even after the metadata manifest has been stripped.\n\nThis matters for what checking (and later, removing) actually accomplishes. If an image uses only a hard-binding manifest, removing the metadata removes the credential cleanly. But if it also carries a soft-binding watermark (as Google and OpenAI images increasingly do, via SynthID), that pixel-level signal persists after metadata removal, and a service specifically looking for it can still recover the provenance. We wrote about that distinction in detail in our piece on [content credentials vs watermarking vs metadata](/blog/content-credentials-vs-watermarking-vs-metadata).",
+        },
+        {
+          heading: "What to do once you know",
+          body: "Once you’ve checked and you know what’s embedded, you’ve got a decision, and it depends on where the image is going.\n\n**If you’re keeping it:** nothing to do. The credential travels with the file and helps establish provenance, which is often desirable: for authenticity, for professional workflows, and increasingly for regulatory compliance (the EU AI Act’s Article 50, which began enforcement August 2, 2026, effectively expects AI-generated content to carry machine-readable disclosure).\n\n**If you want to remove it before sharing**, because you’d rather not carry the “Made with AI” trigger, or you don’t want the embedded software/timestamp/identity data traveling with your image, a client-side metadata tool strips the C2PA manifest along with the rest of the metadata. MetaStrip does exactly this, entirely in your browser, so the file never leaves your device. Check what’s embedded first, remove it, then re-check to confirm it’s gone.\n\nThe one honest caveat, tied to the binding point above: removing the metadata manifest removes the metadata-based credential, but it does not remove a pixel-level watermark like SynthID. No metadata tool can; that’s a fundamentally different operation. Any tool claiming to strip “all AI detection” including invisible watermarks is overstating what’s possible.",
+        },
+        {
+          heading: "FAQ",
+          body: "**How do I know if a photo was made by AI?** Check for a C2PA content credential using verify.contentauthenticity.org or the Content Credentials Chrome extension. If the image was made by a C2PA-supporting AI tool (DALL-E, Firefly, Gemini, Imagen) and still has its credential intact, the tool will show an AI-generation assertion. Note that not all AI tools embed credentials, and platforms often strip them, so absence isn’t proof it’s not AI.\n\n**Does every photo have a content credential?** No. Only images from C2PA-enabled sources (certain AI tools, newer cameras like the Pixel 10, and pro editing software) carry one. Many images have none, and images downloaded from social media usually had theirs stripped on upload.\n\n**Why does my image show “no content credentials” when I know it was AI-generated?** Most likely the credential was stripped when the image passed through a social platform, messaging app, or a screenshot/re-save. Check the original file, not a downloaded or forwarded copy.\n\n**Is a content credential the same as a watermark?** No. A content credential is signed metadata (removable with a metadata tool). A watermark like SynthID lives in the pixels (not removable with a metadata tool). Some images carry both.\n\n**Can I remove a C2PA content credential?** Yes: the metadata manifest can be stripped client-side with a tool like MetaStrip. A pixel-level watermark, if present, cannot be removed this way.\n\n**Is it legal to remove content credentials?** Removing metadata from your own images is legal in essentially all jurisdictions. But be aware the EU AI Act (enforcement from August 2, 2026) expects AI-generated content distributed in the EU to carry disclosure markers, so removing them from AI content you then distribute there may have implications depending on context. This isn’t legal advice.",
+        },
+      ],
+    },
+    faq: [
+      {
+        question: "How do I know if a photo was made by AI?",
+        answer:
+          "Check for a C2PA content credential using verify.contentauthenticity.org or the Content Credentials Chrome extension. If the image was made by a C2PA-supporting AI tool (DALL-E, Firefly, Gemini, Imagen) and still has its credential intact, the tool will show an AI-generation assertion. Note that not all AI tools embed credentials, and platforms often strip them, so absence isn’t proof it’s not AI.",
+      },
+      {
+        question: "Does every photo have a content credential?",
+        answer:
+          "No. Only images from C2PA-enabled sources (certain AI tools, newer cameras like the Pixel 10, and pro editing software) carry one. Many images have none, and images downloaded from social media usually had theirs stripped on upload.",
+      },
+      {
+        question:
+          "Why does my image show “no content credentials” when I know it was AI-generated?",
+        answer:
+          "Most likely the credential was stripped when the image passed through a social platform, messaging app, or a screenshot/re-save. Check the original file, not a downloaded or forwarded copy.",
+      },
+      {
+        question: "Is a content credential the same as a watermark?",
+        answer:
+          "No. A content credential is signed metadata (removable with a metadata tool). A watermark like SynthID lives in the pixels (not removable with a metadata tool). Some images carry both.",
+      },
+      {
+        question: "Can I remove a C2PA content credential?",
+        answer:
+          "Yes: the metadata manifest can be stripped client-side with a tool like MetaStrip. A pixel-level watermark, if present, cannot be removed this way.",
+      },
+      {
+        question: "Is it legal to remove content credentials?",
+        answer:
+          "Removing metadata from your own images is legal in essentially all jurisdictions. But be aware the EU AI Act (enforcement from August 2, 2026) expects AI-generated content distributed in the EU to carry disclosure markers, so removing them from AI content you then distribute there may have implications depending on context. This isn’t legal advice.",
+      },
+    ],
+  },
+  {
     id: "check-pdf-metadata-confirm-removed",
     slug: "check-pdf-metadata-confirm-removed",
     title:
