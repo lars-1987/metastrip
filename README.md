@@ -20,12 +20,12 @@ Every other "remove metadata" tool I tried wanted me to upload my files to their
 
 | Category   | Formats                                       |
 | ---------- | --------------------------------------------- |
-| Images     | JPEG, PNG, WebP                               |
+| Images     | JPEG, PNG, WebP, HEIC                          |
 | Documents  | PDF, DOCX, XLSX, PPTX                         |
 | Video      | MP4, MOV, M4V                                 |
 | Audio      | MP3, M4A, FLAC, WAV                           |
 
-HEIC, TIFF, GIF and additional document formats (RTF, ODT, Pages) are on the roadmap.
+TIFF, GIF and additional document formats (RTF, ODT, Pages) are on the roadmap.
 
 ## What gets stripped
 
@@ -44,6 +44,7 @@ Steganographic watermarks (e.g. Google's SynthID) are pixel-level and not addres
 - [pdf-lib](https://github.com/Hopding/pdf-lib) for PDF metadata
 - [JSZip](https://github.com/Stuk/jszip) for DOCX / XLSX / PPTX (they're ZIP archives — unpack, modify XML, repack)
 - Custom in-browser MP4 atom walker for video (MP4, MOV, M4V) — replaces metadata atoms with `free` atoms of identical size so file structure stays valid
+- Custom in-browser HEIC/HEIF parser — HEIC is an ISOBMFF container (same box grammar as MP4), so it reuses the same box walker; locates the EXIF/XMP items via `iloc`/`iinf` and zeroes their byte ranges in place, leaving the image items untouched (no decode, no re-encode, output stays `.heic`)
 - Custom parsers for ID3v1/v2 (MP3), Vorbis comments (FLAC), and RIFF LIST/INFO + bext (WAV); FLAC PICTURE / VORBIS_COMMENT blocks are replaced with `PADDING` of equal size, RIFF chunks with `JUNK` — no length recomputation, no risk of breaking playback
 - [PostHog](https://posthog.com) for cookieless, DNT-respecting analytics
 - Hosted on GitHub Pages (deployed via Actions)
@@ -72,7 +73,7 @@ npm run build
 
 PRs welcome — particularly:
 
-- HEIC support (the format every iPhone now defaults to)
+- ~~HEIC support (the format every iPhone now defaults to)~~ — ✅ shipped Jul 2026
 - Additional document formats (RTF, ODT, Pages)
 - WebM / MKV / AVI video and OGG / Opus audio
 - Web Worker offload so very large files don't block the main thread
