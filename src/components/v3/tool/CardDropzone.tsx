@@ -14,7 +14,7 @@ interface Props {
 type Kind = "image" | "doc" | "video" | "audio";
 
 const FORMATS: { ext: string; kind: Kind }[] = [
-  { ext: "jpeg", kind: "image" }, { ext: "png", kind: "image" }, { ext: "webp", kind: "image" },
+  { ext: "jpeg", kind: "image" }, { ext: "png", kind: "image" }, { ext: "webp", kind: "image" }, { ext: "heic", kind: "image" },
   { ext: "pdf", kind: "doc" }, { ext: "docx", kind: "doc" }, { ext: "xlsx", kind: "doc" }, { ext: "pptx", kind: "doc" },
   { ext: "mp4", kind: "video" }, { ext: "mov", kind: "video" },
   { ext: "mp3", kind: "audio" }, { ext: "m4a", kind: "audio" }, { ext: "flac", kind: "audio" }, { ext: "wav", kind: "audio" },
@@ -100,7 +100,7 @@ export function CardDropzone({ onFiles, busy, error }: Props) {
         ref={inputRef}
         type="file"
         multiple
-        accept={ACCEPTED_TYPES.join(",")}
+        accept={[...ACCEPTED_TYPES, ".heic", ".heif"].join(",")}
         className="hidden"
         onChange={(e) => {
           if (e.target.files) onFiles(Array.from(e.target.files));

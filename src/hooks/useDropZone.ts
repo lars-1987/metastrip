@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, type DragEvent } from "react";
+import { isAcceptedForUpload } from "@/lib/file-utils";
 
 interface UseDropZoneOptions {
   onFiles: (files: File[]) => void;
@@ -24,7 +25,7 @@ export function useDropZone({ onFiles, acceptedTypes }: UseDropZoneOptions) {
       e.preventDefault();
       setIsDragOver(false);
       const files = Array.from(e.dataTransfer.files).filter((f) =>
-        acceptedTypes.includes(f.type)
+        isAcceptedForUpload(f, acceptedTypes)
       );
       if (files.length) onFiles(files);
     },

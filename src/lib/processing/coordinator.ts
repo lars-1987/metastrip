@@ -2,6 +2,7 @@ import { detectFileType } from "../file-utils";
 import { processJpeg } from "./image/jpeg";
 import { processPng } from "./image/png";
 import { processWebp } from "./image/webp";
+import { processHeic } from "./image/heic";
 import { processPdf } from "./document/pdf";
 import { processDocx } from "./document/docx";
 import { processXlsx } from "./document/xlsx";
@@ -27,6 +28,7 @@ const processors: Partial<Record<SupportedFileType, Processor>> = {
   jpeg: processJpeg,
   png: processPng,
   webp: processWebp,
+  heic: processHeic,
   pdf: processPdf,
   docx: processDocx,
   xlsx: processXlsx,

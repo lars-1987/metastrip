@@ -74,8 +74,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip GPS coordinates, camera info, AI generation tags, and hidden data from your images, instantly, privately, for free.",
     heroLabel: "FREE TOOL, NO UPLOAD REQUIRED",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
+    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "ImageSquare",
     metadataCategories: [
       {
@@ -387,8 +387,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Remove EXIF, IPTC, XMP, and all embedded metadata from photos, free, private, no upload required.",
     heroLabel: "FREE EXIF REMOVER: 100% CLIENT-SIDE",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
+    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "ImageSquare",
     metadataCategories: [
       {
@@ -561,8 +561,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip C2PA content credentials, XMP AI generation tags, and tool fingerprints from Midjourney, DALL-E, Stable Diffusion, and Adobe Firefly images.",
     heroLabel: "STRIP AI FINGERPRINTS: 100% CLIENT-SIDE",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
+    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "Robot",
     metadataCategories: [
       {
@@ -881,8 +881,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip embedded GPS coordinates, altitude, speed, and direction data from your photos before sharing them online.",
     heroLabel: "PROTECT YOUR LOCATION: FREE & PRIVATE",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP",
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
+    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "MapPin",
     metadataCategories: [
       {
@@ -1031,6 +1031,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       "image/jpeg",
       "image/png",
       "image/webp",
+      "image/heic",
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

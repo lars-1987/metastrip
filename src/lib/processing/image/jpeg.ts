@@ -5,62 +5,7 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
-
-const TAG_CATEGORIES: Record<string, MetadataCategory> = {
-  GPSLatitude: "gps",
-  GPSLongitude: "gps",
-  GPSAltitude: "gps",
-  GPSDateStamp: "gps",
-  GPSTimeStamp: "gps",
-  GPSLatitudeRef: "gps",
-  GPSLongitudeRef: "gps",
-  GPSAltitudeRef: "gps",
-  GPSSpeed: "gps",
-  GPSSpeedRef: "gps",
-  GPSImgDirection: "gps",
-  GPSImgDirectionRef: "gps",
-  GPSDestBearing: "gps",
-  GPSDestBearingRef: "gps",
-  GPSHPositioningError: "gps",
-  Make: "device",
-  Model: "device",
-  BodySerialNumber: "device",
-  LensModel: "device",
-  LensMake: "device",
-  LensSerialNumber: "device",
-  CameraOwnerName: "device",
-  HostComputer: "device",
-  Software: "software",
-  ProcessingSoftware: "software",
-  DateTime: "dates",
-  DateTimeOriginal: "dates",
-  DateTimeDigitized: "dates",
-  OffsetTime: "dates",
-  OffsetTimeOriginal: "dates",
-  OffsetTimeDigitized: "dates",
-  SubSecTime: "dates",
-  SubSecTimeOriginal: "dates",
-  SubSecTimeDigitized: "dates",
-  Artist: "author",
-  XPAuthor: "author",
-  Copyright: "copyright",
-  ImageDescription: "custom",
-  UserComment: "custom",
-  XPComment: "custom",
-  XPTitle: "custom",
-  XPSubject: "custom",
-  XPKeywords: "custom",
-  ImageUniqueID: "custom",
-};
-
-// Map IFD name to piexif constant
-const IFD_MAP: Record<string, string> = {
-  "0th": "ImageIFD",
-  Exif: "ExifIFD",
-  GPS: "GPSIFD",
-  "1st": "ImageIFD",
-  Interop: "InteropIFD",
-};
+import { TAG_CATEGORIES, IFD_MAP, catalogExifFields } from "./exif-catalog";
 
 export async function processJpeg(
   file: File,
@@ -94,27 +39,7 @@ export async function processJpeg(
   }
 
   // Catalogue all found metadata fields
-  for (const ifd of ["0th", "Exif", "GPS", "1st", "Interop"]) {
-    if (exifObj[ifd]) {
-      for (const [tagId, value] of Object.entries(exifObj[ifd])) {
-        if (value === undefined || value === null) continue;
-        const ifdKey = IFD_MAP[ifd] || "ImageIFD";
-        const tagInfo =
-          piexif.TAGS[ifd]?.[tagId] ?? piexif.TAGS[ifdKey]?.[tagId];
-        const tagName = tagInfo?.["name"] ?? `Unknown_${ifd}_${tagId}`;
-        const category = TAG_CATEGORIES[tagName as string] || "custom";
-
-        const field: MetadataField = {
-          category,
-          key: tagName as string,
-          label: (tagName as string).replace(/([A-Z])/g, " $1").trim(),
-          value: formatExifValue(value),
-          removable: true,
-        };
-        fieldsFound.push(field);
-      }
-    }
-  }
+  fieldsFound.push(...catalogExifFields(exifObj));
 
   // Determine which categories to strip
   const categoriesToStrip = (
@@ -235,18 +160,4 @@ function dataUrlToBlob(dataUrl: string): Blob {
     array[i] = binary.charCodeAt(i);
   }
   return new Blob([array], { type: mime });
-}
-
-function formatExifValue(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  if (Array.isArray(value)) {
-    return value
-      .map((v) => {
-        if (Array.isArray(v) && v.length === 2) return `${v[0]}/${v[1]}`;
-        return String(v);
-      })
-      .join(", ");
-  }
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
 }

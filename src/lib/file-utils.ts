@@ -5,6 +5,9 @@ const MIME_TO_TYPE: Record<string, SupportedFileType> = {
   "image/png": "png",
   "image/webp": "webp",
   "image/heic": "heic",
+  "image/heif": "heic",
+  "image/heic-sequence": "heic",
+  "image/heif-sequence": "heic",
   "image/tiff": "tiff",
   "image/gif": "gif",
   "application/pdf": "pdf",
@@ -26,8 +29,36 @@ const MIME_TO_TYPE: Record<string, SupportedFileType> = {
   "audio/wave": "wav",
 };
 
+// Extensions we detect by name when the browser reports no/unknown MIME.
+// (Chrome/Firefox commonly report an empty `file.type` for HEIC.)
+const EXT_TO_TYPE: Record<string, SupportedFileType> = {
+  heic: "heic",
+  heif: "heic",
+};
+
+function extensionOf(name: string): string {
+  const dot = name.lastIndexOf(".");
+  return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
+}
+
 export function detectFileType(file: File): SupportedFileType | null {
-  return MIME_TO_TYPE[file.type] ?? null;
+  const byMime = MIME_TO_TYPE[file.type];
+  if (byMime) return byMime;
+  // Fall back to the extension (HEIC often arrives with an empty MIME type).
+  return EXT_TO_TYPE[extensionOf(file.name)] ?? null;
+}
+
+/** Whether a file should be accepted by the dropzone/file input. Matches by
+ *  MIME, or by extension for formats the browser doesn't tag (HEIC). */
+export function isAcceptedForUpload(file: File, acceptedTypes: string[]): boolean {
+  if (file.type && acceptedTypes.includes(file.type)) return true;
+  const type = EXT_TO_TYPE[extensionOf(file.name)];
+  if (!type) return false;
+  // Only accept the extension if the corresponding MIME(s) are in the list.
+  if (type === "heic") {
+    return acceptedTypes.includes("image/heic") || acceptedTypes.includes("image/heif");
+  }
+  return false;
 }
 
 const IMAGE_TYPES: SupportedFileType[] = ["jpeg", "png", "webp", "heic", "tiff", "gif"];
@@ -59,6 +90,8 @@ const TYPE_LABELS: Record<string, string> = {
   "image/jpeg": "JPEG",
   "image/png": "PNG",
   "image/webp": "WebP",
+  "image/heic": "HEIC",
+  "image/heif": "HEIC",
   "image/gif": "GIF",
   "application/pdf": "PDF",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",

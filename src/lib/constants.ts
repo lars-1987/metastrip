@@ -6,6 +6,7 @@ export const SUPPORTED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
   "image/heic",
+  "image/heif",
   "image/tiff",
   "image/gif",
 ];
@@ -48,6 +49,8 @@ export const ACCEPTED_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "image/heic",
+  "image/heif",
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
