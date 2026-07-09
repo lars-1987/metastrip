@@ -9,8 +9,10 @@ import type {
 const RIFF_HEADER = new TextEncoder().encode("RIFF");
 const WEBP_FOURCC = new TextEncoder().encode("WEBP");
 
-// Metadata chunk FourCCs to strip
-const METADATA_CHUNKS = new Set(["EXIF", "XMP "]);
+// Metadata chunk FourCCs to strip. "C2PA" holds the content-credential /
+// provenance manifest (the WebP binding for a JUMBF C2PA box) that AI
+// generators embed; without it listed here the manifest passes straight through.
+const METADATA_CHUNKS = new Set(["EXIF", "XMP ", "C2PA"]);
 
 function readUint32LE(data: Uint8Array, offset: number): number {
   return (
@@ -150,6 +152,16 @@ function catalogueChunkFields(chunk: RiffChunk): MetadataField[] {
     return catalogueExifFields(chunk.data);
   } else if (chunk.fourcc === "XMP ") {
     return catalogueXmpFields(chunk.data);
+  } else if (chunk.fourcc === "C2PA") {
+    return [
+      {
+        category: "ai",
+        key: "C2PA",
+        label: "C2PA Content Credential",
+        value: `(${chunk.data.length} bytes)`,
+        removable: true,
+      },
+    ];
   }
   return [];
 }

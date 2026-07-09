@@ -91,8 +91,11 @@ export async function processHeic(
     const xmpItems = items.filter(
       (it) => it.type === "mime" && /rdf\+xml/i.test(it.contentType ?? "")
     );
+    // C2PA content credentials live in a top-level `uuid` box (the ISOBMFF
+    // binding), not a `meta` item, so scan the box tree for it separately.
+    const c2paBoxes = findC2paBoxes(view);
 
-    if (exifItems.length === 0 && xmpItems.length === 0) {
+    if (exifItems.length === 0 && xmpItems.length === 0 && c2paBoxes.length === 0) {
       // Nothing to strip.
       return passthrough(new Blob([original], { type: file.type || "image/heic" }));
     }
@@ -112,6 +115,14 @@ export async function processHeic(
       fieldsFound.push(...fields);
       return { item: it, fields };
     });
+    const c2paFields: MetadataField[] = c2paBoxes.map((box) => ({
+      category: "ai" as MetadataCategory,
+      key: "C2PA",
+      label: "C2PA Content Credential",
+      value: `(${box.end - box.contentStart} bytes)`,
+      removable: true,
+    }));
+    fieldsFound.push(...c2paFields);
 
     // ── Decide what to strip ────────────────────────────────────
     const enabled = new Set(
@@ -155,6 +166,18 @@ export async function processHeic(
       }
     }
 
+    // C2PA uuid box(es): neutralize in place when the AI / content-credential
+    // category is stripped. Renaming to a `free` box and zeroing the payload
+    // keeps the file the same size, so the absolute iloc offsets stay valid.
+    if (strippingAll || enabled.has("ai")) {
+      for (let i = 0; i < c2paBoxes.length; i++) {
+        stripC2paBox(cleaned, c2paBoxes[i]);
+        fieldsRemoved.push(c2paFields[i]);
+      }
+    } else {
+      fieldsKept.push(...c2paFields);
+    }
+
     const blob = new Blob([cleaned], { type: "image/heic" });
     return {
       originalFile: file,
@@ -190,6 +213,40 @@ function isHeifFile(view: DataView): boolean {
 
 function findTopLevelBox(view: DataView, type: string): BoxInfo | null {
   return findBox(view, 0, view.byteLength, type);
+}
+
+// C2PA BMFF manifest-store box UUID (d8fec3d6-1b0e-483c-9297-5828877ec481).
+const C2PA_BMFF_UUID = [
+  0xd8, 0xfe, 0xc3, 0xd6, 0x1b, 0x0e, 0x48, 0x3c,
+  0x92, 0x97, 0x58, 0x28, 0x87, 0x7e, 0xc4, 0x81,
+];
+
+/** Find top-level `uuid` boxes carrying the C2PA manifest store. */
+function findC2paBoxes(view: DataView): BoxInfo[] {
+  const out: BoxInfo[] = [];
+  for (const box of iterBoxes(view, 0, view.byteLength)) {
+    if (box.type !== "uuid" || box.contentStart + 16 > box.end) continue;
+    let match = true;
+    for (let i = 0; i < 16; i++) {
+      if (view.getUint8(box.contentStart + i) !== C2PA_BMFF_UUID[i]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) out.push(box);
+  }
+  return out;
+}
+
+/** Neutralize a C2PA uuid box in place: rename it to a `free` box and zero its
+ *  payload (the UUID + manifest). Same size, so iloc's absolute offsets remain
+ *  correct and the image itself is untouched. */
+function stripC2paBox(buf: Uint8Array, box: BoxInfo) {
+  buf[box.offset + 4] = 0x66; // 'f'
+  buf[box.offset + 5] = 0x72; // 'r'
+  buf[box.offset + 6] = 0x65; // 'e'
+  buf[box.offset + 7] = 0x65; // 'e'
+  zeroBytes(buf, box.contentStart, box.end - box.contentStart);
 }
 
 /** Parse iinf → item_ID → { type, contentType }. */

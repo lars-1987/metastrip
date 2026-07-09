@@ -8,13 +8,18 @@ import type {
 // PNG signature: 8 bytes
 const PNG_SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 
-// Metadata chunk types to strip
+// Metadata chunk types to strip.
+// `caBX` holds the C2PA manifest store (content credentials / provenance) — the
+// PNG binding for a JUMBF C2PA box. AI generators (DALL-E, Gemini, Firefly, etc.)
+// embed it, and it is invisible to text-chunk parsing, so it must be listed here
+// explicitly or it sails straight through.
 const METADATA_CHUNKS = new Set([
   "tEXt",
   "iTXt",
   "zTXt",
   "eXIf",
   "tIME",
+  "caBX",
 ]);
 
 // Map PNG text keywords to metadata categories
@@ -205,6 +210,14 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
       category: "device",
       key: "eXIf",
       label: "Embedded EXIF Data",
+      value: `(${chunk.data.length} bytes)`,
+      removable: true,
+    });
+  } else if (chunk.type === "caBX") {
+    fields.push({
+      category: "ai",
+      key: "C2PA",
+      label: "C2PA Content Credential",
       value: `(${chunk.data.length} bytes)`,
       removable: true,
     });
