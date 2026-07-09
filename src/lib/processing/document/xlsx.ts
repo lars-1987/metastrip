@@ -4,6 +4,7 @@ import {
   stripCoreXml,
   parseAppXml,
   stripAppXml,
+  removeZipParts,
 } from "./office-common";
 import type {
   StripOptions,
@@ -108,6 +109,23 @@ export async function processXlsx(
       });
       zip.remove("docProps/custom.xml");
     }
+  }
+
+  // Cell comments, modern threaded comments, and their author records — none of
+  // which the core/app metadata pass touches.
+  if (options.comments) {
+    const { found, removed } = removeZipParts(
+      zip,
+      [
+        /^xl\/comments\d*\.xml$/i,
+        /^xl\/threadedComments\/.*\.xml$/i,
+        /^xl\/persons\/.*\.xml$/i,
+      ],
+      "comments",
+      "Comment part"
+    );
+    fieldsFound.push(...found);
+    fieldsRemoved.push(...removed);
   }
 
   const cleanedArrayBuffer = await zip.generateAsync({ type: "arraybuffer" });

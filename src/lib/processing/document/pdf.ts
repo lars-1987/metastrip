@@ -1,4 +1,4 @@
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict, PDFRef } from "pdf-lib";
 import type {
   StripOptions,
   ProcessingResult,
@@ -120,6 +120,69 @@ export async function processPdf(
         fieldsRemoved.push(field);
       } else {
         fieldsKept.push(field);
+      }
+    }
+  }
+
+  // ── XMP metadata stream ────────────────────────────────────────────────
+  // pdf-lib's setters only touch the Document Info dictionary; a PDF also keeps
+  // a parallel XMP packet in the catalog's /Metadata stream (author, title,
+  // rights, creator-tool, edit history). Clearing the Info fields leaves XMP
+  // fully intact — the classic "looks clean but isn't" trap. Drop the whole
+  // stream, from both the catalog reference and the object table so it isn't
+  // written back as an orphan.
+  const xmpValue = pdfDoc.catalog.get(PDFName.of("Metadata"));
+  if (xmpValue) {
+    const field: MetadataField = {
+      category: "custom",
+      key: "XMP",
+      label: "XMP metadata stream",
+      value: "(present)",
+      removable: true,
+    };
+    fieldsFound.push(field);
+    // XMP bundles author/title/dates/software/copyright — remove it whenever any
+    // of those is being stripped (always true for the default full strip).
+    const removeXmp =
+      options.author ||
+      options.dates ||
+      options.software ||
+      options.copyright ||
+      options.custom;
+    if (removeXmp) {
+      pdfDoc.catalog.delete(PDFName.of("Metadata"));
+      if (xmpValue instanceof PDFRef) pdfDoc.context.delete(xmpValue);
+      fieldsRemoved.push(field);
+    } else {
+      fieldsKept.push(field);
+    }
+  }
+
+  // ── Custom Info-dictionary properties ──────────────────────────────────
+  // Templates and Office exports inject non-standard keys (Company, Manager,
+  // classification codes, …) that the standard setters never clear.
+  if (options.custom) {
+    const infoRef = pdfDoc.context.trailerInfo.Info;
+    const info = infoRef ? pdfDoc.context.lookup(infoRef, PDFDict) : undefined;
+    if (info) {
+      const STANDARD = new Set([
+        "Title", "Author", "Subject", "Keywords", "Creator",
+        "Producer", "CreationDate", "ModDate", "Trapped",
+      ]);
+      for (const key of info.keys()) {
+        const name = key.asString().replace(/^\//, "");
+        if (!STANDARD.has(name)) {
+          const field: MetadataField = {
+            category: "custom",
+            key: name,
+            label: `Custom property: ${name}`,
+            value: "(present)",
+            removable: true,
+          };
+          fieldsFound.push(field);
+          info.delete(key);
+          fieldsRemoved.push(field);
+        }
       }
     }
   }

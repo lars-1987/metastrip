@@ -135,6 +135,30 @@ export async function processDocx(
     }
   }
 
+  // Tracked changes (revision markup) live in word/document.xml, not in a
+  // metadata file. "Accept All Changes" in Word doesn't guarantee they're gone,
+  // and the deleted text inside <w:del>/<w:delText> is fully recoverable. Excise
+  // it: drop deletions/moves-from and format-change records entirely, and unwrap
+  // insertions/moves-to so the inserted text stays as normal content.
+  if (options.comments) {
+    const docFile = zip.file("word/document.xml");
+    if (docFile) {
+      const docXml = await docFile.async("text");
+      if (/<w:(ins|del|moveFrom|moveTo|rPrChange|pPrChange)\b/.test(docXml)) {
+        const field: MetadataField = {
+          category: "comments",
+          key: "tracked-changes",
+          label: "Tracked changes / revision history",
+          value: "(present)",
+          removable: true,
+        };
+        fieldsFound.push(field);
+        zip.file("word/document.xml", stripTrackedChanges(docXml));
+        fieldsRemoved.push(field);
+      }
+    }
+  }
+
   const cleanedArrayBuffer = await zip.generateAsync({ type: "arraybuffer" });
   const cleanedBlob = new Blob([cleanedArrayBuffer], { type: file.type });
 
@@ -152,4 +176,29 @@ export async function processDocx(
       processedAt: new Date(),
     },
   };
+}
+
+/**
+ * Excise Word tracked-change markup from a document.xml string. Targeted string
+ * surgery (not a full DOM reparse) so the rest of the document body is left
+ * byte-identical. The `\b` after each tag name avoids matching siblings like
+ * `w:delText` or `w:instrText`.
+ *
+ *  - `<w:del>` / `<w:moveFrom>`  → removed entirely (drops the deleted text)
+ *  - `w:rPrChange`/`w:pPrChange`/table+section change records → removed
+ *  - `<w:ins>` / `<w:moveTo>`    → unwrapped (the inserted text is kept)
+ */
+export function stripTrackedChanges(xml: string): string {
+  return xml
+    // Drop deleted / moved-from content (paired and self-closing).
+    .replace(/<w:(del|moveFrom)\b[^>]*>[\s\S]*?<\/w:\1>/g, "")
+    .replace(/<w:(del|moveFrom)\b[^>]*\/>/g, "")
+    // Drop formatting-revision records.
+    .replace(
+      /<w:(rPrChange|pPrChange|tblPrChange|tcPrChange|trPrChange|sectPrChange|tblGridChange)\b[^>]*>[\s\S]*?<\/w:\1>/g,
+      ""
+    )
+    .replace(/<w:(numberingChange|cellIns|cellDel|cellMerge)\b[^>]*\/>/g, "")
+    // Accept insertions / moves-to: unwrap, keeping the inserted text.
+    .replace(/<\/?w:(ins|moveTo)\b[^>]*>/g, "");
 }

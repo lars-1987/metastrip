@@ -4,6 +4,7 @@ import {
   stripCoreXml,
   parseAppXml,
   stripAppXml,
+  removeZipParts,
 } from "./office-common";
 import type {
   StripOptions,
@@ -108,6 +109,24 @@ export async function processPptx(
       });
       zip.remove("docProps/custom.xml");
     }
+  }
+
+  // Slide comments (modern per-slide + legacy) and their author records. Speaker
+  // notes are deliberately left alone — they're author-written content, not
+  // metadata.
+  if (options.comments) {
+    const { found, removed } = removeZipParts(
+      zip,
+      [
+        /^ppt\/comments\/.*\.xml$/i,
+        /^ppt\/authors\.xml$/i,
+        /^ppt\/commentAuthors\.xml$/i,
+      ],
+      "comments",
+      "Comment part"
+    );
+    fieldsFound.push(...found);
+    fieldsRemoved.push(...removed);
   }
 
   const cleanedArrayBuffer = await zip.generateAsync({ type: "arraybuffer" });
