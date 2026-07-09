@@ -51,6 +51,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/author/lars`,
+      lastModified: BUILD_DATE,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
   ];
 
   const seoPages: MetadataRoute.Sitemap = SEO_SLUGS.map((slug) => ({

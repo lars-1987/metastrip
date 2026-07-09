@@ -10,6 +10,7 @@ import InlineCTA from "@/components/blog/InlineCTA";
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import { getCategoryLabel } from "@/lib/blog-data";
 import type { BlogArticle } from "@/lib/blog-data";
+import { AUTHOR } from "@/lib/author";
 import { Icon } from "@/components/shared/Icon";
 
 function renderInlineMarkdown(text: string): ReactNode[] {
@@ -183,6 +184,15 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
           <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
             {article.readTime}
           </span>
+          <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
+            &middot;
+          </span>
+          <Link
+            href={AUTHOR.path}
+            className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)] no-underline transition-colors hover:text-[color:var(--accent-strong)]"
+          >
+            By {AUTHOR.firstName}
+          </Link>
         </div>
 
         <h1 className="text-[38px] font-extrabold leading-[1.2] tracking-[-0.03em] font-[family-name:var(--font-outfit)] text-[color:var(--text)] mb-5">
@@ -280,6 +290,32 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
               Open MetaStrip →
             </Link>
           </div>
+
+          {/* Author bio: E-E-A-T trust signal, links through to the author page */}
+          <Link
+            href={AUTHOR.path}
+            className="group mt-10 flex items-start gap-4 rounded-2xl bg-[var(--surface)] p-5 no-underline"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={AUTHOR.image}
+              alt={AUTHOR.name}
+              width={48}
+              height={48}
+              className="h-12 w-12 shrink-0 rounded-full object-cover"
+              style={{ boxShadow: "0 0 0 1px var(--border)" }}
+            />
+            <div className="min-w-0">
+              <div className="text-[12px] uppercase tracking-[0.1em] text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
+                Written by
+              </div>
+              <div className="text-[15px] font-semibold text-[color:var(--text)]">{AUTHOR.name}</div>
+              <p className="text-[13px] leading-relaxed text-[color:var(--text-muted)] mt-1">{AUTHOR.bio}</p>
+              <span className="mt-1.5 inline-block text-[13px] font-medium text-[color:var(--accent-strong)] transition-transform group-hover:translate-x-0.5">
+                More from {AUTHOR.firstName} &rarr;
+              </span>
+            </div>
+          </Link>
 
           {/* Related Posts */}
           <RelatedPosts currentId={article.id} />

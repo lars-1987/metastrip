@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ArticlePage from "@/components/blog/ArticlePage";
-import { getArticleBySlug, BLOG_SLUGS } from "@/lib/blog-data";
+import { getArticleBySlug, BLOG_SLUGS, type BlogArticle } from "@/lib/blog-data";
 import { OG_IMAGE } from "@/lib/og";
+import { AUTHOR, AUTHOR_ID } from "@/lib/author";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -43,6 +44,37 @@ function toIsoDate(date: string): string {
   return isNaN(parsed.getTime()) ? date : parsed.toISOString().slice(0, 10);
 }
 
+/** Strip inline markdown (bold, italic, code, links) down to the plain text a
+ *  reader sees, so FAQ JSON-LD mirrors the rendered page word-for-word, which
+ *  Google requires for FAQPage rich results. */
+function stripInlineMarkdown(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .trim();
+}
+
+/** Derive FAQ Q&A pairs from a post's visible "FAQ" section (blocks shaped
+ *  `**Question?** Answer`), so the structured data is generated from the exact
+ *  text on the page and can never drift out of sync with it. */
+function faqFromArticle(
+  article: BlogArticle
+): { question: string; answer: string }[] {
+  const section = article.content?.sections.find((s) => s.heading === "FAQ");
+  if (!section) return [];
+  return section.body
+    .split("\n\n")
+    .map((block) => {
+      const m = block.match(/^\s*\*\*(.+?)\*\*\s*([\s\S]*)$/);
+      return m
+        ? { question: stripInlineMarkdown(m[1]), answer: stripInlineMarkdown(m[2]) }
+        : null;
+    })
+    .filter((x): x is { question: string; answer: string } => x !== null);
+}
+
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
@@ -63,8 +95,12 @@ export default async function Page({ params }: PageProps) {
     image: "https://metastrip.app/opengraph-image",
     author: {
       "@type": "Person",
-      name: "Lars Holmstrom",
-      url: "https://x.com/larsitodev",
+      "@id": AUTHOR_ID,
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+      jobTitle: AUTHOR.jobTitle,
+      image: AUTHOR.imageUrl,
+      sameAs: AUTHOR.sameAs,
     },
     publisher: {
       "@type": "Organization",
@@ -89,14 +125,16 @@ export default async function Page({ params }: PageProps) {
     ],
   };
 
-  // FAQPage — only for posts that genuinely answer discrete questions.
-  // Primarily consumed by AI answer engines (Bing Copilot, AI Overviews).
+  // FAQPage, derived from the post's visible "FAQ" section so the structured
+  // data always mirrors what's on the page. Primarily consumed by AI answer
+  // engines (Bing Copilot, AI Overviews) and Google's FAQ rich results.
+  const faqPairs = faqFromArticle(article);
   const faqLd =
-    article.faq && article.faq.length > 0
+    faqPairs.length > 0
       ? {
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: article.faq.map((f) => ({
+          mainEntity: faqPairs.map((f) => ({
             "@type": "Question",
             name: f.question,
             acceptedAnswer: { "@type": "Answer", text: f.answer },
