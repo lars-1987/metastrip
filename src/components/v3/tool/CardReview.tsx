@@ -66,7 +66,7 @@ export function CardReview({
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
       <div className="mb-5 flex items-end justify-between gap-4">
-        <h3 className="v3-mono truncate text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        <h3 className="v3-mono min-w-0 truncate text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
           Found in <span className="text-[var(--text-body)]">{entry.file.name}</span>
         </h3>
         {!nothingFound && <Checkbox checked={allOn} onChange={onToggleAll} label="Remove all" />}
@@ -78,7 +78,7 @@ export function CardReview({
             No removable metadata found; this file is already clean.
           </div>
         ) : (
-          <div className="grid gap-3 lg:grid-cols-2 [grid-auto-flow:row_dense]">
+          <div className="grid min-w-0 gap-3 lg:grid-cols-2 [grid-auto-flow:row_dense]">
             {coords && <V3LocationMap coords={coords} />}
             {visibleCategories.map((cat) => {
               const cfg = CATEGORY_CONFIG[cat];
@@ -87,7 +87,7 @@ export function CardReview({
               return (
                 <div
                   key={cat}
-                  className={`rounded-[var(--radius-sm)] p-4 transition-colors ${
+                  className={`min-w-0 rounded-[var(--radius-sm)] p-4 transition-colors ${
                     on ? "bg-[var(--card)]" : "bg-[color-mix(in_srgb,var(--card)_45%,transparent)]"
                   }`}
                 >
@@ -112,9 +112,9 @@ export function CardReview({
                   {fields.length > 0 && (
                     <ul className="v3-mono mt-4 space-y-1">
                       {fields.slice(0, 6).map((f, i) => (
-                        <li key={i} className="flex gap-2 text-[12px]">
+                        <li key={i} className="flex min-w-0 gap-2 text-[12px]">
                           <span className="text-[var(--text-muted)] shrink-0">{f.label}:</span>
-                          <span className="text-[var(--text-body)] truncate">{f.value || "—"}</span>
+                          <span className="min-w-0 break-words text-[var(--text-body)]">{f.value || "—"}</span>
                         </li>
                       ))}
                       {fields.length > 6 && <li className="text-[12px] text-[var(--text-muted)]">+{fields.length - 6} more</li>}

@@ -95,7 +95,7 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
                   aria-expanded={isOpen}
                   className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left cursor-pointer"
                 >
-                  <span className="truncate text-[14px] text-[var(--text)]">cleaned_{e.file.name}</span>
+                  <span className="min-w-0 truncate text-[14px] text-[var(--text)]">cleaned_{e.file.name}</span>
                   <span className="flex shrink-0 items-center gap-3">
                     <span className="v3-mono text-[12px] text-[var(--success)]">−{r.fieldsRemoved.length} removed</span>
                     <span className="transition-transform duration-200" style={{ transform: isOpen ? "rotate(180deg)" : "none", color: "var(--text-muted)" }}>
@@ -122,9 +122,9 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
                               </div>
                               <ul className="v3-mono space-y-1">
                                 {fields.map((f, i) => (
-                                  <li key={i} className="flex gap-2 text-[12px]">
+                                  <li key={i} className="flex min-w-0 gap-2 text-[12px]">
                                     <span className="shrink-0 text-[var(--text-muted)]">{f.label}:</span>
-                                    <span className="truncate text-[var(--text-body)]">{valueToString(f.value)}</span>
+                                    <span className="min-w-0 break-words text-[var(--text-body)]">{valueToString(f.value)}</span>
                                   </li>
                                 ))}
                               </ul>

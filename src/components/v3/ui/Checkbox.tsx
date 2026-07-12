@@ -17,7 +17,7 @@ export function Checkbox({ checked, onChange, label, id }: CheckboxProps) {
       aria-label={label}
       id={id}
       onClick={() => onChange(!checked)}
-      className="group inline-flex items-center gap-3 cursor-pointer focus-visible:outline-none"
+      className="group inline-flex shrink-0 items-center gap-3 cursor-pointer focus-visible:outline-none"
     >
       <span
         className={`grid place-items-center h-6 w-6 shrink-0 rounded-[8px] transition-colors duration-150 ${
@@ -43,7 +43,7 @@ export function Checkbox({ checked, onChange, label, id }: CheckboxProps) {
         </svg>
       </span>
       {label && (
-        <span className="text-[15px] text-[var(--text-body)] group-hover:text-[var(--text)] transition-colors">
+        <span className="whitespace-nowrap text-[15px] text-[var(--text-body)] group-hover:text-[var(--text)] transition-colors">
           {label}
         </span>
       )}
