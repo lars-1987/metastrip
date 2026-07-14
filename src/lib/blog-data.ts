@@ -52,6 +52,51 @@ export const CATEGORIES: BlogCategory[] = [
 
 export const ARTICLES: BlogArticle[] = [
   {
+    id: "two-ways-a-photo-reveals-your-location",
+    slug: "two-ways-a-photo-reveals-your-location",
+    title:
+      "The Two Ways a Photo Reveals Where You Are (Only One of Which You Can Strip)",
+    excerpt:
+      "A photo gives away your location two ways: the GPS coordinates saved in the file, which you can strip, and the visible content of the image itself, which AI tools can now read to estimate where it was taken. Here’s the difference, and why stripping metadata is necessary but not a cloak of invisibility.",
+    category: "privacy",
+    date: "Jul 14, 2026",
+    readTime: "6 min read",
+    featured: true,
+    tags: ["GPS", "geolocation", "privacy", "OSINT", "metadata"],
+    coverGradient: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)",
+    coverIcon: "MapPin",
+    content: {
+      intro:
+        "There is a viral kind of video where someone is handed a random photo, a nondescript street, a field, a bus stop, and within seconds names the country, then the city, then the actual street. The best-known face of this is Trevor Rainbolt, a GeoGuessr player who can look at an unremarkable Google Street View image and place it with unsettling speed. He is not reading hidden data. He is reading the picture: the shape of the utility poles, the color of the soil, the style of road markings, the script on a distant sign, which side of the road the cars drive on.\n\nThat skill matters for your privacy, because it is now automated. What took Rainbolt years of practice, AI tools can now approximate in seconds, and that changes what “sharing a photo” actually exposes.",
+      sections: [
+        {
+          heading: "TL;DR",
+          body: "A photo can give away your location two completely different ways. The first is metadata: GPS coordinates quietly saved into the file, which you can remove, and which MetaStrip removes. The second is the picture itself: the buildings, street signs, plants, and light in the frame, which AI tools can now read to estimate where a photo was taken, often without any metadata at all. Stripping metadata is necessary and worth doing before you share anything. But it is not a cloak of invisibility, and understanding the difference is the point of this post.",
+        },
+        {
+          heading: "Two separate things, often confused",
+          body: "When people worry about photos revealing their location, they are usually thinking about one thing, metadata, when there are really two.\n\n**Location in the metadata.** Your phone writes data into every photo it takes, and that data often includes the exact GPS coordinates of where you were standing. This is invisible when you look at the picture, but trivially readable by anyone who opens the file’s metadata. This is the part you can remove. It is what MetaStrip strips, and it is why stripping before you share matters: post an unstripped photo from your backyard and you may be publishing your home address in a form no one can see but anyone can extract.\n\n**Location in the pixels.** This is the picture itself: everything visible in the frame. A street sign, a distinctive building, a mountain on the horizon, the particular design of a lamppost. None of this is metadata. It is just what the photo shows. And it cannot be stripped, because it is the photo. Remove it and you have no photo left.\n\nFor years, only dedicated experts could reliably turn pixels into a location. That is no longer true.",
+        },
+        {
+          heading: "What changed: reading location from pixels got automated",
+          body: "A tool called GeoSpy, built by a Boston company called Graylark Technologies, brought this into public view. It analyzes a photo’s visual content, architecture, vegetation, soil, signage, the spatial relationships between things, and estimates where the photo was taken. No GPS. No [EXIF](/blog/what-is-exif-data). Just the pixels. Its own marketing puts it plainly: no metadata required.\n\nIn January 2025, the investigative outlet 404 Media reported on GeoSpy, noting it could geolocate photos in seconds and had been used by members of the public, including some asking for help stalking specific people. The day after 404 Media contacted the founder for comment, the company shut off public access and pivoted to selling to law enforcement and government agencies. Later reporting showed police agencies including the Los Angeles Police Department and the Miami-Dade Sheriff’s Office had purchased access to the technology, since rebranded as Raven, with the company claiming accuracy within one to five meters in supported cities.\n\nYou do not need the professional tool, though. General-purpose AI models have picked up the same ability as a side effect of being trained on huge amounts of imagery. People have tested reasoning models by handing them a photo and simply saying “you’re in geoguessr,” and watched the model reason through the visual clues to a startlingly close guess, no metadata involved.\n\nThe security researcher Cooper Quintin of the Electronic Frontier Foundation summed up the stakes: geolocating photos from background clues has always been possible for skilled analysts, but doing it automatically, at scale, and for anyone, is a different kind of risk.",
+        },
+        {
+          heading: "Why this matters even after you strip metadata",
+          body: "Here is the uncomfortable implication, and the reason this post exists on a metadata-removal site.\n\nMost social platforms already strip metadata when you upload. We have written before about [which platforms do and do not](/blog/which-social-media-strips-metadata). So the GPS coordinates are often gone by the time your photo is public. That protects you from the first kind of exposure. It does nothing about the second. The visual clues are still right there in the image everyone can see, and those clues are exactly what visual geolocation reads. In fact the professional tools advertise this as a feature: they work on images that have already had their metadata stripped by social platforms and messaging apps.\n\nSo stripping metadata and being unlocatable are not the same thing. Stripping metadata closes one door, an important one, the one where your home coordinates travel silently inside a file. It does not close the window that is the photograph itself.",
+        },
+        {
+          heading: "What actually reduces your exposure",
+          body: "We are not going to pretend there is a tool that scrubs geographic meaning out of a photo. There isn’t, and anyone claiming otherwise is selling something. What helps is a mix of the removable and the behavioral:\n\n**Strip the metadata.** Always do this before sharing, especially for photos taken at home or anywhere you do not want pinned. It removes the exact-coordinate exposure completely and takes seconds; here’s [how to remove GPS location from your photos](/blog/how-to-remove-gps-location-from-photos). This is the part that is fully in your control.\n\n**Be aware of what is in frame.** For genuinely sensitive photos, the ones taken at home, think about what is visible: a house number, a distinctive view from a window, a street sign, a piece of mail, a recognizable landmark nearby. The more distinctive the background, the more locatable the photo, regardless of metadata.\n\n**Understand that “no location data” is not “no location.”** This is the mental model to carry. A stripped photo is safer, not anonymous. Treat the visible content of a sensitive photo as information, because to a tool trained on the whole world’s imagery, it is.\n\nStripping metadata is the necessary first step and the one you can fully control, so do it every time. Just know what it does and does not do. It removes the location the file is carrying. It cannot remove the location the photo is showing.",
+        },
+        {
+          heading: "FAQ",
+          body: "**Does removing metadata stop AI from finding a photo’s location?** No. Removing metadata deletes the GPS coordinates stored in the file, which is important and worth doing. But AI geolocation tools work from the visible content of the photo, architecture, vegetation, signage, so they can still estimate a location from a stripped image. The two are separate exposures.\n\n**How does AI figure out location without GPS data?** It reads visual clues in the image the same way an expert human would: building styles, road markings, plant life, soil color, signage, the position of the sun. Tools trained on millions of geotagged images match those clues to likely locations, often without needing any metadata at all.\n\n**Is metadata removal still worth it, then?** Yes, absolutely. Metadata carries the exact coordinates of where a photo was taken, often down to a few meters, in a form that is invisible but trivially extractable. Removing it closes that exposure completely and takes seconds. It is the necessary first step; it just is not the whole picture.\n\n**What is the difference between GeoSpy and GeoGuessr?** GeoGuessr is a game where players guess locations from Google Street View images using visual clues. GeoSpy (now Raven) is an AI tool that automates that same visual skill to estimate where a photo was taken, and is now sold mainly to law enforcement and government agencies after public access was withdrawn over misuse concerns.\n\n**How do I actually reduce my location exposure in photos?** Strip the metadata before sharing to remove the GPS coordinates, and for sensitive photos be conscious of what is visible in the frame, house numbers, distinctive views, nearby landmarks. The first part is fully in your control and quick to do; the second is about awareness, since visible detail cannot be removed without removing the photo.",
+        },
+      ],
+    },
+  },
+  {
     id: "remove-heic-metadata-iphone-photos",
     slug: "remove-heic-metadata-iphone-photos",
     title:
