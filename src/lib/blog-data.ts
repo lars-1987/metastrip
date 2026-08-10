@@ -40,6 +40,19 @@ export interface BlogArticle {
    * concise and self-contained.
    */
   faq?: { question: string; answer: string }[];
+  /**
+   * Optional contextual call-to-action, overriding the generic in-article CTA.
+   *
+   * Analytics (Aug 2026) showed the blog→tool click is the entire bottleneck:
+   * ~100% of readers who reach the tool complete a strip, but informational
+   * posts ("what is X", comparisons) produced almost no clicks at all, while
+   * action-intent posts ("how to remove X") converted ~36%. The generic
+   * "strip metadata from any photo" CTA reads as a non-sequitur to someone who
+   * just came to *understand* something. Set this to bridge from what the post
+   * explained to the thing the reader can now do, and point `href` at the tool
+   * page that matches the topic. Omit it to keep the generic CTA.
+   */
+  cta?: { headline: string; sub: string; href: string };
 }
 
 export const CATEGORIES: BlogCategory[] = [
@@ -427,6 +440,11 @@ export const ARTICLES: BlogArticle[] = [
     tags: ["PDF", "Adobe Acrobat", "metadata", "how-to", "batch"],
     coverGradient: "linear-gradient(135deg, #dc2626 0%, #ea580c 100%)",
     coverIcon: "FileText",
+    cta: {
+      headline: "No Acrobat subscription needed.",
+      sub: "Clear the author, producer and the XMP stream from a PDF in your browser, one file or a batch. Nothing uploaded.",
+      href: "/remove-author-from-pdf",
+    },
     content: {
       intro: "If you’ve got Adobe Acrobat and need to strip metadata from a PDF, there isn’t one button that does it. There are three different methods, and they don’t remove the same things. One clears the basic fields but leaves hidden metadata behind. One lets you pick what to remove. One nukes everything. Knowing which is which matters, because “I removed the author name” and “I removed everything that could identify this document” are very different outcomes.\n\nHere’s exactly how each Acrobat method works, how to deal with the batch problem (which Acrobat handles poorly), and when reaching for a free browser tool is the faster call.",
       sections: [
@@ -486,6 +504,11 @@ export const ARTICLES: BlogArticle[] = [
     tags: ["C2PA", "SynthID", "watermarking", "AI", "metadata"],
     coverGradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)",
     coverIcon: "Tag",
+    cta: {
+      headline: "The metadata layer is the part you can remove.",
+      sub: "See the C2PA manifest, XMP and IPTC markers in your own image, and strip them in your browser. Nothing uploaded.",
+      href: "/remove-ai-metadata",
+    },
     faq: [
       {
         question: "Is Adobe Firefly using content credentials or watermarking?",
@@ -616,6 +639,11 @@ export const ARTICLES: BlogArticle[] = [
     tags: ["AI", "detection", "C2PA", "accuracy", "creators"],
     coverGradient: "linear-gradient(135deg, #ef4444 0%, #c084fc 50%, #6366f1 100%)",
     coverIcon: "MagnifyingGlass",
+    cta: {
+      headline: "Which detectable markers is your image carrying?",
+      sub: "Drop it in to see the C2PA, XMP and EXIF data a detector would read, then remove what you choose. Free, in your browser.",
+      href: "/remove-ai-metadata",
+    },
     content: {
       intro: "A quick test before we start. Look at these claims, all from AI detection vendor marketing pages in 2026:\n\n“95%+ accuracy detecting AI-generated images.” “Authentic photographs correctly identified 97% of the time.” “Industry-leading accuracy across DALL-E, Midjourney, Flux, and Stable Diffusion.”\n\nNow look at what independent benchmarking and community testing actually finds: detection accuracy ranges from 65% to 90% depending on the tool and content type. False positive rates of 15% to 40% are common across community testing. In some adversarial conditions, paraphrased text, post-edited images, social media recompression, detection accuracy drops below 5%.\n\nBoth sets of numbers are true. They measure different things. The gap between them is where the entire AI detection industry currently lives.",
       sections: [
@@ -725,6 +753,11 @@ export const ARTICLES: BlogArticle[] = [
     tags: ["AI", "C2PA", "regulation", "creators"],
     coverGradient: "linear-gradient(135deg, #f97316 0%, #ef4444 50%, #c084fc 100%)",
     coverIcon: "Eye",
+    cta: {
+      headline: "Your AI images carry these markers by default.",
+      sub: "See the C2PA manifest and AI generation tags embedded in yours, and strip them in your browser. Free, no account.",
+      href: "/remove-ai-metadata",
+    },
     content: {
       intro: "Three months ago, AI image detection was inconsistent. Some platforms checked metadata, others ignored it. Some AI tools embedded provenance data, others didn’t. Whether your AI-assisted work got flagged was largely a matter of which platform you uploaded to and which generator you used.\n\nThat’s changed. Fast.\n\nBetween the C2PA standard becoming ISO/IEC 22144, the EU AI Act enforcement clock starting in August 2026, California’s SB 942 already in effect, and almost every major AI generator now embedding cryptographic provenance data by default, the landscape for creators using AI in their workflow has fundamentally shifted.",
       sections: [
@@ -841,6 +874,11 @@ export const ARTICLES: BlogArticle[] = [
     tags: ["EXIF", "GPS", "privacy", "photos"],
     coverGradient: "linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)",
     coverIcon: "MapPin",
+    cta: {
+      headline: "See what your own photo is carrying.",
+      sub: "Drop one in and read its GPS coordinates, device details and timestamps, then strip them. Free, nothing leaves your device.",
+      href: "/remove-metadata-from-photos",
+    },
     content: {
       intro: "You snapped a photo of your morning coffee, posted it to a forum, and moved on with your day. What you didn\u2019t realize is that the image file you uploaded contained your exact home coordinates, your phone\u2019s serial number, and the precise second the photo was taken.\n\nWelcome to the world of photo metadata.",
       sections: [
@@ -897,6 +935,11 @@ export const ARTICLES: BlogArticle[] = [
     tags: ["AI", "C2PA", "Midjourney", "DALL-E"],
     coverGradient: "linear-gradient(135deg, #c084fc 0%, #818cf8 100%)",
     coverIcon: "Robot",
+    cta: {
+      headline: "Does your image have a content credential?",
+      sub: "Drop it in to see the C2PA manifest it\u2019s carrying, then strip it. Free, in your browser, nothing uploaded.",
+      href: "/remove-ai-metadata",
+    },
     content: {
       intro: "If you\u2019ve generated an image with Midjourney, DALL-E, Adobe Firefly, or ChatGPT in 2026, that image almost certainly contains invisible metadata identifying it as AI-generated. It\u2019s not a watermark you can see. It\u2019s not a label on the image. It\u2019s cryptographic data embedded directly in the file, and a growing number of platforms, search engines, and stock sites are checking for it.\n\nHere\u2019s what you need to understand.",
       sections: [

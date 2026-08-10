@@ -247,7 +247,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
                 {section.heading}
               </h2>
               {section.body.split("\n\n").map((block, j) => renderBlock(block, j))}
-              {i === 1 && <InlineCTA />}
+              {i === 1 && <InlineCTA {...(article.cta ?? {})} />}
             </div>
           ))}
 
