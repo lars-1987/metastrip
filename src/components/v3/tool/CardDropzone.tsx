@@ -7,6 +7,8 @@ import { Button } from "../ui/Button";
 
 interface Props {
   onFiles: (files: File[]) => void;
+  /** Files the dropzone turned away, so the tool can message and track them. */
+  onRejected?: (files: File[]) => void;
   busy: boolean;
   error: string | null;
 }
@@ -79,10 +81,11 @@ function FormatChip({ ext, kind }: { ext: string; kind: Kind }) {
   );
 }
 
-export function CardDropzone({ onFiles, busy, error }: Props) {
+export function CardDropzone({ onFiles, onRejected, busy, error }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { isDragOver, dragHandlers } = useDropZone({
     onFiles,
+    onRejected,
     acceptedTypes: ACCEPTED_TYPES,
   });
 

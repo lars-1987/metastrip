@@ -97,7 +97,7 @@ export function V3Tool() {
       <div ref={slotRefs[0]} className="v3-card-slot" style={slotStyle(0)} data-active="true">
         <div ref={contentRefs[0]} className="h-full min-h-0">
           {t.phase === "drop" ? (
-            <CardDropzone onFiles={t.addFiles} busy={t.busy} error={t.addError} />
+            <CardDropzone onFiles={t.addFiles} onRejected={t.rejectFiles} busy={t.busy} error={t.addError} />
           ) : (
             <FilesCard
               entries={t.entries}

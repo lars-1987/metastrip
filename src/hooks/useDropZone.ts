@@ -6,9 +6,16 @@ import { isAcceptedForUpload } from "@/lib/file-utils";
 interface UseDropZoneOptions {
   onFiles: (files: File[]) => void;
   acceptedTypes: string[];
+  /**
+   * Files the dropzone turned away. Optional so existing consumers keep their
+   * current behaviour; without it an unsupported drop is silently discarded,
+   * which leaves the user with no feedback and us with no signal about which
+   * formats people are actually bringing.
+   */
+  onRejected?: (files: File[]) => void;
 }
 
-export function useDropZone({ onFiles, acceptedTypes }: UseDropZoneOptions) {
+export function useDropZone({ onFiles, acceptedTypes, onRejected }: UseDropZoneOptions) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const onDragOver = useCallback((e: DragEvent) => {
@@ -24,12 +31,14 @@ export function useDropZone({ onFiles, acceptedTypes }: UseDropZoneOptions) {
     (e: DragEvent) => {
       e.preventDefault();
       setIsDragOver(false);
-      const files = Array.from(e.dataTransfer.files).filter((f) =>
-        isAcceptedForUpload(f, acceptedTypes)
-      );
-      if (files.length) onFiles(files);
+      const dropped = Array.from(e.dataTransfer.files);
+      if (!dropped.length) return;
+      const accepted = dropped.filter((f) => isAcceptedForUpload(f, acceptedTypes));
+      const rejected = dropped.filter((f) => !isAcceptedForUpload(f, acceptedTypes));
+      if (rejected.length) onRejected?.(rejected);
+      if (accepted.length) onFiles(accepted);
     },
-    [onFiles, acceptedTypes]
+    [onFiles, onRejected, acceptedTypes]
   );
 
   return {

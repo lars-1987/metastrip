@@ -5,7 +5,7 @@ import { processFile } from "@/lib/processing/coordinator";
 import { detectFileType, getFileCategory } from "@/lib/file-utils";
 import { BATCH_LIMIT, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
-import { trackFileAdded, trackFileStripped, trackFileDownloaded } from "@/lib/analytics";
+import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileFailed } from "@/lib/analytics";
 import { prefersReducedMotion } from "../motion";
 
 export type Phase = "drop" | "review" | "done";
@@ -48,8 +48,29 @@ export function useV3Tool() {
   const addFiles = useCallback(async (incoming: File[]) => {
     setAddError(null);
     const supported = incoming.filter((f) => detectFileType(f) !== null);
+
+    // Anything we turned away is worth knowing about: the rejected mime types
+    // are a direct read on which formats to support next.
+    for (const f of incoming.filter((f) => detectFileType(f) === null)) {
+      trackFileFailed({
+        file_type: f.type || "unknown",
+        file_size: f.size,
+        stage: "add",
+        reason: "unsupported_type",
+      });
+    }
+
     if (supported.length === 0) { setAddError("Those file types aren't supported yet."); return; }
-    if (supported.length > BATCH_LIMIT) { setAddError(`Up to ${BATCH_LIMIT} files at a time.`); return; }
+    if (supported.length > BATCH_LIMIT) {
+      trackFileFailed({
+        file_type: supported.map((f) => f.type).join(","),
+        file_size: supported.reduce((s, f) => s + f.size, 0),
+        stage: "add",
+        reason: "batch_limit",
+      });
+      setAddError(`Up to ${BATCH_LIMIT} files at a time.`);
+      return;
+    }
 
     setBusy(true);
     trackFileAdded({
@@ -61,6 +82,14 @@ export function useV3Tool() {
     const scanned: ToolEntry[] = [];
     for (const file of supported) {
       const r = await processFile(file, { ...ALL_ON });
+      if (r.error) {
+        trackFileFailed({
+          file_type: file.type || "unknown",
+          file_size: file.size,
+          stage: "scan",
+          reason: r.error,
+        });
+      }
       scanned.push({
         id: `${file.name}-${file.size}-${scanned.length}-${file.lastModified}`,
         file,
@@ -74,6 +103,20 @@ export function useV3Tool() {
     setSelectedId(scanned[0]?.id ?? null);
     setPhase("review");
     setBusy(false);
+  }, []);
+
+  /** Files the dropzone turned away before they reached addFiles. Same message
+   *  and same telemetry as an unsupported pick from the file input. */
+  const rejectFiles = useCallback((rejected: File[]) => {
+    for (const f of rejected) {
+      trackFileFailed({
+        file_type: f.type || "unknown",
+        file_size: f.size,
+        stage: "add",
+        reason: "unsupported_type",
+      });
+    }
+    setAddError("Those file types aren't supported yet.");
   }, []);
 
   const removeEntry = useCallback((id: string) => {
@@ -119,6 +162,14 @@ export function useV3Tool() {
         const r = await processFile(e.file, { ...e.options });
         cleanedBlob = r.cleanedBlob;
         finalReport = r.report;
+        if (r.error) {
+          trackFileFailed({
+            file_type: e.file.type || "unknown",
+            file_size: e.file.size,
+            stage: "strip",
+            reason: r.error,
+          });
+        }
       }
       trackFileStripped({
         file_type: e.file.type,
@@ -198,6 +249,6 @@ export function useV3Tool() {
   return {
     phase, entries, selectedId, activeEntry, addError, busy, running, tickedIds,
     visibleCategories, allFilesAllOn,
-    addFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download,
+    addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download,
   };
 }
