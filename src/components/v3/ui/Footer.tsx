@@ -44,9 +44,9 @@ export function Footer() {
     <footer ref={ref} className="relative z-0 w-full lg:sticky lg:bottom-0">
       <div className="relative px-6 lg:px-12 pt-20 lg:pt-24 pb-12 overflow-hidden" style={{ background: "var(--bg)" }}>
         <div className="relative z-10 max-w-6xl mx-auto flex flex-col gap-14">
-          <div className="grid grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
             {/* Brand block */}
-            <FadeIn revealed={revealed} delay={0} className="col-span-2 lg:col-span-4">
+            <FadeIn revealed={revealed} delay={0} className="sm:col-span-2 lg:col-span-4">
               <Link href="/" className="inline-flex items-center gap-2.5 no-underline mb-5">
                 <MetaStripIcon size={32} />
                 <span className="font-extrabold text-[20px] tracking-[-0.02em]" style={{ color: "var(--text)" }}>
@@ -140,7 +140,7 @@ function LinkColumn({ label, links }: { label: string; links: { label: string; h
               className="group flex items-center gap-1 text-[13px] no-underline transition-colors hover:text-[var(--text)]"
               style={{ color: "var(--text-secondary)" }}
             >
-              <span className="truncate transition-transform duration-200 ease-out group-hover:translate-x-1">{link.label}</span>
+              <span className="line-clamp-2 transition-transform duration-200 ease-out group-hover:translate-x-1">{link.label}</span>
               <svg
                 width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"
                 className="shrink-0 -translate-x-1.5 opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100"

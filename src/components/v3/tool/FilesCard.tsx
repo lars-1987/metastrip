@@ -69,7 +69,7 @@ export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, runnin
                     <button
                       onClick={(ev) => { ev.stopPropagation(); onRemoveEntry(e.id); }}
                       aria-label={`Remove ${e.file.name}`}
-                      className="shrink-0 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors text-lg leading-none"
+                      className="-m-2.5 shrink-0 p-2.5 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors text-lg leading-none"
                     >
                       ×
                     </button>
