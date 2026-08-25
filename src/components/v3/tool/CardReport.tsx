@@ -122,8 +122,8 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
                               </div>
                               <ul className="v3-mono space-y-1">
                                 {fields.map((f, i) => (
-                                  <li key={i} className="flex min-w-0 gap-2 text-[12px]">
-                                    <span className="shrink-0 text-[var(--text-muted)]">{f.label}:</span>
+                                  <li key={i} className="flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 text-[12px]">
+                                    <span className="max-w-full shrink-0 text-[var(--text-muted)]">{f.label}:</span>
                                     <span className="min-w-0 break-words text-[var(--text-body)]">{valueToString(f.value)}</span>
                                   </li>
                                 ))}
