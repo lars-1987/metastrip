@@ -73,7 +73,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove Metadata from Photos",
     subtitle:
       "Strip GPS coordinates, camera info, AI generation tags, and hidden data from your images, instantly, privately, for free.",
-    heroLabel: "FREE TOOL, NO UPLOAD REQUIRED",
+    heroLabel: "REMOVE PHOTO METADATA: FREE, NOTHING UPLOADED",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "ImageSquare",
@@ -236,7 +236,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove Author from PDF",
     subtitle:
       "Strip author names, creator applications, company info, and hidden document properties from PDF files, instantly, in your browser.",
-    heroLabel: "FREE TOOL: FILES STAY ON YOUR DEVICE",
+    heroLabel: "REMOVE PDF AUTHOR & METADATA: FREE, NOTHING UPLOADED",
     acceptedTypes: ["application/pdf"],
     acceptedLabel: "PDF files",
     fileIcon: "FileText",
@@ -386,7 +386,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Strip EXIF Data Online",
     subtitle:
       "Remove EXIF, IPTC, XMP, and all embedded metadata from photos, free, private, no upload required.",
-    heroLabel: "FREE EXIF REMOVER: 100% CLIENT-SIDE",
+    heroLabel: "STRIP EXIF DATA: FREE, 100% CLIENT-SIDE",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "ImageSquare",
@@ -560,7 +560,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove C2PA Metadata",
     subtitle:
       "Strip C2PA content credentials from JPEG, PNG, WebP, and HEIC images in your browser. Unlimited files, no signup, nothing uploaded.",
-    heroLabel: "REMOVE C2PA CONTENT CREDENTIALS: 100% CLIENT-SIDE",
+    heroLabel: "REMOVE C2PA CONTENT CREDENTIALS: UNLIMITED, NOTHING UPLOADED",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
     acceptedLabel: "JPEG · PNG · WebP · HEIC",
     fileIcon: "LockKey",
@@ -723,7 +723,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove AI Metadata",
     subtitle:
       "Strip C2PA content credentials, XMP AI generation tags, and tool fingerprints from Midjourney, DALL-E, Stable Diffusion, and Adobe Firefly images.",
-    heroLabel: "STRIP AI FINGERPRINTS: 100% CLIENT-SIDE",
+    heroLabel: "STRIP AI GENERATION TAGS: FREE, 100% CLIENT-SIDE",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "Robot",
@@ -891,7 +891,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Strip Metadata from Word Documents",
     subtitle:
       "Remove author names, tracked changes, comments, company info, and hidden properties from DOCX files, privately, in your browser.",
-    heroLabel: "FREE TOOL: NO UPLOAD, NO ACCOUNT",
+    heroLabel: "STRIP WORD DOCUMENT METADATA: FREE, NOTHING UPLOADED",
     acceptedTypes: [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ],
@@ -1043,7 +1043,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove GPS Location from Photos",
     subtitle:
       "Strip embedded GPS coordinates, altitude, speed, and direction data from your photos before sharing them online.",
-    heroLabel: "PROTECT YOUR LOCATION: FREE & PRIVATE",
+    heroLabel: "REMOVE GPS LOCATION FROM PHOTOS: FREE & PRIVATE",
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
     acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
     fileIcon: "MapPin",
@@ -1189,7 +1189,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     title: "Remove Metadata Before Sharing Online",
     subtitle:
       "Clean hidden data from photos and documents before uploading, emailing, or posting; protect your privacy in seconds.",
-    heroLabel: "CLEAN YOUR FILES: SHARE SAFELY",
+    heroLabel: "CLEAN FILES BEFORE SHARING: FREE, NOTHING UPLOADED",
     acceptedTypes: [
       "image/jpeg",
       "image/png",

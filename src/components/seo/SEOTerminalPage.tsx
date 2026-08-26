@@ -17,8 +17,18 @@ export function SEOTerminalPage({ config }: SEOTerminalPageProps) {
       <div className="relative z-10 bg-[var(--bg)] shadow-[0_40px_70px_-30px_rgba(0,0,0,0.45)]">
         <TopNav />
 
+        {/* Query confirmation, above the tool. Someone arriving from search sees a
+            dropzone first; without this the page never says which job it does
+            until well below the fold. The h1 still lives under the tool so the
+            tool stays the first thing you can actually use. */}
+        <section className="px-6 pt-6 md:pt-7 text-center">
+          <p className="v3-mono text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+            {config.heroLabel}
+          </p>
+        </section>
+
         {/* Tool first, full-bleed and evenly framed, just like the home page. */}
-        <section className="relative px-5 pt-5 md:px-[116px] md:pt-8 md:min-h-[calc(100svh-84px)]">
+        <section className="relative px-5 pt-4 md:px-[116px] md:pt-5 md:min-h-[calc(100svh-132px)]">
           <div className="w-full">
             <V3Tool />
           </div>
@@ -27,9 +37,6 @@ export function SEOTerminalPage({ config }: SEOTerminalPageProps) {
         {/* Page heading + subtitle, below the tool. */}
         <section className="px-6 lg:px-8 pt-16 lg:pt-24 pb-4 text-center">
           <div className="mx-auto max-w-3xl">
-            <div className="v3-mono mb-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              {config.heroLabel}
-            </div>
             <h1
               className="mb-5 font-extrabold leading-[1.05] tracking-[-0.04em] text-[var(--text)]"
               style={{ fontSize: "clamp(40px, 5.5vw, 64px)" }}
