@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { processFile } from "@/lib/processing/coordinator";
-import { detectFileType, getFileCategory } from "@/lib/file-utils";
-import { BATCH_LIMIT, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
+import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
+import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileFailed } from "@/lib/analytics";
 import { prefersReducedMotion } from "../motion";
@@ -46,7 +46,7 @@ export function useV3Tool() {
   const [tickedIds, setTickedIds] = useState<string[]>([]);
   /** Live scan progress. Scanning is the slow part (~500ms/file), so a large
    *  batch needs real feedback rather than one static "reading files" label. */
-  const [scanProgress, setScanProgress] = useState<{ done: number; total: number } | null>(null);
+  const [scanProgress, setScanProgress] = useState<{ done: number; total: number; large: boolean } | null>(null);
 
   const addFiles = useCallback(async (incoming: File[]) => {
     setAddError(null);
@@ -75,6 +75,20 @@ export function useV3Tool() {
       return;
     }
 
+    const totalBytes = supported.reduce((s, f) => s + f.size, 0);
+    if (totalBytes > BATCH_SIZE_HARD_CAP_BYTES) {
+      trackFileFailed({
+        file_type: supported.map((f) => f.type).join(","),
+        file_size: totalBytes,
+        stage: "add",
+        reason: "batch_size_cap",
+      });
+      setAddError(
+        `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(BATCH_SIZE_HARD_CAP_BYTES)} at a time.`
+      );
+      return;
+    }
+
     setBusy(true);
     trackFileAdded({
       file_type: supported.map((f) => f.type).join(","),
@@ -82,7 +96,8 @@ export function useV3Tool() {
       file_count: supported.length,
     });
 
-    setScanProgress({ done: 0, total: supported.length });
+    const large = totalBytes > BATCH_SIZE_WARN_BYTES;
+    setScanProgress({ done: 0, total: supported.length, large });
 
     const scanned: ToolEntry[] = [];
     for (const file of supported) {
@@ -106,7 +121,7 @@ export function useV3Tool() {
       // Publish as we go: each file appears in the list the moment it is really
       // done, so a 75-file batch shows genuine progress instead of looking hung.
       setEntries([...scanned]);
-      setScanProgress({ done: scanned.length, total: supported.length });
+      setScanProgress({ done: scanned.length, total: supported.length, large });
       if (scanned.length === 1) {
         setSelectedId(scanned[0].id);
         setPhase("review");

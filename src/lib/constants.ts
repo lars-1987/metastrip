@@ -70,7 +70,17 @@ export const ACCEPTED_TYPES = [
   "audio/wave",
 ];
 
-export const BATCH_LIMIT = 20;
+export const BATCH_LIMIT = 50;
+
+/**
+ * Total bytes across a batch. Count alone is a poor guard: 50 photos and 50
+ * videos are wildly different loads. Profiled Aug 2026 on desktop Chrome, a
+ * 75-file / 423 MB batch completed scan + strip + zip in ~12s with no trouble,
+ * so the ceiling sits below what desktop can do to leave mobile headroom, which
+ * has far less memory and was not profiled.
+ */
+export const BATCH_SIZE_WARN_BYTES = 300 * 1024 * 1024; // 300 MB, flagged but allowed
+export const BATCH_SIZE_HARD_CAP_BYTES = 750 * 1024 * 1024; // 750 MB, refused
 
 /** Soft warning threshold — videos above this take longer + use more memory */
 export const VIDEO_SIZE_WARN_BYTES = 250 * 1024 * 1024; // 250 MB

@@ -11,7 +11,7 @@ interface Props {
   running?: boolean;
   tickedIds?: string[];
   /** Set while files are still being scanned, so the header can count up. */
-  scanProgress?: { done: number; total: number } | null;
+  scanProgress?: { done: number; total: number; large: boolean } | null;
 }
 
 function Spinner() {
@@ -38,7 +38,7 @@ export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, runnin
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-7">
       <h3 className="v3-mono mb-5 text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
         {scanProgress
-          ? `reading ${scanProgress.done} of ${scanProgress.total}…`
+          ? `reading ${scanProgress.done} of ${scanProgress.total}…${scanProgress.large ? " large batch, this takes a moment" : ""}`
           : `${entries.length} ${entries.length === 1 ? "file" : "files"}`}
         {selectable && !scanProgress && <span className="ml-2 normal-case tracking-normal text-[var(--text-muted)]">· tap to review each</span>}
       </h3>
