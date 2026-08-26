@@ -10,6 +10,8 @@ interface Props {
   onRemoveEntry?: (id: string) => void;
   running?: boolean;
   tickedIds?: string[];
+  /** Set while files are still being scanned, so the header can count up. */
+  scanProgress?: { done: number; total: number } | null;
 }
 
 function Spinner() {
@@ -29,14 +31,16 @@ function Tick() {
 /** Left column once files are loaded — click a file to review/select its
  *  metadata in the panel to the right. During removal each file shows a
  *  spinner that flips to a tick, one after another. */
-export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, running, tickedIds = [] }: Props) {
+export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, running, tickedIds = [], scanProgress }: Props) {
   const selectable = !running && !!onSelect && entries.length > 1;
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-7">
       <h3 className="v3-mono mb-5 text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-        {entries.length} {entries.length === 1 ? "file" : "files"}
-        {selectable && <span className="ml-2 normal-case tracking-normal text-[var(--text-muted)]">· tap to review each</span>}
+        {scanProgress
+          ? `reading ${scanProgress.done} of ${scanProgress.total}…`
+          : `${entries.length} ${entries.length === 1 ? "file" : "files"}`}
+        {selectable && !scanProgress && <span className="ml-2 normal-case tracking-normal text-[var(--text-muted)]">· tap to review each</span>}
       </h3>
       <ul className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 -mr-1">
         {entries.map((e) => {

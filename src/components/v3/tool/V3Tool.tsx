@@ -101,6 +101,7 @@ export function V3Tool() {
           ) : (
             <FilesCard
               entries={t.entries}
+              scanProgress={t.scanProgress}
               selectedId={t.selectedId}
               onSelect={t.phase === "review" ? t.selectEntry : undefined}
               onRemoveEntry={t.phase === "review" ? t.removeEntry : undefined}

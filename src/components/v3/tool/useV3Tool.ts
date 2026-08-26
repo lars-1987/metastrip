@@ -44,6 +44,9 @@ export function useV3Tool() {
   const [busy, setBusy] = useState(false);
   const [running, setRunning] = useState(false);
   const [tickedIds, setTickedIds] = useState<string[]>([]);
+  /** Live scan progress. Scanning is the slow part (~500ms/file), so a large
+   *  batch needs real feedback rather than one static "reading files" label. */
+  const [scanProgress, setScanProgress] = useState<{ done: number; total: number } | null>(null);
 
   const addFiles = useCallback(async (incoming: File[]) => {
     setAddError(null);
@@ -79,6 +82,8 @@ export function useV3Tool() {
       file_count: supported.length,
     });
 
+    setScanProgress({ done: 0, total: supported.length });
+
     const scanned: ToolEntry[] = [];
     for (const file of supported) {
       const r = await processFile(file, { ...ALL_ON });
@@ -98,10 +103,16 @@ export function useV3Tool() {
         options: { ...ALL_ON },
         error: r.error,
       });
+      // Publish as we go: each file appears in the list the moment it is really
+      // done, so a 75-file batch shows genuine progress instead of looking hung.
+      setEntries([...scanned]);
+      setScanProgress({ done: scanned.length, total: supported.length });
+      if (scanned.length === 1) {
+        setSelectedId(scanned[0].id);
+        setPhase("review");
+      }
     }
-    setEntries(scanned);
-    setSelectedId(scanned[0]?.id ?? null);
-    setPhase("review");
+    setScanProgress(null);
     setBusy(false);
   }, []);
 
@@ -184,7 +195,10 @@ export function useV3Tool() {
     // strip is near-instant, but an instant jump to "done" reads as suspicious.
     if (!prefersReducedMotion()) {
       const ids = entries.map((e) => e.id);
-      const stagger = Math.min(420, Math.max(150, Math.round(1500 / ids.length)));
+      // Spread the ticks over a fixed window rather than a fixed per-file delay.
+      // The strip itself is near-instant, so this is reassurance, not progress;
+      // at 75 files a per-file delay added ~12s on top of a scan already watched.
+      const stagger = Math.min(420, Math.max(16, Math.round(1500 / ids.length)));
       await sleep(450); // everything spins first
       for (let i = 0; i < ids.length; i++) {
         setTickedIds(ids.slice(0, i + 1));
@@ -247,7 +261,7 @@ export function useV3Tool() {
   const allFilesAllOn = useMemo(() => entries.every((e) => optionsAllOn(e.options)), [entries]);
 
   return {
-    phase, entries, selectedId, activeEntry, addError, busy, running, tickedIds,
+    phase, entries, selectedId, activeEntry, addError, busy, running, tickedIds, scanProgress,
     visibleCategories, allFilesAllOn,
     addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download,
   };
