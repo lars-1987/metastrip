@@ -554,6 +554,169 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       "Remove EXIF, IPTC, XMP, and GPS metadata from photos. See what's embedded, then strip it. Free, in your browser, no upload.",
   },
 
+  "remove-c2pa-metadata": {
+    slug: "remove-c2pa-metadata",
+    keyword: "remove C2PA metadata from images",
+    title: "Remove C2PA Metadata",
+    subtitle:
+      "Strip C2PA content credentials from JPEG, PNG, WebP, and HEIC images in your browser. Unlimited files, no signup, nothing uploaded.",
+    heroLabel: "REMOVE C2PA CONTENT CREDENTIALS: 100% CLIENT-SIDE",
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
+    acceptedLabel: "JPEG · PNG · WebP · HEIC",
+    fileIcon: "LockKey",
+    metadataCategories: [
+      {
+        category: "ai",
+        icon: "LockKey",
+        color: "#c084fc",
+        label: "C2PA Manifest",
+        fields: [
+          { label: "c2pa.claim_generator", value: "Adobe Firefly 3.0" },
+          { label: "c2pa.action", value: "c2pa.created" },
+          { label: "c2pa.ai_generated", value: "true" },
+          { label: "instance_id", value: "xmp:iid:9f3b2a41..." },
+        ],
+      },
+      {
+        category: "ai",
+        icon: "ShieldCheck",
+        color: "#a78bfa",
+        label: "Signature & Provenance",
+        fields: [
+          { label: "signature.issuer", value: "Adobe Inc." },
+          { label: "signature.alg", value: "ps256" },
+          { label: "c2pa.digest", value: "sha256:a4f2e8..." },
+          { label: "claim.created", value: "2026-02-28T22:14:08Z" },
+        ],
+      },
+      {
+        category: "custom",
+        icon: "Tag",
+        color: "#38bdf8",
+        label: "XMP Provenance Block",
+        fields: [
+          { label: "xmp:CreatorTool", value: "Adobe Firefly" },
+          {
+            label: "Iptc4xmpExt:DigitalSourceType",
+            value: "trainedAlgorithmicMedia",
+          },
+          { label: "dcterms:provenance", value: "c2pa manifest store" },
+        ],
+      },
+      {
+        category: "device",
+        icon: "Camera",
+        color: "#818cf8",
+        label: "Capture Credentials",
+        fields: [
+          { label: "c2pa.capture_device", value: "Google Pixel 10" },
+          { label: "exif:Make", value: "Google" },
+          { label: "c2pa.hash.data", value: "signed at capture" },
+        ],
+      },
+    ],
+    explainerTabs: [
+      {
+        id: "what",
+        label: "What C2PA Is",
+        icon: "LockKey",
+        color: "#c084fc",
+        title: "A signed record attached to your file",
+        description:
+          "C2PA (Coalition for Content Provenance and Authenticity) content credentials are a cryptographically signed manifest embedded in an image. It records what produced the file, which tool edited it, when, and whether AI was involved. Adobe markets it as Content Credentials.",
+        example: {
+          label: "Where it lives",
+          value:
+            "JUMBF boxes in JPEG, a caBX chunk in PNG, a C2PA chunk in WebP, a uuid box in HEIC",
+        },
+        risk: "The manifest travels with the file, so anyone who receives it can read your tool, timestamps, and edit history.",
+      },
+      {
+        id: "removable",
+        label: "Why It Strips",
+        icon: "ShieldCheck",
+        color: "#a78bfa",
+        title: "It is metadata, not pixels",
+        description:
+          "The manifest sits in the file's metadata container, alongside the image rather than inside it. That is what makes it removable without touching a single pixel. Your image comes out visually identical, just without the provenance record attached.",
+        example: {
+          label: "What changes",
+          value:
+            "Manifest removed, image data byte-for-byte unchanged, file slightly smaller",
+        },
+        risk: "Re-saving in another app can also drop it, but that usually recompresses and costs you quality.",
+      },
+      {
+        id: "formats",
+        label: "Every Format",
+        icon: "ImageSquare",
+        color: "#38bdf8",
+        title: "Including JPEG and HEIC",
+        description:
+          "C2PA binds differently in each format, which is why many tools only handle one or two. MetaStrip reads all four bindings: APP11 JUMBF segments in JPEG, the caBX chunk in PNG, the C2PA RIFF chunk in WebP, and the uuid box in HEIC, the format every iPhone shoots by default.",
+        example: {
+          label: "Supported",
+          value: "JPEG, PNG, WebP, HEIC, plus EXIF, XMP and IPTC alongside",
+        },
+        risk: "A tool that only supports PNG and WebP leaves your camera photos and iPhone shots untouched.",
+      },
+      {
+        id: "limits",
+        label: "What It Cannot Do",
+        icon: "Eye",
+        color: "#f472b6",
+        title: "Pixel watermarks are a separate layer",
+        description:
+          "Removing the C2PA manifest removes the metadata layer. It does not remove an invisible pixel watermark such as Google's SynthID, which is woven into the image data itself. No metadata tool can, and any tool claiming otherwise is overstating what is possible.",
+        example: {
+          label: "Honest scope",
+          value:
+            "Metadata layer removed; pixel-level watermarks are untouched",
+        },
+        risk: "Know which layer you are dealing with before assuming an image carries no markers at all.",
+      },
+    ],
+    seoContent: {
+      heading: "How to remove C2PA metadata from an image",
+      paragraphs: [
+        "Drop an image into the tool above. MetaStrip reads the C2PA manifest directly in your browser, shows you exactly what provenance data is embedded, and removes it when you confirm. The cleaned file downloads straight back to you. Nothing is uploaded to a server at any point, which matters when the whole reason you are stripping provenance is that you would rather not share it.",
+        "C2PA content credentials are embedded automatically by a growing list of sources: Adobe Firefly, Photoshop and Lightroom exports, OpenAI's DALL-E and Sora, Google Gemini and Imagen, and at the hardware level by cameras from Sony, Nikon and Leica, plus the Google Pixel, which signs every photo it takes. If your image came from any of those, it very likely carries a manifest whether you knew about it or not.",
+        "Because the manifest lives in the file's metadata container rather than in the pixels, removing it leaves the image visually identical. MetaStrip strips the C2PA manifest along with the EXIF, XMP and IPTC data sitting beside it, so you are not left with your camera model and GPS coordinates after clearing the provenance record.",
+        "One honest limit: removing the C2PA manifest removes the metadata-based marker. It does not remove a pixel-level watermark such as SynthID, which is embedded in the image data itself and cannot be stripped by any metadata tool. Most automated checks read the manifest, so removal is usually sufficient, but it is worth knowing the difference.",
+      ],
+    },
+    supportedFormats: [
+      {
+        ext: "JPEG",
+        desc: "APP11 JUMBF manifest, XMP provenance block, EXIF alongside",
+        color: "#c084fc",
+      },
+      {
+        ext: "PNG",
+        desc: "caBX manifest chunk, iTXt XMP provenance, text chunks",
+        color: "#a78bfa",
+      },
+      {
+        ext: "WebP",
+        desc: "C2PA RIFF chunk, XMP provenance, EXIF chunk",
+        color: "#38bdf8",
+      },
+      {
+        ext: "HEIC",
+        desc: "C2PA uuid box, Exif and XMP items, iPhone's default format",
+        color: "#818cf8",
+      },
+    ],
+    batchCta: {
+      text: "Strip C2PA Free →",
+      subtext:
+        "Unlimited strips, no daily cap, no account, nothing uploaded.",
+    },
+    metaTitle:
+      "Remove C2PA Metadata from Images: Free & Unlimited | MetaStrip",
+    metaDescription:
+      "Remove C2PA content credentials from JPEG, PNG, WebP and HEIC images. Runs entirely in your browser, nothing uploaded, unlimited files, no signup.",
+  },
   "remove-ai-metadata": {
     slug: "remove-ai-metadata",
     keyword: "remove AI metadata from images",
@@ -717,9 +880,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove C2PA Metadata & AI Tags from Images: Free | MetaStrip",
+      "Remove AI Metadata & Generation Tags from Images | MetaStrip",
     metaDescription:
-      "Strip C2PA content credentials and AI generation tags from Midjourney, DALL\u00b7E, ChatGPT, and Firefly images. 100% browser-based. No upload, no signup.",
+      "Strip AI generation tags, XMP creator-tool fields and IPTC markers from Midjourney, DALL\u00b7E, ChatGPT and Firefly images. 100% browser-based. No upload, no signup.",
   },
 
   "strip-metadata-from-word-document": {

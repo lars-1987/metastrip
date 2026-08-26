@@ -13,7 +13,8 @@ const TOOLS = [
   { label: "Remove GPS from photos", href: "/remove-gps-location-from-photos" },
   { label: "Remove author from PDF", href: "/remove-author-from-pdf" },
   { label: "Strip Word document metadata", href: "/strip-metadata-from-word-document" },
-  { label: "Remove AI metadata (C2PA)", href: "/remove-ai-metadata" },
+  { label: "Remove C2PA metadata", href: "/remove-c2pa-metadata" },
+  { label: "Remove AI metadata", href: "/remove-ai-metadata" },
   { label: "Remove metadata before sharing", href: "/remove-metadata-before-sharing" },
 ];
 
