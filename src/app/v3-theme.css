@@ -152,6 +152,13 @@
     overflow: hidden;
     flex: 0 0 auto;
   }
+  /* A fully collapsed slot must take no width at all. Under border-box the
+     7px gutters survive width:0, so a closed slot still measured 14px: enough
+     to push the row 14px past its container and to leave a visible band where
+     the card used to be. */
+  .v3-card-slot[data-active="false"] {
+    padding: 0;
+  }
 }
 @media (max-width: 767px) {
   .v3-card-slot[data-active="false"] {

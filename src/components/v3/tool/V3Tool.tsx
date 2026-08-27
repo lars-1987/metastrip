@@ -15,7 +15,16 @@ const W: Record<Phase, [number, number, number]> = {
   done: [34, 0, 66],
 };
 const ENTERING: Record<Phase, number> = { drop: -1, review: 1, done: 2 };
-const SLOT_PAD = 16; // 8px each side from .v3-card-slot
+
+/** Horizontal gutters on .v3-card-slot, measured rather than hardcoded: the
+ *  CSS says 7px a side and the old constant assumed 8, so every entering card
+ *  was pinned 2px narrow and snapped as it landed. Read it off slot 0, the one
+ *  slot that is never collapsed and so always keeps its padding. */
+function slotPad(el: HTMLElement | null): number {
+  if (!el) return 14;
+  const cs = getComputedStyle(el);
+  return parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+}
 
 export function V3Tool() {
   const t = useV3Tool();
@@ -44,18 +53,32 @@ export function V3Tool() {
     slotRefs.forEach((r, i) => {
       if (r.current && fromW[i] !== toW[i]) r.current.style.setProperty("--w", `${fromW[i]}%`);
     });
-    // hold the entering card's content at its FINAL width, so the opening slot
-    // reveals it left-to-right from the seam (no reflow, no "appears from nowhere")
-    if (enter >= 0 && slotRefs[enter].current && contentRefs[enter].current) {
-      const row = slotRefs[enter].current!.parentElement!;
-      const finalInner = Math.max(0, row.clientWidth * (toW[enter] / 100) - SLOT_PAD);
-      contentRefs[enter].current!.style.width = `${finalInner}px`;
-    }
+    // Hold a card's content at a fixed pixel width for the whole transition, so
+    // the slot acts purely as a clip window and the text never reflows.
+    // Entering cards are held at their FINAL width (revealed left-to-right from
+    // the seam). Cards collapsing to nothing are held at their STARTING width:
+    // without this their content box reflows all the way down to 0px and the
+    // text stacks one character per line for the entire ~0.5s collapse.
+    const pad = slotPad(slotRefs[0].current);
+    const pinned: number[] = [];
+    const pin = (i: number, pct: number) => {
+      const slot = slotRefs[i].current, content = contentRefs[i].current;
+      if (!slot || !content) return;
+      content.style.width = `${Math.max(0, slot.parentElement!.clientWidth * (pct / 100) - pad)}px`;
+      pinned.push(i);
+    };
+    const unpin = () => pinned.forEach((i) => {
+      if (contentRefs[i].current) contentRefs[i].current!.style.width = "";
+    });
+    if (enter >= 0) pin(enter, toW[enter]);
+    slotRefs.forEach((_, i) => {
+      if (i !== enter && toW[i] === 0 && fromW[i] > 0) pin(i, fromW[i]);
+    });
 
     let killed = false;
     loadGsap().then(({ gsap }) => {
       if (killed) return;
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ onComplete: unpin });
       // existing cards narrow first
       slotRefs.forEach((r, i) => {
         if (i === enter || !r.current || fromW[i] === toW[i]) return;
@@ -64,20 +87,32 @@ export function V3Tool() {
       // then the new card unfurls rightward from the seam, revealing its content
       if (enter >= 0 && slotRefs[enter].current) {
         tl.to(slotRefs[enter].current, { "--w": `${toW[enter]}%`, duration: 0.62, ease: "power3.inOut" }, 0.28);
-        tl.set(contentRefs[enter].current, { width: "" }, ">"); // restore responsive width
       }
     });
-    return () => { killed = true; };
+    // If we unmount or re-run mid-flight, drop the pins so nothing is left
+    // frozen at a stale pixel width.
+    return () => { killed = true; unpin(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t.phase]);
 
   const handleReset = () => {
     if (prefersReducedMotion() || (typeof window !== "undefined" && window.innerWidth < 768)) { t.reset(); return; }
+    // Hold the report at its current width for the same reason: collapsing it
+    // to 0 would reflow its text into a single-character column on the way out.
+    const report = slotRefs[2].current;
+    if (report && contentRefs[2].current) {
+      const inner = Math.max(0, report.parentElement!.clientWidth * (W.done[2] / 100) - slotPad(slotRefs[0].current));
+      contentRefs[2].current.style.width = `${inner}px`;
+    }
     loadGsap().then(({ gsap }) => {
       const tl = gsap.timeline({
         onComplete: () => {
-          // restore the report wrapper's opacity so it isn't blank next time
-          if (contentRefs[2].current) contentRefs[2].current.style.opacity = "";
+          // restore the report wrapper's opacity and width so it isn't blank
+          // or frozen narrow next time
+          if (contentRefs[2].current) {
+            contentRefs[2].current.style.opacity = "";
+            contentRefs[2].current.style.width = "";
+          }
           skipAnim.current = true;
           t.reset();
         },
