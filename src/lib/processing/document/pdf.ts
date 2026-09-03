@@ -14,7 +14,12 @@ export async function processPdf(
   let pdfDoc: PDFDocument;
 
   try {
-    pdfDoc = await PDFDocument.load(arrayBuffer);
+    // updateMetadata defaults to true, which makes pdf-lib stamp its own
+    // Producer and a fresh ModDate onto the Info dict during load, before we
+    // have read anything. That made us report pdf-lib as the user's PDF
+    // Producer and "now" as their modification date, and it wrote both into
+    // the output whenever the user chose to KEEP those categories.
+    pdfDoc = await PDFDocument.load(arrayBuffer, { updateMetadata: false });
   } catch {
     const blob = new Blob([arrayBuffer], { type: "application/pdf" });
     return {
