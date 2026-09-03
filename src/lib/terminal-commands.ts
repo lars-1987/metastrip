@@ -1,3 +1,4 @@
+import { BATCH_LIMIT } from "./constants";
 // ============================================================
 // Interactive terminal command parser — easter egg!
 // ============================================================
@@ -162,7 +163,7 @@ export function executeCommand(input: string): CommandResult {
         "  -rw-r--r--  .xlsx",
         "  -rw-r--r--  .pptx",
         "",
-        "8 supported formats | batch limit: 20 files",
+        `8 supported formats | batch limit: ${BATCH_LIMIT} files`,
         "",
       ],
       style: "info",

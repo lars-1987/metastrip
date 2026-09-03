@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BATCH_LIMIT } from "@/lib/constants";
 
 const PRIVACY_SECTIONS = [
   {
@@ -94,14 +95,14 @@ const TERMS_SECTIONS = [
       "  Video:     MP4, MOV, M4V",
       "  Audio:     MP3, M4A, FLAC, WAV",
       "All processing is client-side JavaScript. Files never uploaded.",
-      "Free to use. Batch limit: 20 files.",
+      `Free to use. Batch limit: ${BATCH_LIMIT} files.`,
     ],
   },
   {
     num: "03",
     title: "USAGE LIMITS",
     lines: [
-      "Up to 20 files per batch. No daily limits.",
+      `Up to ${BATCH_LIMIT} files (750 MB) per batch. No daily limits.`,
       "We reserve the right to modify limits at any time.",
     ],
   },
@@ -211,7 +212,7 @@ export function PrivacyTab() {
           <div className="text-sm text-white/60 font-[family-name:var(--font-mono)] leading-relaxed">
             {activeDoc === "privacy"
               ? "Files processed in-browser. We never see them. No tracking cookies. No accounts. Minimal analytics. Free forever."
-              : "MetaStrip is free, as-is. You own your files. Don't use it for anything illegal. Batch limit: 20 files."}
+              : `MetaStrip is free, as-is. You own your files. Don't use it for anything illegal. Batch limit: ${BATCH_LIMIT} files.`}
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import { BATCH_LIMIT } from "@/lib/constants";
 /**
  * Section 2 — three-up explainer of what's hidden, how the tool works,
  * and when you'd reach for it. Helio-inspired clean grid, no card chrome.
@@ -28,7 +29,7 @@ const FEATURES: Feature[] = [
     body: "MetaStrip runs entirely in your browser. There is no upload, no server, no temporary cache. You drop the file in, the tool reads its metadata locally with libraries like piexifjs and pdf-lib, shows you exactly what's embedded, and writes a clean copy back out.",
     bullets: [
       "Files never leave your device, verifiable in DevTools",
-      "Batch up to 20 files at once",
+      `Batch up to ${BATCH_LIMIT} files at once`,
       "Open source under MIT. The code is on GitHub.",
       "Works on mobile and desktop, online or offline",
     ],

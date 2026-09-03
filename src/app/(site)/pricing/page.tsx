@@ -4,6 +4,7 @@ import { Footer } from "@/components/v3/ui/Footer";
 import { Button } from "@/components/v3/ui/Button";
 import { EmailButton } from "@/components/v3/ui/EmailButton";
 import { OG_IMAGE } from "@/lib/og";
+import { BATCH_LIMIT } from "@/lib/constants";
 
 const ArrowRight = (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -117,7 +118,7 @@ export default function PricingPage() {
                   {[
                     "EXIF, GPS, IPTC, XMP, C2PA removal",
                     "Photos, PDFs, Word, Excel, PowerPoint",
-                    "Batch processing up to 20 files",
+                    `Batch processing up to ${BATCH_LIMIT} files`,
                     "100% client-side; nothing uploaded",
                     "Open source under MIT licence",
                   ].map((f) => (

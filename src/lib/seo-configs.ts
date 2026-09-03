@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { IconName } from "@/components/shared/Icon";
+import { BATCH_LIMIT } from "./constants";
 
 export interface MockMetadataField {
   label: string;
@@ -222,7 +223,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "Remove Metadata from Photos Online: Free, No Upload | MetaStrip",
@@ -372,7 +373,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "Remove Author from PDF Online, Free, No Upload | MetaStrip",
@@ -546,7 +547,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "EXIF Remover: View & Strip Photo Metadata Online | MetaStrip",
@@ -877,7 +878,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "Remove AI Metadata & Generation Tags from Images | MetaStrip",
@@ -1029,7 +1030,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "Word Metadata Remover (.docx): Free | MetaStrip",
@@ -1175,7 +1176,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "Remove GPS Location from Photos: Free & Private | MetaStrip",
@@ -1375,7 +1376,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     batchCta: {
       text: "Strip Files Free \u2192",
       subtext:
-        "Up to 20 files per batch. No account, no upload, no cost.",
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
     },
     metaTitle:
       "Remove Metadata Before Sharing: Photos, PDFs & Docs | MetaStrip",

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TopNav } from "@/components/v3/ui/TopNav";
 import { Footer } from "@/components/v3/ui/Footer";
 import { Icon } from "@/components/shared/Icon";
+import { BATCH_LIMIT } from "@/lib/constants";
 
 /* ------------------------------------------------------------------ */
 /*  Legal Section Component                                            */
@@ -324,14 +325,15 @@ function TermsContent() {
         </p>
         <p>
           The Service is completely free with support for batch processing of up
-          to 20 files at a time.
+          to {BATCH_LIMIT} files at a time.
         </p>
       </LegalSection>
 
       <LegalSection number="3" title="Usage Limits">
         <p className="mb-3">
-          MetaStrip allows processing of up to 20 files per batch, supporting
-          both images and documents. There are no daily limits.
+          MetaStrip allows processing of up to {BATCH_LIMIT} files per batch, up to
+          750 MB in total, supporting both images and documents. There are no
+          daily limits.
         </p>
         <p>
           We reserve the right to modify usage limits at any time without

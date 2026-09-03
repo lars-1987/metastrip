@@ -1,3 +1,4 @@
+import { BATCH_LIMIT } from "@/lib/constants";
 export interface FAQItem {
   question: string;
   answer: string;
@@ -47,7 +48,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "Can I batch process multiple files?",
     answer:
-      "Yes: drop up to 20 files at once. Each is processed independently in the browser, and you can download them individually or as a single zip. Batch limits exist purely because browser memory is finite, not because we're holding back features.",
+      `Yes: drop up to ${BATCH_LIMIT} files at once, up to 750 MB in total. Each is processed independently in the browser, and you can download them individually or as a single zip. The limits exist purely because your browser's memory is finite, not because we're holding back features.`,
   },
   {
     question: "Does it work on mobile?",
