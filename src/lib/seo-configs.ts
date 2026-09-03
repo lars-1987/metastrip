@@ -718,6 +718,167 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     metaDescription:
       "Remove C2PA content credentials from JPEG, PNG, WebP and HEIC images. Runs entirely in your browser, nothing uploaded, unlimited files, no signup.",
   },
+
+  "check-pdf-metadata": {
+    slug: "check-pdf-metadata",
+    keyword: "check PDF metadata",
+    title: "Check PDF Metadata",
+    subtitle:
+      "See every hidden property inside a PDF: author, timestamps, editing software, and the XMP packet most viewers never open. Read it in your browser, then strip it if you want to.",
+    heroLabel: "CHECK WHAT A PDF IS CARRYING: FREE, NOTHING UPLOADED",
+    acceptedTypes: ["application/pdf"],
+    acceptedLabel: "PDF files",
+    fileIcon: "MagnifyingGlass",
+    metadataCategories: [
+      {
+        category: "author",
+        icon: "User",
+        color: "#f472b6",
+        label: "Document Properties",
+        fields: [
+          { label: "Author", value: "j.mitchell" },
+          { label: "Title", value: "Q3 Board Pack CONFIDENTIAL" },
+          { label: "Subject", value: "Internal only, do not circulate" },
+          { label: "Keywords", value: "board, q3, restricted" },
+        ],
+      },
+      {
+        category: "custom",
+        icon: "Tag",
+        color: "#38bdf8",
+        label: "XMP Packet",
+        fields: [
+          { label: "dc:creator", value: "Jane Mitchell" },
+          { label: "xmp:CreatorTool", value: "Microsoft Word for Microsoft 365" },
+          { label: "xmpMM:DocumentID", value: "uuid:9f8b7a6c-1234-4def..." },
+          { label: "xmpMM:InstanceID", value: "uuid:00000000-aaaa-4bbb..." },
+        ],
+      },
+      {
+        category: "dates",
+        icon: "CalendarBlank",
+        color: "#fbbf24",
+        label: "Timestamps",
+        fields: [
+          { label: "CreationDate", value: "2026-07-14 09:30:00 +10:00" },
+          { label: "ModDate", value: "2026-08-12 23:47:11 +10:00" },
+          { label: "xmp:MetadataDate", value: "2026-08-12 23:47:11 +10:00" },
+        ],
+      },
+      {
+        category: "software",
+        icon: "Laptop",
+        color: "#818cf8",
+        label: "Software & Producer",
+        fields: [
+          { label: "Creator", value: "Microsoft Word for Microsoft 365" },
+          { label: "Producer", value: "Acrobat Distiller 24.0" },
+          { label: "Company", value: "Northgate Capital Partners" },
+        ],
+      },
+    ],
+    explainerTabs: [
+      {
+        id: "two-places",
+        label: "Two Places to Look",
+        icon: "MagnifyingGlass",
+        color: "#38bdf8",
+        title: "A PDF stores its metadata twice",
+        description:
+          "Every PDF has a Document Info dictionary, the fields Acrobat shows under Properties. Most PDFs also carry a second, parallel copy in an XMP packet attached to the document catalog. Clearing the Info fields does nothing to the XMP, which is why a file can look clean in one viewer and still name you in another.",
+        example: {
+          label: "The trap",
+          value:
+            "Author cleared in Properties, dc:creator still present in the XMP packet",
+        },
+        risk: "A checker that only reads the Info dictionary tells you a file is clean when it is not.",
+      },
+      {
+        id: "what-leaks",
+        label: "What It Gives Away",
+        icon: "Eye",
+        color: "#f472b6",
+        title: "More than a name",
+        description:
+          "PDF properties routinely carry the login name of whoever made the file, the organisation from the Office template, the exact software and version, and timestamps down to the second with a timezone offset. Office exports add non-standard keys such as Company and Manager that the standard fields never mention.",
+        example: {
+          label: "Typical leak",
+          value:
+            "j.mitchell, Northgate Capital Partners, Word for Microsoft 365, edited 23:47 +10:00",
+        },
+        risk: "A timezone and an edit time can place you, and a login name is often your real one.",
+      },
+      {
+        id: "document-ids",
+        label: "Document IDs",
+        icon: "LockKey",
+        color: "#c084fc",
+        title: "The identifiers that link copies together",
+        description:
+          "XMP carries xmpMM:DocumentID and xmpMM:InstanceID, persistent identifiers that survive edits and re-saves. Two files that look unrelated can share a DocumentID and be traced back to the same original. They are invisible in every ordinary PDF reader and almost never mentioned by simple metadata viewers.",
+        example: {
+          label: "What persists",
+          value:
+            "DocumentID unchanged across every revision and export of the same document",
+        },
+        risk: "Anonymising a document is not complete while it still carries the ID of the file it came from.",
+      },
+      {
+        id: "no-upload",
+        label: "Why Not Upload",
+        icon: "ShieldCheck",
+        color: "#4ade80",
+        title: "Reading a header should not need a server",
+        description:
+          "Almost every PDF metadata viewer online works by uploading your file, reading it server-side, and sending the answer back. The files people want to check are usually the confidential ones, which makes uploading the exact wrong move. MetaStrip parses the PDF in your browser with pdf-lib. Nothing is sent anywhere, and you can confirm that in DevTools.",
+        example: {
+          label: "Network requests",
+          value: "Zero. Open the network tab and drop a file in to check",
+        },
+        risk: "Uploading a confidential PDF to an unknown server to find out whether it is confidential defeats the point.",
+      },
+    ],
+    seoContent: {
+      heading: "How to check what metadata a PDF contains",
+      paragraphs: [
+        "Drop a PDF into the tool above. MetaStrip reads it in your browser and lists every property it finds, grouped by what the field actually reveals rather than dumped as raw keys. Nothing is uploaded at any point, which matters because the documents worth checking are usually the ones you would least like to hand to a stranger's server.",
+        "It reads both places a PDF keeps its metadata. The Document Info dictionary holds the familiar Author, Title, Subject and Keywords fields that Acrobat shows under Properties. The XMP packet holds a parallel copy plus things the Info dictionary never mentions: the creator tool, metadata timestamps, and the xmpMM document and instance identifiers that persist across every edit and link copies of a file back to one original.",
+        "That second location is where checking usually goes wrong. Clearing the Author field in Acrobat updates the Info dictionary and leaves the XMP packet untouched, so the document still names you to anything that reads XMP. If you have already tried to clean a file, this is the fastest way to find out whether it actually worked.",
+        "If you do not like what you see, you can remove it in the same place. Untick anything you want to keep, strip the rest, and download the cleaned file. Then drop the cleaned copy straight back in: the tool reads it again from scratch, so you can confirm the fields are actually gone rather than taking it on trust.",
+      ],
+    },
+    supportedFormats: [
+      {
+        ext: "PDF",
+        desc: "Info dictionary, XMP packet, document IDs, custom Office keys",
+        color: "#38bdf8",
+      },
+      {
+        ext: "DOCX",
+        desc: "Core and app properties, tracked changes, comments",
+        color: "#60a5fa",
+      },
+      {
+        ext: "XLSX",
+        desc: "Author, company, comments, defined-name leftovers",
+        color: "#4ade80",
+      },
+      {
+        ext: "PPTX",
+        desc: "Author, company, speaker notes metadata, comments",
+        color: "#fbbf24",
+      },
+    ],
+    batchCta: {
+      text: "Check a PDF Free →",
+      subtext:
+        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
+    },
+    metaTitle:
+      "Check PDF Metadata Online, Free, No Upload | MetaStrip",
+    metaDescription:
+      "See every hidden property in a PDF: author, timestamps, software, and the XMP packet most viewers miss. Runs in your browser, the file is never uploaded.",
+  },
   "remove-ai-metadata": {
     slug: "remove-ai-metadata",
     keyword: "remove AI metadata from images",

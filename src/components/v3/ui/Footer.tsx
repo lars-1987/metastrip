@@ -12,6 +12,7 @@ const TOOLS = [
   { label: "Strip EXIF data", href: "/strip-exif-data" },
   { label: "Remove GPS from photos", href: "/remove-gps-location-from-photos" },
   { label: "Remove author from PDF", href: "/remove-author-from-pdf" },
+  { label: "Check PDF metadata", href: "/check-pdf-metadata" },
   { label: "Strip Word document metadata", href: "/strip-metadata-from-word-document" },
   { label: "Remove C2PA metadata", href: "/remove-c2pa-metadata" },
   { label: "Remove AI metadata", href: "/remove-ai-metadata" },

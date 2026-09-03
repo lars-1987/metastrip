@@ -390,6 +390,11 @@ export const ARTICLES: BlogArticle[] = [
   {
     id: "check-pdf-metadata-confirm-removed",
     slug: "check-pdf-metadata-confirm-removed",
+    cta: {
+      headline: "See what your PDF is actually carrying",
+      sub: "Reads the Info dictionary and the XMP packet, in your browser. Nothing uploaded.",
+      href: "/check-pdf-metadata",
+    },
     title:
       "How to Check What Metadata Your PDF Contains (and Confirm It’s Actually Gone)",
     excerpt:
@@ -419,7 +424,7 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "How to check without Acrobat",
-          body: "You don’t need a paid Acrobat licence to inspect a PDF.\n\n**Any PDF reader’s properties panel** shows the basic Document Info fields. Free readers expose File → Properties / Document Properties. This covers the first layer but not XMP or hidden content.\n\n**A browser-based metadata viewer** reads the full property set, Doc Info and XMP, without installing anything. This is the fastest way to see what’s embedded, and a client-side one keeps the file on your device. [MetaStrip’s PDF metadata tool](/remove-author-from-pdf) does exactly this: drop the PDF in and it shows you what metadata is present (Author, Producer, Creator, Title, Subject, Keywords, dates, and the XMP/custom properties) before you decide to remove anything. Because it runs entirely in your browser, the file never gets uploaded, which matters when the whole point is checking a sensitive document for leaks.\n\n**ExifTool** (command line) reads everything for technical users: `exiftool document.pdf` dumps the full metadata set, including fields some GUI tools don’t surface.",
+          body: "You don’t need a paid Acrobat licence to inspect a PDF.\n\n**Any PDF reader’s properties panel** shows the basic Document Info fields. Free readers expose File → Properties / Document Properties. This covers the first layer but not XMP or hidden content.\n\n**A browser-based metadata viewer** reads the full property set, Doc Info and XMP, without installing anything. This is the fastest way to see what’s embedded, and a client-side one keeps the file on your device. MetaStrip’s free tool to [check PDF metadata](/check-pdf-metadata) does exactly this: drop the PDF in and it shows you what metadata is present (Author, Producer, Creator, Title, Subject, Keywords, dates, and the XMP/custom properties) before you decide to remove anything. Because it runs entirely in your browser, the file never gets uploaded, which matters when the whole point is checking a sensitive document for leaks.\n\n**ExifTool** (command line) reads everything for technical users: `exiftool document.pdf` dumps the full metadata set, including fields some GUI tools don’t surface.",
         },
         {
           heading: "The verification workflow: check, clean, check again",
