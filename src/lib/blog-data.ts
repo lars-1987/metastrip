@@ -40,6 +40,13 @@ export interface BlogArticle {
    * concise and self-contained.
    */
   faq?: { question: string; answer: string }[];
+  /** Search-result title, used verbatim as the <title>. Set this when the
+   *  heading that reads well on the page is not the one that earns the click.
+   *  Falls back to `${title}, MetaStrip Blog`. */
+  seoTitle?: string;
+  /** Meta description. `excerpt` is written for the blog card and often runs
+   *  past the ~155 chars Google renders, which truncates away the hook. */
+  seoDescription?: string;
   /**
    * Optional contextual call-to-action, overriding the generic in-article CTA.
    *
@@ -138,6 +145,9 @@ export const ARTICLES: BlogArticle[] = [
     id: "does-x-twitter-strip-metadata",
     slug: "does-x-twitter-strip-metadata",
     title: "Does X (Twitter) Strip Metadata From Photos?",
+    seoTitle: "Does X (Twitter) Strip Metadata? Yes, With Three Gaps",
+    seoDescription:
+      "X strips GPS and camera EXIF from photos posted through the app or x.com. It does not cover DMs, API uploads, or video, and X still gets the original.",
     excerpt:
       "Yes: for photos posted through the official X app or x.com, X re-encodes the image and strips GPS, camera, and timestamp EXIF from the copy others can download. But that doesn’t cover DMs, API and scheduling-tool uploads, or video, and X still receives the original. Here’s the full picture.",
     category: "privacy",

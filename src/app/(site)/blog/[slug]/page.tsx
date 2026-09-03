@@ -20,12 +20,15 @@ export async function generateMetadata({
   const article = getArticleBySlug(slug);
   if (!article) return {};
 
+  const seoTitle = article.seoTitle ?? `${article.title}, MetaStrip Blog`;
+  const seoDescription = article.seoDescription ?? article.excerpt;
+
   return {
-    title: `${article.title}, MetaStrip Blog`,
-    description: article.excerpt,
+    title: seoTitle,
+    description: seoDescription,
     openGraph: {
       title: article.title,
-      description: article.excerpt,
+      description: seoDescription,
       url: `https://metastrip.app/blog/${slug}`,
       siteName: "MetaStrip",
       type: "article",
