@@ -1,4 +1,5 @@
-import { PDFDocument, PDFName, PDFDict, PDFRef } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict, PDFRef, PDFRawStream } from "pdf-lib";
+import { parseXmp, type XmpProperty } from "./xmp";
 import type {
   StripOptions,
   ProcessingResult,
@@ -138,28 +139,54 @@ export async function processPdf(
   // written back as an orphan.
   const xmpValue = pdfDoc.catalog.get(PDFName.of("Metadata"));
   if (xmpValue) {
-    const field: MetadataField = {
-      category: "custom",
-      key: "XMP",
-      label: "XMP metadata stream",
-      value: "(present)",
-      removable: true,
-    };
-    fieldsFound.push(field);
-    // XMP bundles author/title/dates/software/copyright — remove it whenever any
-    // of those is being stripped (always true for the default full strip).
-    const removeXmp =
-      options.author ||
-      options.dates ||
-      options.software ||
-      options.copyright ||
-      options.custom;
+    // Read the packet so the report can name what is inside it rather than
+    // just admitting something is. XMP streams are required to be plain, so a
+    // decode is normally enough; anything unreadable falls back to the old
+    // single "(present)" row.
+    let parsed: XmpProperty[] = [];
+    try {
+      const stream = pdfDoc.context.lookup(xmpValue);
+      if (stream instanceof PDFRawStream) {
+        parsed = parseXmp(new TextDecoder().decode(stream.getContents()));
+      }
+    } catch {
+      parsed = [];
+    }
+
+    const xmpFields: MetadataField[] = parsed.length
+      ? parsed.map((prop) => ({
+          category: prop.category,
+          key: `XMP:${prop.key}`,
+          label: prop.label,
+          value: prop.value,
+          removable: true,
+        }))
+      : [{
+          category: "custom" as MetadataCategory,
+          key: "XMP",
+          label: "XMP metadata stream",
+          value: "(present)",
+          removable: true,
+        }];
+
+    for (const field of xmpFields) fieldsFound.push(field);
+
+    // The packet can only be dropped whole, so it goes if ANY category it
+    // carries is being stripped. Everything in it is then reported as removed,
+    // including a category the user chose to keep: that is what actually
+    // happens to the file, and reporting otherwise would be the same class of
+    // untruth as the pdf-lib Producer bug. Per-property rewriting of the packet
+    // is the fix if that partial case ever matters.
+    const removeXmp = parsed.length
+      ? xmpFields.some((field) => options[field.category])
+      : options.author || options.dates || options.software || options.copyright || options.custom;
+
     if (removeXmp) {
       pdfDoc.catalog.delete(PDFName.of("Metadata"));
       if (xmpValue instanceof PDFRef) pdfDoc.context.delete(xmpValue);
-      fieldsRemoved.push(field);
+      for (const field of xmpFields) fieldsRemoved.push(field);
     } else {
-      fieldsKept.push(field);
+      for (const field of xmpFields) fieldsKept.push(field);
     }
   }
 

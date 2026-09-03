@@ -107,8 +107,12 @@ export const RELEVANT_CATEGORIES_BY_FILE_CATEGORY: Record<
     "gps", "device", "dates", "author", "software",
     "copyright", "ai", "comments", "custom",
   ]),
+  // gps and device look wrong for a document until you remember XMP: a scanned
+  // or phone-captured PDF carries tiff:Make/Model, and sometimes exif GPS, in
+  // its metadata packet. Categories only surface when a field is actually
+  // found, so widening this costs nothing on an ordinary Word export.
   document: new Set([
-    "dates", "author", "software", "copyright", "comments", "custom",
+    "gps", "device", "dates", "author", "software", "copyright", "comments", "custom",
   ]),
   video: new Set([
     "gps", "device", "dates", "software", "custom",
