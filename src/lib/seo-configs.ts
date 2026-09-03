@@ -375,9 +375,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Up to 20 files per batch. No account, no upload, no cost.",
     },
     metaTitle:
-      "Remove Metadata from PDFs: Author, Dates & More | MetaStrip",
+      "Remove Author from PDF Online, Free, No Upload | MetaStrip",
     metaDescription:
-      "Strip author names, creator app, timestamps, and hidden properties from PDF files. Free, browser-based, no upload required.",
+      "Remove the author name, creator app, and hidden properties from a PDF. Runs in your browser, so the file never leaves your device. Free, no sign-up.",
   },
 
   "strip-exif-data": {
