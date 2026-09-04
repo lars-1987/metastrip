@@ -5,6 +5,7 @@ import { Button } from "@/components/v3/ui/Button";
 import { EmailButton } from "@/components/v3/ui/EmailButton";
 import { OG_IMAGE } from "@/lib/og";
 import { BATCH_LIMIT } from "@/lib/constants";
+import { KOFI_URL } from "@/lib/constants";
 
 const ArrowRight = (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -200,7 +201,7 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button href="https://ko-fi.com/metastrip" external variant="soft" size="lg" hoverIcon={ArrowRight}>
+                <Button href={KOFI_URL} external variant="soft" size="lg" hoverIcon={ArrowRight}>
                   Support on Ko-fi
                 </Button>
               </div>

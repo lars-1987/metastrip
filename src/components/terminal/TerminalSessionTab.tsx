@@ -18,6 +18,7 @@ import { TerminalActions } from "./TerminalActions";
 import { trackFileDownloaded } from "@/lib/analytics";
 import { useClock } from "@/hooks/useClock";
 import { isChunkLoadError, reloadForStaleChunk } from "@/lib/chunk-reload";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 function SystemClockPill() {
   const now = useClock();
@@ -281,7 +282,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
             <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">client-side</span>
             <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">no tracking</span>
             <a
-              href="https://github.com/lars-1987/metastrip"
+              href={GITHUB_REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="px-2 py-0.5 rounded bg-white/[0.04] text-amber-400/70 hover:bg-white/[0.06] hover:text-amber-300 transition-colors no-underline flex items-center gap-1"

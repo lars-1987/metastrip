@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ARTICLES } from "@/lib/blog-data";
 import { MetaStripIcon } from "@/components/shared/Logo";
 import { useTheme } from "@/components/shared/ThemeProvider";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 const TOOLS = [
   { label: "Remove metadata from photos", href: "/remove-metadata-from-photos" },
@@ -87,7 +88,7 @@ export function Footer() {
                     gone in seconds. 100% in your browser. Free, open source.
                   </p>
                   <div className="flex gap-2">
-                    <IconButton href="https://github.com/lars-1987/metastrip" label="GitHub">
+                    <IconButton href={GITHUB_REPO_URL} label="GitHub">
                       <GitHubIcon />
                     </IconButton>
                     <IconButton href="https://x.com/larsitodev" label="X / Twitter">

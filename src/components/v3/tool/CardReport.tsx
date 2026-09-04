@@ -7,6 +7,8 @@ import { Icon } from "@/components/shared/Icon";
 import type { MetadataCategory, MetadataField } from "@/lib/processing/types";
 import { Button } from "../ui/Button";
 import type { ToolEntry } from "./useV3Tool";
+import { KOFI_URL, GITHUB_REPO_URL } from "@/lib/constants";
+import { trackCtaClicked } from "@/lib/analytics";
 
 interface Props {
   entries: ToolEntry[];
@@ -141,10 +143,11 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
         })}
       </ul>
 
-      <div className="mt-auto flex flex-col sm:flex-row items-center justify-end gap-3">
+      <div className="mt-auto flex flex-col flex-wrap sm:flex-row items-center justify-end gap-3">
         <Button
           variant="ghost"
           size="lg"
+          className="shrink-0 whitespace-nowrap"
           onClick={onReset}
           hoverIcon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -157,6 +160,7 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
         </Button>
         <Button
           size="lg"
+          className="shrink-0 whitespace-nowrap"
           onClick={onDownload}
           hoverIcon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -166,11 +170,18 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
         >
           Download clean {entries.length > 1 ? "files (.zip)" : "file"}
         </Button>
+        {/* The two support asks share one row on mobile. Stacked, the fourth
+            button lands below the fold on a 390x844 screen, which is where most
+            completed strips happen. `sm:contents` dissolves this wrapper at
+            desktop so the row there is unchanged. */}
+        <div className="flex w-full items-center justify-center gap-3 sm:contents">
         <Button
           variant="soft"
           size="lg"
-          href="https://ko-fi.com/metastrip"
+          className="shrink-0 whitespace-nowrap !px-5 sm:!px-8"
+          href={KOFI_URL}
           external
+          onClick={() => trackCtaClicked({ cta: "tip_jar", file_count: entries.length })}
           hoverIcon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M4 8h12v5a4 4 0 01-4 4H8a4 4 0 01-4-4V8z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
@@ -181,6 +192,20 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
         >
           Tip jar
         </Button>
+        <Button
+          variant="soft"
+          size="lg"
+          className="min-w-0 flex-1 whitespace-nowrap !px-4 !text-[15px] sm:flex-none sm:!px-8 sm:!text-[17px]"
+          href={GITHUB_REPO_URL}
+          external
+          onClick={() => trackCtaClicked({ cta: "github_star", file_count: entries.length })}
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+            <path d="M12 2.6l2.9 5.88 6.49.95-4.7 4.58 1.11 6.46L12 17.42l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.95L12 2.6z" />
+          </svg>
+          Star on GitHub
+        </Button>
+        </div>
       </div>
     </div>
   );

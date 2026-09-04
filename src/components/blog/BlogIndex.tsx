@@ -6,6 +6,7 @@ import { Footer } from "@/components/v3/ui/Footer";
 import FeaturedCard from "@/components/blog/FeaturedCard";
 import ArticleCard from "@/components/blog/ArticleCard";
 import { CATEGORIES, ARTICLES, getFeaturedArticle } from "@/lib/blog-data";
+import { KOFI_URL } from "@/lib/constants";
 
 export default function BlogIndex() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -114,7 +115,7 @@ export default function BlogIndex() {
               or you used the tool to fix it, I&apos;d genuinely
               appreciate a coffee.{" "}
               <a
-                href="https://ko-fi.com/metastrip"
+                href={KOFI_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline underline-offset-2 font-semibold"

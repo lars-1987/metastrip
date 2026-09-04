@@ -21,6 +21,13 @@ export function trackFileStripped(props: {
   posthog.capture("file_stripped", props);
 }
 
+/** A support call-to-action on the results card. Carries no file data, just
+ *  which ask was clicked and how big the batch was, so star and tip can be
+ *  compared against each other rather than inferred from autocapture. */
+export function trackCtaClicked(props: { cta: "github_star" | "tip_jar"; file_count: number }) {
+  posthog.capture("cta_clicked", props);
+}
+
 export function trackFileDownloaded(props: { file_type: string }) {
   posthog.capture("file_downloaded", props);
 }

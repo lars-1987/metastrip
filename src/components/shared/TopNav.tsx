@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "./ThemeProvider";
 import { MetaStripIcon } from "./Logo";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 const NAV_LINKS = [
   { label: "Blog", href: "/blog" },
@@ -69,7 +70,7 @@ export function TopNav() {
             </NavLink>
           ))}
 
-          <NavLink href="https://github.com/lars-1987/metastrip" external>
+          <NavLink href={GITHUB_REPO_URL} external>
             GitHub
           </NavLink>
 

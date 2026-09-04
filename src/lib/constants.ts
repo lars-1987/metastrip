@@ -70,6 +70,14 @@ export const ACCEPTED_TYPES = [
   "audio/wave",
 ];
 
+/** Ko-fi tip page. Centralised because the handle has already changed once,
+ *  from /metastrip to /larshdev, and the old URL only resolves while Ko-fi
+ *  chooses to keep redirecting it. */
+export const KOFI_URL = "https://ko-fi.com/larshdev";
+
+/** Public repo. Used by the nav, footer, terminal and the results-card star CTA. */
+export const GITHUB_REPO_URL = "https://github.com/lars-1987/metastrip";
+
 export const BATCH_LIMIT = 50;
 
 /**
