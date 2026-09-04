@@ -76,6 +76,22 @@ export function formatExifValue(value: unknown): string {
 type ExifObj = Record<string, Record<string, unknown>>;
 
 /** Turn a parsed piexif EXIF object into a list of MetadataFields. */
+/** Turn a piexif tag name into a readable label.
+ *
+ *  Splitting on every capital ("JPEGInterchangeFormat" -> " J P E G ...")
+ *  shreds acronyms, which is most of the EXIF vocabulary: JPEG, GPS, ISO, XMP.
+ *  Split only at a real word boundary instead: lower-or-digit followed by
+ *  upper, and the end of an acronym run followed by a capitalised word. */
+export function humanizeTagName(tagName: string): string {
+  return tagName
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/([a-zA-Z])(\d)/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function catalogExifFields(exifObj: ExifObj): MetadataField[] {
   const fields: MetadataField[] = [];
   for (const ifd of ["0th", "Exif", "GPS", "1st", "Interop"]) {
@@ -89,7 +105,7 @@ export function catalogExifFields(exifObj: ExifObj): MetadataField[] {
       fields.push({
         category,
         key: tagName,
-        label: tagName.replace(/([A-Z])/g, " $1").trim(),
+        label: humanizeTagName(tagName),
         value: formatExifValue(value),
         removable: true,
       });
