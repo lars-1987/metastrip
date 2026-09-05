@@ -567,7 +567,7 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "Always verify",
-          body: "This applies regardless of method. After cleaning, reopen the PDF and check its properties, in Acrobat, any PDF reader, or by dropping it back into a metadata viewer. If the cleanup worked, the Author, Creator, Producer, and custom fields should read empty. The reason to verify is exactly the XMP-stream gotcha from earlier: a file can look clean in the basic properties view while still carrying metadata in the XMP block. Checking takes ten seconds and is the difference between “I think it’s clean” and “I confirmed it’s clean.”\n\nWhether you use Acrobat’s Sanitize Document or strip it in the browser, the goal is the same: the file that leaves your hands should carry your content and nothing else.\n\nDrop a PDF into MetaStrip to see exactly what metadata it’s carrying right now, and remove it without an Acrobat subscription.",
+          body: "This applies regardless of method. After cleaning, reopen the PDF and check its properties, in Acrobat, any PDF reader, or by using a browser tool to [check PDF metadata](/check-pdf-metadata), which reads both the Doc Info fields and the XMP stream without the file leaving your device. If the cleanup worked, the Author, Creator, Producer, and custom fields should read empty. The reason to verify is exactly the XMP-stream gotcha from earlier: a file can look clean in the basic properties view while still carrying metadata in the XMP block. Checking takes ten seconds and is the difference between “I think it’s clean” and “I confirmed it’s clean.”\n\nWhether you use Acrobat’s Sanitize Document or strip it in the browser, the goal is the same: the file that leaves your hands should carry your content and nothing else.\n\nDrop a PDF into MetaStrip to see exactly what metadata it’s carrying right now, and remove it without an Acrobat subscription.",
         },
         {
           heading: "FAQ",
@@ -1169,7 +1169,7 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "Confirm the metadata is actually gone",
-          body: "Removing metadata is only half the job; the other half is confirming it worked, because the most common failure is assuming a file is clean when the XMP stream still holds your name. After you strip a PDF, reopen it and re-inspect the Author, Producer, and custom fields, they should read empty. We cover the full verification pass, including that XMP-survival trap, in [how to check what metadata your PDF contains](/blog/check-pdf-metadata-confirm-removed).",
+          body: "Removing metadata is only half the job; the other half is confirming it worked, because the most common failure is assuming a file is clean when the XMP stream still holds your name. After you strip a PDF, reopen it and re-inspect the Author, Producer, and custom fields, they should read empty. We cover the full verification pass, including that XMP-survival trap, in [how to check what metadata your PDF contains](/blog/check-pdf-metadata-confirm-removed). To do it in seconds rather than by hand, [check PDF metadata](/check-pdf-metadata) in the browser: drop the cleaned file back in and it lists the Document Info dictionary and the XMP packet side by side, so you can see the fields are gone rather than assume it.",
         },
         {
           heading: "FAQ",
