@@ -7,6 +7,15 @@ import { Footer } from "@/components/v3/ui/Footer";
 import ReadingProgressBar from "@/components/blog/ReadingProgressBar";
 import TableOfContents from "@/components/blog/TableOfContents";
 import InlineCTA from "@/components/blog/InlineCTA";
+import dynamic from "next/dynamic";
+
+// The tool pulls in every format processor (pdf-lib, piexifjs and the rest), so
+// it loads as its own chunk and only on the posts that ask for it. The article
+// text renders and indexes without waiting for any of it.
+const V3Tool = dynamic(() => import("@/components/v3/tool/V3Tool").then((m) => m.V3Tool), {
+  ssr: false,
+  loading: () => <div className="min-h-[460px]" aria-hidden />,
+});
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import { getCategoryLabel } from "@/lib/blog-data";
 import type { BlogArticle } from "@/lib/blog-data";
@@ -160,8 +169,24 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
       <ReadingProgressBar />
       <main className="relative z-10" style={{ background: "var(--bg)" }}>
 
+      {/* Tool first, for posts that rank on tool-intent queries. Someone
+          arriving from "c2pa remover" wants to strip a file, not read. Same
+          order as the SEO landing pages: label, tool, then the heading. */}
+      {article.toolFirst && (
+        <section className="px-5 pt-6 md:px-[116px] md:pt-7">
+          <p className="v3-mono mb-3 text-center text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+            {article.toolFirst.label}
+          </p>
+          <V3Tool />
+        </section>
+      )}
+
       {/* Article Header */}
-      <div className="max-w-[700px] mx-auto px-6 pt-16 lg:pt-20">
+      <div
+        className={`max-w-[700px] mx-auto px-6 ${
+          article.toolFirst ? "pt-12 lg:pt-16" : "pt-16 lg:pt-20"
+        }`}
+      >
         <Link
           href="/blog"
           className="group mb-6 inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] bg-[var(--card-elevated)] px-5 py-2 text-[14px] font-medium text-[var(--text)] no-underline transition-colors duration-200 hover:bg-[var(--primary)] hover:text-[var(--on-primary)]"

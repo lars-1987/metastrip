@@ -48,6 +48,11 @@ export interface BlogArticle {
   /** Meta description. `excerpt` is written for the blog card and often runs
    *  past the ~155 chars Google renders, which truncates away the hook. */
   seoDescription?: string;
+  /** Render the live tool directly above the article body.
+   *  For posts that rank on tool-intent queries: someone arriving from
+   *  "c2pa remover" wants to strip a file, not read two sections first. The
+   *  label mirrors the heroLabel pattern on the SEO landing pages. */
+  toolFirst?: { label: string };
   /**
    * Optional contextual call-to-action, overriding the generic in-article CTA.
    *
@@ -453,6 +458,9 @@ export const ARTICLES: BlogArticle[] = [
   {
     id: "remove-c2pa-content-credentials-from-image",
     slug: "remove-c2pa-content-credentials-from-image",
+    toolFirst: {
+      label: "REMOVE C2PA CONTENT CREDENTIALS: FREE, NOTHING UPLOADED",
+    },
     title: "How to Remove C2PA Content Credentials from an Image (and What Happens When You Do)",
     excerpt:
       "C2PA content credentials are the invisible manifest that gets your AI image auto-labeled on Instagram, X, and LinkedIn. Here’s how to remove them, what survives removal, and the legal nuance worth knowing first.",
