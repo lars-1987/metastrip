@@ -47,6 +47,11 @@ export interface BatchCTA {
 
 export interface SEOPageConfig {
   slug: string;
+  /** Real first-published date, from this file's git history. Emitted as
+   *  schema.org datePublished. Without an explicit date Google picks one out of
+   *  the page body, and the only dates there are sample metadata values, so the
+   *  C2PA page (shipped 26 Aug) was showing "28 Feb 2026" in search results. */
+  datePublished: string;
   keyword: string;
   title: string;
   subtitle: string;
@@ -70,6 +75,7 @@ export interface SEOPageConfig {
 export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-metadata-from-photos": {
     slug: "remove-metadata-from-photos",
+    datePublished: "2026-03-04",
     keyword: "remove metadata from photos",
     title: "Remove Metadata from Photos",
     subtitle:
@@ -110,9 +116,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#38bdf8",
         label: "Dates & Times",
         fields: [
-          { label: "Taken", value: "2025-01-15 14:23:07" },
-          { label: "Digitized", value: "2025-01-15 14:23:07" },
-          { label: "Modified", value: "2025-02-20 09:11:33" },
+          { label: "Taken", value: "2025:01:15 14:23:07" },
+          { label: "Digitized", value: "2025:01:15 14:23:07" },
+          { label: "Modified", value: "2025:02:20 09:11:33" },
         ],
       },
       {
@@ -175,7 +181,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
           "Creation dates, modification dates, and timezone offsets reveal not just when a photo was taken, but your patterns: when you're home, at work, or traveling.",
         example: {
           label: "What's hidden",
-          value: "2025-01-15 14:23:07 +11:00 (AEDT)",
+          value: "2025:01:15 14:23:07 +11:00 (AEDT)",
         },
         risk: "Combined with location data, timestamps map your daily movements with precision.",
       },
@@ -233,6 +239,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "remove-author-from-pdf": {
     slug: "remove-author-from-pdf",
+    datePublished: "2026-03-04",
     keyword: "remove author from PDF",
     title: "Remove Author from PDF",
     subtitle:
@@ -276,8 +283,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#38bdf8",
         label: "Dates & Timestamps",
         fields: [
-          { label: "Created", value: "2025-01-08T09:14:22Z" },
-          { label: "Modified", value: "2025-02-18T16:42:07Z" },
+          { label: "Created", value: "D:20250108091422Z" },
+          { label: "Modified", value: "D:20250218164207Z" },
         ],
       },
       {
@@ -383,6 +390,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "strip-exif-data": {
     slug: "strip-exif-data",
+    datePublished: "2026-03-04",
     keyword: "strip EXIF data online",
     title: "Strip EXIF Data Online",
     subtitle:
@@ -557,6 +565,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "remove-c2pa-metadata": {
     slug: "remove-c2pa-metadata",
+    datePublished: "2026-08-26",
     keyword: "remove C2PA metadata from images",
     title: "Remove C2PA Metadata",
     subtitle:
@@ -721,6 +730,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "check-pdf-metadata": {
     slug: "check-pdf-metadata",
+    datePublished: "2026-09-03",
     keyword: "check PDF metadata",
     title: "Check PDF Metadata",
     subtitle:
@@ -760,8 +770,8 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#fbbf24",
         label: "Timestamps",
         fields: [
-          { label: "CreationDate", value: "2026-07-14 09:30:00 +10:00" },
-          { label: "ModDate", value: "2026-08-12 23:47:11 +10:00" },
+          { label: "CreationDate", value: "D:20260714093000+10'00'" },
+          { label: "ModDate", value: "D:20260812234711+10'00'" },
           { label: "xmp:MetadataDate", value: "2026-08-12 23:47:11 +10:00" },
         ],
       },
@@ -881,6 +891,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   },
   "remove-ai-metadata": {
     slug: "remove-ai-metadata",
+    datePublished: "2026-03-04",
     keyword: "remove AI metadata from images",
     title: "Remove AI Metadata",
     subtitle:
@@ -1049,6 +1060,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "strip-metadata-from-word-document": {
     slug: "strip-metadata-from-word-document",
+    datePublished: "2026-03-04",
     keyword: "strip metadata from Word document",
     title: "Strip Metadata from Word Documents",
     subtitle:
@@ -1201,6 +1213,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "remove-gps-location-from-photos": {
     slug: "remove-gps-location-from-photos",
+    datePublished: "2026-03-04",
     keyword: "remove GPS location from photos",
     title: "Remove GPS Location from Photos",
     subtitle:
@@ -1347,6 +1360,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
 
   "remove-metadata-before-sharing": {
     slug: "remove-metadata-before-sharing",
+    datePublished: "2026-03-04",
     keyword: "remove metadata before sharing online",
     title: "Remove Metadata Before Sharing Online",
     subtitle:
@@ -1410,9 +1424,9 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#38bdf8",
         label: "Timestamps",
         fields: [
-          { label: "Photo Taken", value: "2025-02-20 11:38:00" },
-          { label: "Doc Created", value: "2024-09-14 08:22:00" },
-          { label: "Doc Modified", value: "2025-03-01 17:05:00" },
+          { label: "Photo Taken", value: "2025:02:20 11:38:00" },
+          { label: "Doc Created", value: "D:20240914082200" },
+          { label: "Doc Modified", value: "D:20250301170500" },
           { label: "Total Editing Time", value: "1,247 minutes" },
         ],
       },

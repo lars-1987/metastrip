@@ -52,6 +52,7 @@ export default async function Page({ params }: PageProps) {
             name: "MetaStrip",
             url: `https://metastrip.app/${config.slug}`,
             description: config.metaDescription,
+            datePublished: config.datePublished,
             applicationCategory: "UtilitiesApplication",
             operatingSystem: "Any",
             offers: {
