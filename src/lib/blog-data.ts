@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { IconName } from "@/components/shared/Icon";
+import { BATCH_LIMIT } from "./constants";
 
 export interface BlogCategory {
   id: string;
@@ -1153,11 +1154,11 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "Method 3: MetaStrip (browser-based, no install)",
-          body: "MetaStrip processes PDFs entirely in your browser using pdf-lib, an open-source JavaScript PDF library. Drop a PDF, see every metadata field it contains, strip what you want, and download the clean file.\n\nBecause it\u2019s client-side, your PDF never leaves your device, which matters a lot when you\u2019re dealing with contracts, legal filings, or confidential business documents.\n\nFor single files, it\u2019s free and instant. For batches of up to 25 documents with selective removal and an audit report, there\u2019s a one-time $4.99 document pass.",
+          body: "MetaStrip processes PDFs entirely in your browser using pdf-lib, an open-source JavaScript PDF library. Drop a PDF, see every metadata field it contains, strip what you want, and download the clean file.\n\nBecause it\u2019s client-side, your PDF never leaves your device, which matters a lot when you\u2019re dealing with contracts, legal filings, or confidential business documents.\n\nIt is free either way: drop up to " + BATCH_LIMIT + " PDFs at once, choose which categories to remove, and download them individually or as a single zip. No account, no pass, nothing uploaded.",
         },
         {
           heading: "Removing metadata from several PDFs at once",
-          body: "Most of the manual methods handle one file at a time, which is the real friction if you send PDFs regularly. Acrobat Pro can batch through its Action Wizard, but it is fiddly to set up and needs the paid Pro tier. ExifTool can loop over a folder (`exiftool -all= *.pdf`) if you are comfortable on the command line. For a no-install option, [MetaStrip’s PDF metadata remover](/remove-author-from-pdf) clears up to 25 files in one pass in the browser, with a per-file report of exactly what was removed, so you can clear, scrub, or delete metadata from a whole set of documents without touching a terminal.",
+          body: "Most of the manual methods handle one file at a time, which is the real friction if you send PDFs regularly. Acrobat Pro can batch through its Action Wizard, but it is fiddly to set up and needs the paid Pro tier. ExifTool can loop over a folder (`exiftool -all= *.pdf`) if you are comfortable on the command line. For a no-install option, [MetaStrip’s PDF metadata remover](/remove-author-from-pdf) clears up to " + BATCH_LIMIT + " files in one pass in the browser, with a per-file report of exactly what was removed, so you can clear, scrub, or delete metadata from a whole set of documents without touching a terminal.",
         },
         {
           heading: "What about PDF/A and digitally signed PDFs?",
@@ -1221,7 +1222,7 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "A proportionate approach",
-          body: "GDPR compliance doesn\u2019t mean treating every metadata field as a crisis. The regulation is principles-based and expects proportionate responses to data protection risks.\n\nFor most organisations, a reasonable approach is: strip metadata from documents and images before sharing them externally, audit and clean templates regularly, and include metadata in your data protection training. You don\u2019t need to strip metadata from internal documents shared among colleagues (though there may be other reasons to do so), and you don\u2019t need to retroactively clean every file your organisation has ever shared.\n\nThe key is demonstrating that you\u2019ve considered the issue, implemented appropriate measures, and can show that your approach is consistent with data minimization principles.\n\nMetaStrip processes files entirely in the browser, meaning your documents never leave your infrastructure, an important consideration for organisations handling confidential or regulated data. For teams processing documents regularly, the document batch pass handles up to 25 files at once with selective removal options.\n\nMetadata compliance is one of those areas where the gap between what organisations should be doing and what they are doing is wide. The organisations that close that gap now will be better positioned when a regulator eventually asks the question.",
+          body: "GDPR compliance doesn\u2019t mean treating every metadata field as a crisis. The regulation is principles-based and expects proportionate responses to data protection risks.\n\nFor most organisations, a reasonable approach is: strip metadata from documents and images before sharing them externally, audit and clean templates regularly, and include metadata in your data protection training. You don\u2019t need to strip metadata from internal documents shared among colleagues (though there may be other reasons to do so), and you don\u2019t need to retroactively clean every file your organisation has ever shared.\n\nThe key is demonstrating that you\u2019ve considered the issue, implemented appropriate measures, and can show that your approach is consistent with data minimization principles.\n\nMetaStrip processes files entirely in the browser, meaning your documents never leave your infrastructure, an important consideration for organisations handling confidential or regulated data. For teams processing documents regularly, it handles up to " + BATCH_LIMIT + " files at once with per-category removal, at no cost.\n\nMetadata compliance is one of those areas where the gap between what organisations should be doing and what they are doing is wide. The organisations that close that gap now will be better positioned when a regulator eventually asks the question.",
         },
         {
           heading: "FAQ",
