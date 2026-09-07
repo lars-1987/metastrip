@@ -2,6 +2,7 @@ import { detectFileType, sniffFormat, NAMEABLE_UNSUPPORTED } from "../file-utils
 import { processJpeg } from "./image/jpeg";
 import { processPng } from "./image/png";
 import { processWebp } from "./image/webp";
+import { processGif } from "./image/gif";
 import { processHeic } from "./image/heic";
 import { processPdf } from "./document/pdf";
 import { processDocx } from "./document/docx";
@@ -27,6 +28,7 @@ const processors: Partial<Record<SupportedFileType, Processor>> = {
   jpeg: processJpeg,
   png: processPng,
   webp: processWebp,
+  gif: processGif,
   heic: processHeic,
   pdf: processPdf,
   docx: processDocx,

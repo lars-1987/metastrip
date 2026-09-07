@@ -5,6 +5,7 @@ export const SUPPORTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "image/gif",
   "image/heic",
   "image/heif",
   "image/tiff",

@@ -86,7 +86,6 @@ export function sniffFormat(head: Uint8Array): string | null {
  *  to make real demand visible in `file_failed` instead of hiding it behind a
  *  parser error for whatever the extension claimed. */
 export const NAMEABLE_UNSUPPORTED: Record<string, string> = {
-  gif: "GIF",
   tiff: "TIFF",
   avif: "AVIF",
   bmp: "BMP",

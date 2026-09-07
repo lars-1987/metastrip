@@ -16,7 +16,7 @@ interface Props {
 type Kind = "image" | "doc" | "video" | "audio";
 
 const FORMATS: { ext: string; kind: Kind }[] = [
-  { ext: "jpeg", kind: "image" }, { ext: "png", kind: "image" }, { ext: "webp", kind: "image" }, { ext: "heic", kind: "image" },
+  { ext: "jpeg", kind: "image" }, { ext: "png", kind: "image" }, { ext: "webp", kind: "image" }, { ext: "gif", kind: "image" }, { ext: "heic", kind: "image" },
   { ext: "pdf", kind: "doc" }, { ext: "docx", kind: "doc" }, { ext: "xlsx", kind: "doc" }, { ext: "pptx", kind: "doc" },
   { ext: "mp4", kind: "video" }, { ext: "mov", kind: "video" },
   { ext: "mp3", kind: "audio" }, { ext: "m4a", kind: "audio" }, { ext: "flac", kind: "audio" }, { ext: "wav", kind: "audio" },
