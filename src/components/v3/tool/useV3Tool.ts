@@ -235,7 +235,8 @@ export function useV3Tool() {
   }, []);
 
   const download = useCallback(async () => {
-    const done = entries.filter((e) => e.cleanedBlob && e.finalReport);
+    // Never ship a file we could not read as "cleaned_<name>".
+    const done = entries.filter((e) => e.cleanedBlob && e.finalReport && !e.error);
     if (done.length === 0) return;
     try {
       if (done.length === 1) {

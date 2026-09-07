@@ -41,6 +41,57 @@ function extensionOf(name: string): string {
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
 }
 
+/** Identify a file from its leading bytes.
+ *
+ *  `File.type` comes from the operating system's guess at the extension, so a
+ *  JPEG saved as photo.png arrives tagged image/png, gets routed to the PNG
+ *  parser and is rejected on the signature check. That was the single most
+ *  common failure in `file_failed`. The bytes are the only reliable answer.
+ *
+ *  Returns a format id, including ones we cannot process yet, so the caller can
+ *  say "GIF is not supported" rather than "Invalid PNG file". Returns null when
+ *  the header is ambiguous (zip containers, raw MP3 frames), leaving the
+ *  declared type to decide. */
+export function sniffFormat(head: Uint8Array): string | null {
+  if (head.length < 12) return null;
+  const at = (i: number, len: number) =>
+    String.fromCharCode(...head.subarray(i, i + len));
+
+  if (head[0] === 0x89 && at(1, 3) === "PNG") return "png";
+  if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "jpeg";
+  if (at(0, 3) === "GIF") return "gif";
+  if (at(0, 4) === "II*\u0000" || at(0, 4) === "MM\u0000*") return "tiff";
+  if (at(0, 5) === "%PDF-") return "pdf";
+  if (at(0, 4) === "fLaC") return "flac";
+  if (at(0, 3) === "ID3") return "mp3";
+  if (head[0] === 0x42 && head[1] === 0x4d) return "bmp";
+  if (at(0, 4) === "RIFF") {
+    const kind = at(8, 4);
+    if (kind === "WEBP") return "webp";
+    if (kind === "WAVE") return "wav";
+    return null;
+  }
+  // ISO base media: HEIC, AVIF, MP4 and MOV all carry `ftyp` at byte 4.
+  if (at(4, 4) === "ftyp") {
+    const brand = at(8, 4);
+    if (brand.startsWith("hei") || brand.startsWith("mif")) return "heic";
+    if (brand.startsWith("avi")) return "avif";
+    if (brand === "qt  ") return "mov";
+    return "mp4";
+  }
+  return null;
+}
+
+/** Formats we can name but not yet process. Used to give an honest error, and
+ *  to make real demand visible in `file_failed` instead of hiding it behind a
+ *  parser error for whatever the extension claimed. */
+export const NAMEABLE_UNSUPPORTED: Record<string, string> = {
+  gif: "GIF",
+  tiff: "TIFF",
+  avif: "AVIF",
+  bmp: "BMP",
+};
+
 export function detectFileType(file: File): SupportedFileType | null {
   const byMime = MIME_TO_TYPE[file.type];
   if (byMime) return byMime;

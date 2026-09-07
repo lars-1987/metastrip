@@ -1,4 +1,4 @@
-import { detectFileType } from "../file-utils";
+import { detectFileType, sniffFormat, NAMEABLE_UNSUPPORTED } from "../file-utils";
 import { processJpeg } from "./image/jpeg";
 import { processPng } from "./image/png";
 import { processWebp } from "./image/webp";
@@ -15,7 +15,6 @@ import type {
   SupportedFileType,
   StripOptions,
   ProcessingResult,
-  MetadataReport,
 } from "./types";
 import { DEFAULT_STRIP_OPTIONS } from "./types";
 
@@ -42,47 +41,59 @@ const processors: Partial<Record<SupportedFileType, Processor>> = {
   wav: processWav,
 };
 
+/** An empty result carrying an error, so the three failure paths below read as
+ *  one line each instead of three near-identical object literals. */
+function failed(file: File, fileType: SupportedFileType, error: string): ProcessingResult {
+  return {
+    originalFile: file,
+    // The original bytes, untouched. An empty Blob here would hand the user a
+    // 0-byte "cleaned" file if anything downloaded it.
+    cleanedBlob: file,
+    report: {
+      fileName: file.name,
+      fileType,
+      fileSize: file.size,
+      cleanedFileSize: 0,
+      fieldsFound: [],
+      fieldsRemoved: [],
+      fieldsKept: [],
+      processedAt: new Date(),
+    },
+    error,
+  };
+}
+
 export async function processFile(
   file: File,
   options: StripOptions = DEFAULT_STRIP_OPTIONS
 ): Promise<ProcessingResult> {
-  const fileType = detectFileType(file);
+  // Trust the bytes over the file name. `File.type` is the OS guessing from the
+  // extension, so a JPEG saved as photo.png arrived tagged image/png, reached
+  // processPng and failed its signature check. That was the most common error
+  // in `file_failed`: 14 of them from 4 people, all reported as "Invalid PNG".
+  const head = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+  const sniffed = sniffFormat(head);
+
+  // A format we can name but not yet handle. Saying so beats a parser error for
+  // whatever the extension claimed, and it puts real demand in the telemetry.
+  if (sniffed && NAMEABLE_UNSUPPORTED[sniffed]) {
+    return failed(file, detectFileType(file) ?? "jpeg",
+      `${NAMEABLE_UNSUPPORTED[sniffed]} files aren't supported yet.`);
+  }
+
+  const sniffedType =
+    sniffed && Object.prototype.hasOwnProperty.call(processors, sniffed)
+      ? (sniffed as SupportedFileType)
+      : null;
+  const fileType = sniffedType ?? detectFileType(file);
 
   if (!fileType) {
-    return {
-      originalFile: file,
-      cleanedBlob: new Blob(),
-      report: {
-        fileName: file.name,
-        fileType: "jpeg",
-        fileSize: file.size,
-        cleanedFileSize: 0,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      } as MetadataReport,
-      error: `Unsupported file type: ${file.type}`,
-    };
+    return failed(file, "jpeg", `Unsupported file type: ${file.type}`);
   }
 
   const processor = processors[fileType];
   if (!processor) {
-    return {
-      originalFile: file,
-      cleanedBlob: new Blob(),
-      report: {
-        fileName: file.name,
-        fileType,
-        fileSize: file.size,
-        cleanedFileSize: 0,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-      error: `${fileType.toUpperCase()} support coming soon`,
-    };
+    return failed(file, fileType, `${fileType.toUpperCase()} support coming soon`);
   }
 
   return processor(file, options);

@@ -62,6 +62,10 @@ export function CardReview({
   const allOn = visibleCategories.every((c) => options[c]);
   const selectedCount = visibleCategories.filter((c) => options[c]).length;
   const nothingFound = visibleCategories.length === 0;
+  // A file we could not read produces the same empty field list as a genuinely
+  // clean one. Telling someone their file is clean when we never managed to
+  // open it is the worst failure this tool has, so the error takes priority.
+  const failed = Boolean(entry.error);
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
@@ -69,11 +73,24 @@ export function CardReview({
         <h3 className="v3-mono min-w-0 truncate text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
           Found in <span className="text-[var(--text-body)]">{entry.file.name}</span>
         </h3>
-        {!nothingFound && <Checkbox checked={allOn} onChange={onToggleAll} label="Remove all" />}
+        {!nothingFound && !failed && <Checkbox checked={allOn} onChange={onToggleAll} label="Remove all" />}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1 -mr-1">
-        {nothingFound ? (
+        {failed ? (
+          <div
+            role="alert"
+            className="rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--card)] p-6"
+          >
+            <p className="mb-2 text-[15px] font-medium text-[var(--text)]">
+              This file could not be read.
+            </p>
+            <p className="text-[14px] leading-relaxed text-[var(--text-body)]">
+              {entry.error} Nothing was changed, and we cannot tell you whether it
+              carries metadata, so treat it as unchecked rather than clean.
+            </p>
+          </div>
+        ) : nothingFound ? (
           <div className="rounded-[var(--radius-sm)] bg-[var(--card)] p-6 text-[15px] text-[var(--text-body)]">
             No removable metadata found; this file is already clean.
           </div>

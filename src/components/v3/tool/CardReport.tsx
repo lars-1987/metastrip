@@ -41,7 +41,9 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
 
   const stats = useMemo(() => {
     let removed = 0, kept = 0, originalSize = 0, cleanedSize = 0;
-    for (const e of entries) {
+    // Files we could not read contribute nothing: counting them made an
+    // untouched 42-byte file report "42 B saved".
+    for (const e of entries.filter((x) => !x.error)) {
       const r = e.finalReport ?? e.scan;
       removed += r.fieldsRemoved.length;
       kept += r.fieldsKept.length;
@@ -50,6 +52,12 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
     }
     return { removed, kept, saved: Math.max(0, originalSize - cleanedSize) };
   }, [entries]);
+
+  // A file we could not open has an empty field list, exactly like a clean one.
+  // Counting it as "cleaned" would tell someone a file is safe to share when we
+  // never read it.
+  const failedCount = entries.filter((e) => e.error).length;
+  const cleanedCount = entries.length - failedCount;
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
@@ -64,7 +72,9 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
             {stats.removed > 0 ? "Metadata removed" : "Nothing left to remove"}
           </h3>
           <p className="text-[14px] text-[var(--text-body)]">
-            {entries.length} file{entries.length !== 1 ? "s" : ""} cleaned, in your browser.
+            {cleanedCount} file{cleanedCount !== 1 ? "s" : ""} cleaned, in your browser.
+            {failedCount > 0 &&
+              ` ${failedCount} could not be read and ${failedCount === 1 ? "was" : "were"} left unchanged.`}
           </p>
         </div>
       </div>
@@ -97,9 +107,16 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
                   aria-expanded={isOpen}
                   className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left cursor-pointer"
                 >
-                  <span className="min-w-0 truncate text-[14px] text-[var(--text)]">cleaned_{e.file.name}</span>
+                  <span className="min-w-0 truncate text-[14px] text-[var(--text)]">
+                    {e.error ? e.file.name : `cleaned_${e.file.name}`}
+                  </span>
                   <span className="flex shrink-0 items-center gap-3">
-                    <span className="v3-mono text-[12px] text-[var(--success)]">−{r.fieldsRemoved.length} removed</span>
+                    <span
+                      className="v3-mono text-[12px]"
+                      style={{ color: e.error ? "var(--text-muted)" : "var(--success)" }}
+                    >
+                      {e.error ? "not read" : `−${r.fieldsRemoved.length} removed`}
+                    </span>
                     <span className="transition-transform duration-200" style={{ transform: isOpen ? "rotate(180deg)" : "none", color: "var(--text-muted)" }}>
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                         <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -162,6 +179,7 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
           size="lg"
           className="shrink-0 whitespace-nowrap"
           onClick={onDownload}
+          disabled={cleanedCount === 0}
           hoverIcon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
