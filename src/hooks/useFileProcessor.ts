@@ -13,6 +13,7 @@ import type { MetadataCategory } from "@/lib/processing/types";
 import {
   trackFileAdded,
   trackFileStripped,
+  categoriesOf,
 } from "@/lib/analytics";
 
 export interface BatchProgress {
@@ -170,6 +171,8 @@ export function useFileProcessor() {
           file_type: entry.file.type,
           file_size: entry.file.size,
           fields_removed_count: result.report.fieldsRemoved.length,
+          categories_found: categoriesOf(result.report.fieldsFound),
+          categories_removed: categoriesOf(result.report.fieldsRemoved),
         });
 
         return {};
@@ -232,6 +235,8 @@ export function useFileProcessor() {
               file_type: entry.file.type,
               file_size: entry.file.size,
               fields_removed_count: result.report.fieldsRemoved.length,
+              categories_found: categoriesOf(result.report.fieldsFound),
+              categories_removed: categoriesOf(result.report.fieldsRemoved),
             });
           }
 

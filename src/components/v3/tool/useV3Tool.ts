@@ -5,7 +5,7 @@ import { processFile } from "@/lib/processing/coordinator";
 import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
-import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileFailed } from "@/lib/analytics";
+import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileFailed, categoriesOf } from "@/lib/analytics";
 import { prefersReducedMotion } from "../motion";
 
 export type Phase = "drop" | "review" | "done";
@@ -201,6 +201,8 @@ export function useV3Tool() {
         file_type: e.file.type,
         file_size: e.file.size,
         fields_removed_count: finalReport.fieldsRemoved.length,
+        categories_found: categoriesOf(finalReport.fieldsFound),
+        categories_removed: categoriesOf(finalReport.fieldsRemoved),
       });
       finished.push({ ...e, cleanedBlob, finalReport });
     }

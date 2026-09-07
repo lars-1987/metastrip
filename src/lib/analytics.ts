@@ -1,4 +1,5 @@
 import posthog from "posthog-js";
+import type { MetadataCategory } from "./processing/types";
 
 /* ------------------------------------------------------------------ */
 /*  Typed PostHog event helpers                                        */
@@ -13,12 +14,33 @@ export function trackFileAdded(props: {
   posthog.capture("file_added", props);
 }
 
+/**
+ * A completed strip.
+ *
+ * `categories_*` carry category NAMES only ("gps", "ai", "device"), never a
+ * field value, so nothing here can identify a file or a place. Sorted so the
+ * arrays group cleanly in queries.
+ *
+ * Both are recorded because they answer different questions. `found` is what
+ * people's files actually contain, which is the product-direction signal.
+ * `removed` is what they chose to act on, which differs only when someone
+ * deselects a category. Without these, "is anyone removing GPS?" can only be
+ * inferred from field counts and file format, which is suggestive rather than
+ * evidence.
+ */
 export function trackFileStripped(props: {
   file_type: string;
   file_size: number;
   fields_removed_count: number;
+  categories_found: MetadataCategory[];
+  categories_removed: MetadataCategory[];
 }) {
   posthog.capture("file_stripped", props);
+}
+
+/** Unique category names from a field list, sorted for stable grouping. */
+export function categoriesOf(fields: { category: MetadataCategory }[]): MetadataCategory[] {
+  return [...new Set(fields.map((f) => f.category))].sort();
 }
 
 /** A support call-to-action on the results card. Carries no file data, just
