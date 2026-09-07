@@ -54,7 +54,8 @@ const KIND_ICON: Record<Kind, ReactNode> = {
 
 /** A format label that flips on hover to reveal its file-type icon.
  *  3D properties are written with -webkit- prefixes too, or Safari flattens
- *  the transform and shows both faces at once. */
+ *  the transform and shows both faces at once. Both faces also need a
+ *  transform of their own, or Firefox does the same thing. */
 function FormatChip({ ext, kind }: { ext: string; kind: Kind }) {
   const hidden = { backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" } as React.CSSProperties;
   return (
@@ -66,8 +67,17 @@ function FormatChip({ ext, kind }: { ext: string; kind: Kind }) {
         className="relative block transition-transform duration-500 ease-[cubic-bezier(0.5,1.4,0.5,1)] motion-safe:group-hover/chip:[transform:rotateY(180deg)]"
         style={{ transformStyle: "preserve-3d", WebkitTransformStyle: "preserve-3d" } as React.CSSProperties}
       >
-        {/* front: the word */}
-        <span className="block" style={hidden}>{ext}</span>
+        {/* front: the word. The explicit rotateY(0deg) is load-bearing. A face
+            with no transform of its own never joins the 3D rendering context,
+            so Firefox correctly ignores backface-visibility on it and paints
+            the mirrored word over the icon on hover. Chrome and Safari are
+            lenient about this; Firefox is the one following the spec. */}
+        <span
+          className="block"
+          style={{ ...hidden, transform: "rotateY(0deg)", WebkitTransform: "rotateY(0deg)" } as React.CSSProperties}
+        >
+          {ext}
+        </span>
         {/* back: the file-type icon, pre-flipped so it reads upright after the spin */}
         <span
           className="absolute inset-0 grid place-items-center"
