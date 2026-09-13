@@ -184,11 +184,18 @@ export function useV3Tool() {
     for (const e of entries) {
       let cleanedBlob = e.fullyStrippedBlob;
       let finalReport = e.scan;
-      if (!optionsAllOn(e.options)) {
+      let error = e.error;
+      // A file that already failed its scan is not re-read: it would only fail
+      // again and log a second, misleading strip-stage failure.
+      if (!error && !optionsAllOn(e.options)) {
         const r = await processFile(e.file, { ...e.options });
         cleanedBlob = r.cleanedBlob;
         finalReport = r.report;
         if (r.error) {
+          // The error has to travel with the entry. Without it the report
+          // listed this file as "cleaned_<name>, −0 removed" and the download
+          // shipped the untouched original under that name.
+          error = r.error;
           trackFileFailed({
             file_type: e.file.type || "unknown",
             file_size: e.file.size,
@@ -204,7 +211,7 @@ export function useV3Tool() {
         categories_found: categoriesOf(finalReport.fieldsFound),
         categories_removed: categoriesOf(finalReport.fieldsRemoved),
       });
-      finished.push({ ...e, cleanedBlob, finalReport });
+      finished.push({ ...e, cleanedBlob, finalReport, error });
     }
     setEntries(finished);
 
