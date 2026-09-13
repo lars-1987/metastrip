@@ -7,8 +7,10 @@
  * standard MP4 "skip me" marker — the metadata is gone but file
  * structure is preserved and no parent-size recomputation is needed.
  *
- * Also zeroes timestamps (creation_time, modification_time) in mvhd
- * and tkhd, since those leak when the video was recorded.
+ * Also zeroes timestamps (creation_time, modification_time) in mvhd, tkhd
+ * and mdhd, since those leak when the video was recorded. mdhd was missed
+ * until 13 Sep 2026, so every cleaned video still carried its recording time
+ * once per track.
  *
  * Works for iPhone/Android/GoPro/drone MP4s and standard MOV files.
  * Does NOT handle fragmented MP4 (moof/mfra) — those need a different
@@ -158,6 +160,31 @@ function zeroBytes(buf: Uint8Array, offset: number, length: number) {
   buf.fill(0, offset, offset + length);
 }
 
+/** Boxes with a creation/modification time pair, and how the report names them. */
+const TIMESTAMP_BOXES: Record<string, string> = {
+  mvhd: "Movie created",
+  tkhd: "Track created",
+  mdhd: "Media created", // one per track, its own copy of the recording time
+};
+
+// MP4 counts seconds from 1904-01-01; JavaScript from 1970-01-01.
+const MAC_EPOCH_OFFSET = 2082844800;
+
+function readMacTime(view: DataView, offset: number, wide: boolean): number {
+  return wide ? view.getUint32(offset) * 0x100000000 + view.getUint32(offset + 4) : view.getUint32(offset);
+}
+
+function formatMacTime(secs: number): string {
+  const d = new Date((secs - MAC_EPOCH_OFFSET) * 1000);
+  return Number.isNaN(d.getTime()) ? String(secs) : `${d.toISOString().slice(0, 19).replace("T", " ")} UTC`;
+}
+
+function describeTimes(created: number, modified: number): string {
+  if (!created) return `modified ${formatMacTime(modified)}`;
+  if (!modified || modified === created) return formatMacTime(created);
+  return `${formatMacTime(created)} (modified ${formatMacTime(modified)})`;
+}
+
 /* ──────────────────────────────────────────────────────────────────
    The actual stripping pass
    ────────────────────────────────────────────────────────────────── */
@@ -206,50 +233,57 @@ function stripMp4Metadata(input: ArrayBuffer, options: StripOptions): StripResul
       // hdlr — zero the 12-byte "reserved" field where Apple etc. stuff vendor IDs.
       // Box layout (after 8-byte header): version(1) flags(3) pre_defined(4)
       // handler_type(4) reserved[3](12 bytes) name(variable, null-terminated).
+      // A field is only reported when it holds something. Zeroed is what a
+      // stripped file looks like, and reporting these unconditionally made
+      // every cleaned video re-scan as "8 date fields, 14 vendor IDs found".
       if (box.type === "hdlr") {
-        if (options.software || options.device) {
-          const reservedStart = box.contentStart + 12; // skip ver+flags+pre_defined+handler_type
-          const reservedLen = 12;
-          if (reservedStart + reservedLen <= box.end) {
-            zeroBytes(cleaned, reservedStart, reservedLen);
+        const reservedStart = box.contentStart + 12; // skip ver+flags+pre_defined+handler_type
+        const reservedLen = 12;
+        if (reservedStart + reservedLen <= box.end) {
+          const reserved = cleaned.subarray(reservedStart, reservedStart + reservedLen);
+          if (reserved.some((b) => b !== 0)) {
+            const vendor = ASCII.decode(reserved.subarray(0, 4)).replace(/\0/g, "").trim();
             const f: MetadataField = {
               category: "software",
               key: "hdlr_vendor",
               label: "Handler vendor ID",
-              value: "(vendor)",
+              value: vendor || "(set)",
               removable: true,
             };
             fieldsFound.push(f);
-            fieldsRemoved.push(f);
+            if (options.software || options.device) {
+              zeroBytes(cleaned, reservedStart, reservedLen);
+              fieldsRemoved.push(f);
+            }
           }
         }
         continue;
       }
 
-      // mvhd / tkhd — wipe creation_time and modification_time
-      if (box.type === "mvhd" || box.type === "tkhd") {
-        if (options.dates) {
-          // Box content layout (relative to box.contentStart):
-          //   1 byte version, 3 bytes flags, then:
-          //   if version 0: 4 bytes creation_time, 4 bytes modification_time
-          //   if version 1: 8 bytes creation_time, 8 bytes modification_time
-          const version = view.getUint8(box.contentStart);
-          const tsStart = box.contentStart + 4; // skip version + flags
-          const tsLen = version === 1 ? 16 : 8; // both timestamps
-          if (tsStart + tsLen <= box.end) {
-            zeroBytes(cleaned, tsStart, tsLen);
+      // mvhd / tkhd / mdhd: creation_time and modification_time. The fields
+      // are mandatory, so they are zeroed rather than removed. Layout from
+      // box.contentStart: 1 byte version, 3 bytes flags, then two 4-byte
+      // times (version 0) or two 8-byte times (version 1).
+      if (TIMESTAMP_BOXES[box.type]) {
+        const wide = view.getUint8(box.contentStart) === 1;
+        const tsStart = box.contentStart + 4;
+        const tsLen = wide ? 16 : 8;
+        if (tsStart + tsLen <= box.end) {
+          const created = readMacTime(view, tsStart, wide);
+          const modified = readMacTime(view, tsStart + tsLen / 2, wide);
+          if (created || modified) {
             const f: MetadataField = {
               category: "dates",
               key: `${box.type}_timestamps`,
-              label:
-                box.type === "mvhd"
-                  ? "Movie creation/modification time"
-                  : "Track creation/modification time",
-              value: "(timestamp)",
+              label: TIMESTAMP_BOXES[box.type],
+              value: describeTimes(created, modified),
               removable: true,
             };
             fieldsFound.push(f);
-            fieldsRemoved.push(f);
+            if (options.dates) {
+              zeroBytes(cleaned, tsStart, tsLen);
+              fieldsRemoved.push(f);
+            }
           }
         }
         continue;
