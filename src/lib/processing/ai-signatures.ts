@@ -33,6 +33,9 @@ const XMP_KEYS = new Set(["XML:com.adobe.xmp"]);
 
 const GENERATOR_NAMES = /\b(NovelAI|Midjourney|Stable Diffusion|ComfyUI|InvokeAI|Fooocus|DALL[·-]?E|Adobe Firefly)\b/i;
 
+/** Midjourney packs the prompt and the job into one Description field. */
+const MIDJOURNEY_JOB = /\bJob ID:\s*[0-9a-f-]{8,}/i;
+
 const hasOwn = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
 
 /**
@@ -48,7 +51,7 @@ export function looksLikeAiGeneration(value: string): boolean {
   // JSON carrying a prompt alongside sampling settings (NovelAI's Comment).
   if (/"prompt"\s*:/.test(v) && /"(steps|seed|sampler|scale|cfg_scale|n_samples)"\s*:/.test(v)) return true;
   // Midjourney packs the prompt and the job into Description.
-  if (/\bJob ID:\s*[0-9a-f-]{8,}/i.test(v)) return true;
+  if (MIDJOURNEY_JOB.test(v)) return true;
   // NovelAI's fixed Title.
   if (/^AI generated image$/i.test(v.trim())) return true;
   return false;
@@ -72,4 +75,12 @@ export function aiCategoryFor(key: string, value: string): MetadataCategory | nu
 /** A readable label for a key only generation tools write, else null. */
 export function aiTextLabel(key: string): string | null {
   return hasOwn(AI_TEXT_KEYS, key) ? AI_TEXT_KEYS[key] : null;
+}
+
+/** A readable label for a generic field whose value marks it as one tool's
+ *  record, else null. A Midjourney download showed its prompt and job as a
+ *  bare "Description". */
+export function aiValueLabel(key: string, value: string): string | null {
+  if (FREE_TEXT_KEYS.has(key) && MIDJOURNEY_JOB.test(value.replace(/\0/g, ""))) return "Midjourney prompt and job ID";
+  return null;
 }

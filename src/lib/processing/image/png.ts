@@ -4,7 +4,7 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
-import { aiCategoryFor, aiTextLabel } from "../ai-signatures";
+import { aiCategoryFor, aiTextLabel, aiValueLabel } from "../ai-signatures";
 import { describeC2pa } from "../c2pa-manifest";
 
 // PNG signature: 8 bytes
@@ -170,7 +170,7 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
       fields.push({
         category,
         key: parsed.keyword,
-        label: aiTextLabel(parsed.keyword) ?? parsed.keyword,
+        label: aiTextLabel(parsed.keyword) ?? aiValueLabel(parsed.keyword, parsed.value) ?? parsed.keyword,
         value: parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value,
         removable: true,
       });
@@ -182,7 +182,7 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
       fields.push({
         category,
         key: parsed.keyword,
-        label: `${aiTextLabel(parsed.keyword) ?? parsed.keyword} (iTXt)`,
+        label: `${aiTextLabel(parsed.keyword) ?? aiValueLabel(parsed.keyword, parsed.value) ?? parsed.keyword} (iTXt)`,
         value: parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value,
         removable: true,
       });

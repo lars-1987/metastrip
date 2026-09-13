@@ -1,6 +1,6 @@
 import piexif from "piexifjs";
 import type { MetadataField, MetadataCategory } from "../types";
-import { aiCategoryFor } from "../ai-signatures";
+import { aiCategoryFor, aiValueLabel } from "../ai-signatures";
 
 /** Maps EXIF tag names to metadata categories. Shared by the JPEG and HEIC
  *  processors so an EXIF block is classified identically wherever it lives. */
@@ -131,7 +131,7 @@ export function catalogExifFields(exifObj: ExifObj): MetadataField[] {
       fields.push({
         category,
         key: tagName,
-        label: humanizeTagName(tagName),
+        label: aiValueLabel(tagName, formatted) ?? humanizeTagName(tagName),
         value: tagName === "UserComment" ? decodeUserComment(formatted) : formatted,
         removable: true,
       });
