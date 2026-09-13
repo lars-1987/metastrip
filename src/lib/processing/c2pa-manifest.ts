@@ -300,7 +300,7 @@ function agentName(agent: unknown): string | undefined {
  *  plainly: removing the manifest removes this record, not the watermark. */
 function actionLabel(action: string | undefined): string | undefined {
   if (!action) return undefined;
-  if (/^c2pa\.watermarked/.test(action)) return "invisible watermark added (it stays in the pixels)";
+  if (/^c2pa\.watermarked/.test(action)) return "watermarked";
   return action.replace(/^c2pa\./, "");
 }
 
@@ -381,6 +381,11 @@ export function describeC2pa(payload: Uint8Array, totalBytes = payload.length): 
     if (source) out.push(field("C2PA:source", "Source", source));
     if (when) out.push(field("C2PA:when", "Created", when.replace("T", " ").replace(/(\.\d+)?(Z|[+-]\d\d:?\d\d)?$/, (_m, _f, z) => (z === "Z" ? " UTC" : z ? ` ${z}` : ""))));
     if (actionNames.length) out.push(field("C2PA:actions", "Actions", actionNames.join(", ")));
+    // Its own short line: tucked into Actions, the caveat was cut off by the
+    // review's 60-character preview, and it is the part that matters.
+    if (actions.some((a) => /^c2pa\.watermarked/.test(asString(a["action"]) ?? ""))) {
+      out.push(field("C2PA:watermark", "Invisible watermark", "stays in the pixels after stripping"));
+    }
     if (credited.length) out.push(field("C2PA:author", "Credited to", credited.join(", ")));
     if (manifests.length > 1) out.push(field("C2PA:history", "Earlier manifests", `${manifests.length - 1} (the history of edits before this one)`));
     return out;

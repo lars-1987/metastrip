@@ -83,8 +83,14 @@ export function aiTextLabel(key: string): string | null {
 export function aiValueLabel(key: string, value: string): string | null {
   if (FREE_TEXT_KEYS.has(key) && MIDJOURNEY_JOB.test(value.replace(/\0/g, ""))) return "Midjourney prompt and job ID";
   if (XMP_KEYS.has(key) && xmpProvenance(value)) return "C2PA manifest stored online";
+  if (XMP_KEYS.has(key) && aiCategoryFor(key, value) === "ai") return "AI marker in XMP";
   return null;
 }
+
+const IPTC_SOURCE_TYPES: [RegExp, string][] = [
+  [/compositeWithTrainedAlgorithmicMedia/i, "Edited with AI (IPTC digital source type)"],
+  [/trainedAlgorithmicMedia/i, "AI-generated (IPTC digital source type)"],
+];
 
 /**
  * The online manifest an XMP packet points to, else null. Adobe Firefly's PNG
@@ -97,8 +103,14 @@ export function xmpProvenance(xmp: string): string | null {
   return m ? m[1] : null;
 }
 
-/** A better value to show than the raw text, else null: the manifest link
- *  rather than the opening of an XMP packet. */
+/** A better value to show than the raw text, else null. For an XMP packet the
+ *  opening "<?xpacket begin=…" said nothing: show the manifest link, the IPTC
+ *  source type, or the generator it names instead. */
 export function aiDisplayValue(key: string, value: string): string | null {
-  return XMP_KEYS.has(key) ? xmpProvenance(value) : null;
+  if (!XMP_KEYS.has(key)) return null;
+  const link = xmpProvenance(value);
+  if (link) return link;
+  for (const [re, text] of IPTC_SOURCE_TYPES) if (re.test(value)) return text;
+  const tool = GENERATOR_NAMES.exec(value);
+  return tool ? `names ${tool[1]}` : null;
 }

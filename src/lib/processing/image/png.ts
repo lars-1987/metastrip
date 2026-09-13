@@ -182,7 +182,7 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
       fields.push({
         category,
         key: parsed.keyword,
-        label: `${aiTextLabel(parsed.keyword) ?? aiValueLabel(parsed.keyword, parsed.value) ?? parsed.keyword} (iTXt)`,
+        label: aiTextLabel(parsed.keyword) ?? aiValueLabel(parsed.keyword, parsed.value) ?? `${parsed.keyword} (iTXt)`,
         value: aiDisplayValue(parsed.keyword, parsed.value) ?? (parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value),
         removable: true,
       });
