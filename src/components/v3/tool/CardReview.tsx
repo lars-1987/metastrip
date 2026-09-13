@@ -13,7 +13,7 @@ import type { ToolEntry } from "./useV3Tool";
 
 /** Plain-English explanations shown in the per-card "?" tooltip. */
 const CATEGORY_INFO: Record<MetadataCategory, string> = {
-  gps: "The exact spot the photo was taken, often accurate to a few metres. Enough to pinpoint your home, workplace, or wherever you were.",
+  gps: "The exact spot the photo or video was taken, often accurate to a few metres. Enough to pinpoint your home, workplace, or wherever you were.",
   device: "The make, model, and serial of the device that made the file. Acts as a fingerprint that links all your files back to one device.",
   dates: "When the file was created and last edited, often down to the second and timezone, which can reveal your routine and rough location.",
   author: "Names, usernames, or creator credits embedded by your device or editing software.",

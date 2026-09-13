@@ -123,8 +123,11 @@ export const RELEVANT_CATEGORIES_BY_FILE_CATEGORY: Record<
   document: new Set([
     "gps", "device", "dates", "author", "software", "copyright", "comments", "custom",
   ]),
+  // author, comments and copyright surface once the MP4 processor reads inside
+  // udta and meta: a video's ©ART or com.apple.quicktime.author was stripped
+  // but, filtered out here, never shown.
   video: new Set([
-    "gps", "device", "dates", "software", "custom",
+    "gps", "device", "dates", "author", "software", "copyright", "comments", "custom",
   ]),
   audio: new Set([
     "dates", "author", "software", "copyright", "comments", "custom",

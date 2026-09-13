@@ -7,9 +7,10 @@ import type { MetadataField } from "./processing/types";
  * GPSLatitude = "40/1, 26/1, 4612/100" (degrees, minutes, seconds), paired
  * with GPSLatitudeRef = "N" | "S" (and the same for longitude with "E"|"W").
  *
- * Video (MP4 ©xyz/loci) stores location as opaque binary that the processors
- * don't decode to decimal, so those return null here — the map simply doesn't
- * render for video, which is fine.
+ * Videos store a point as an ISO 6709 string ("+37.7749-122.4194+012.345/"):
+ * Apple's com.apple.quicktime.location.ISO6709 key, Android's ©xyz atom, and
+ * 3GPP loci once the MP4 processor converts it. The processor emits those under
+ * the key "ISO6709", so a video's location reaches the same map.
  */
 
 export interface LatLng {
@@ -42,11 +43,24 @@ function fieldValue(fields: MetadataField[], key: string): string | null {
   return String(f.value);
 }
 
-/** Returns decimal coordinates if the fields carry a parseable EXIF GPS fix. */
+/** "+37.7749-122.4194+012.345/" -> { lat: 37.7749, lng: -122.4194 }. Decimal
+ *  degrees, the form phones write; altitude and the trailing "/" are ignored. */
+export function parseIso6709(value: string): LatLng | null {
+  const m = /^([+-]\d{1,2}(?:\.\d+)?)([+-]\d{1,3}(?:\.\d+)?)/.exec(value.trim());
+  if (!m) return null;
+  const lat = Number(m[1]);
+  const lng = Number(m[2]);
+  if (Number.isNaN(lat) || Number.isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
+}
+
+/** Returns decimal coordinates if the fields carry a parseable GPS fix: EXIF
+ *  for photos, ISO 6709 for video. */
 export function extractGpsCoordinates(fields: MetadataField[]): LatLng | null {
+  const iso = fieldValue(fields, "ISO6709");
   const latRaw = fieldValue(fields, "GPSLatitude");
   const lngRaw = fieldValue(fields, "GPSLongitude");
-  if (!latRaw || !lngRaw) return null;
+  if (!latRaw || !lngRaw) return iso ? parseIso6709(iso) : null;
 
   let lat = dmsToDecimal(latRaw);
   let lng = dmsToDecimal(lngRaw);
