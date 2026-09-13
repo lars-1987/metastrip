@@ -5,6 +5,7 @@ import type {
   MetadataCategory,
 } from "../types";
 import { describeC2pa } from "../c2pa-manifest";
+import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 
 // RIFF header: "RIFF" + 4-byte LE size + "WEBP"
 const RIFF_HEADER = new TextEncoder().encode("RIFF");
@@ -111,11 +112,14 @@ function catalogueXmpFields(data: Uint8Array): MetadataField[] {
   const fields: MetadataField[] = [];
   const text = new TextDecoder().decode(data);
 
+  // An AI marker or a C2PA manifest link (a Firefly download) puts the packet
+  // under AI, with the link as its value rather than a byte count.
+  const xmpKey = "XML:com.adobe.xmp";
   fields.push({
-    category: "custom",
+    category: aiCategoryFor(xmpKey, text) === "ai" ? "ai" : "custom",
     key: "XMP",
-    label: "XMP Metadata",
-    value: `(${data.length} bytes)`,
+    label: aiValueLabel(xmpKey, text) ?? "XMP Metadata",
+    value: aiDisplayValue(xmpKey, text) ?? `(${data.length} bytes)`,
     removable: true,
   });
 

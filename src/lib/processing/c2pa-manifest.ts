@@ -295,6 +295,15 @@ function agentName(agent: unknown): string | undefined {
   return version ? `${name} ${version}` : name;
 }
 
+/** "c2pa.watermarked", ".bound" and ".unbound" mean an invisible watermark
+ *  went into the pixels (the first real ChatGPT image carried one). Say so
+ *  plainly: removing the manifest removes this record, not the watermark. */
+function actionLabel(action: string | undefined): string | undefined {
+  if (!action) return undefined;
+  if (/^c2pa\.watermarked/.test(action)) return "invisible watermark added (it stays in the pixels)";
+  return action.replace(/^c2pa\./, "");
+}
+
 function sourceTypeLabel(url: unknown): string | undefined {
   const s = asString(url);
   if (!s) return undefined;
@@ -364,7 +373,7 @@ export function describeC2pa(payload: Uint8Array, totalBytes = payload.length): 
     const model = agentName(created?.["softwareAgent"]);
     const source = sourceTypeLabel(created?.["digitalSourceType"] ?? actions.find((a) => a["digitalSourceType"])?.["digitalSourceType"]);
     const when = asString(created?.["when"]);
-    const actionNames = [...new Set(actions.map((a) => asString(a["action"])?.replace(/^c2pa\./, "")).filter((x): x is string => !!x))];
+    const actionNames = [...new Set(actions.map((a) => actionLabel(asString(a["action"]))).filter((x): x is string => !!x))];
 
     const out = [field("C2PA", "C2PA Content Credential", signer ? `certificate issued to ${signer}` : `(${totalBytes} bytes)`)];
     if (generator) out.push(field("C2PA:generator", "Made with", generator));

@@ -68,7 +68,7 @@ export function aiCategoryFor(key: string, value: string): MetadataCategory | nu
   if (FREE_TEXT_KEYS.has(key)) return looksLikeAiGeneration(value) ? "ai" : null;
   // IPTC's official AI marker (Midjourney, Google and Adobe set it) or a
   // generator named as the creator tool.
-  if (XMP_KEYS.has(key)) return /trainedAlgorithmicMedia/i.test(value) || GENERATOR_NAMES.test(value) ? "ai" : null;
+  if (XMP_KEYS.has(key)) return /trainedAlgorithmicMedia/i.test(value) || GENERATOR_NAMES.test(value) || xmpProvenance(value) ? "ai" : null;
   return null;
 }
 
@@ -82,5 +82,23 @@ export function aiTextLabel(key: string): string | null {
  *  bare "Description". */
 export function aiValueLabel(key: string, value: string): string | null {
   if (FREE_TEXT_KEYS.has(key) && MIDJOURNEY_JOB.test(value.replace(/\0/g, ""))) return "Midjourney prompt and job ID";
+  if (XMP_KEYS.has(key) && xmpProvenance(value)) return "C2PA manifest stored online";
   return null;
+}
+
+/**
+ * The online manifest an XMP packet points to, else null. Adobe Firefly's PNG
+ * downloads carry no embedded manifest at all, only this link
+ * (dcterms:provenance="https://cai-manifests.adobe.com/manifests/…"), which
+ * showed as a Custom field whose 200-character preview cut the link off.
+ */
+export function xmpProvenance(xmp: string): string | null {
+  const m = /dcterms:provenance\s*=\s*"([^"]+)"/.exec(xmp) ?? /<dcterms:provenance>\s*([^<\s]+)\s*</.exec(xmp);
+  return m ? m[1] : null;
+}
+
+/** A better value to show than the raw text, else null: the manifest link
+ *  rather than the opening of an XMP packet. */
+export function aiDisplayValue(key: string, value: string): string | null {
+  return XMP_KEYS.has(key) ? xmpProvenance(value) : null;
 }

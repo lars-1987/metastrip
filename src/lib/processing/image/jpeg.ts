@@ -7,6 +7,7 @@ import type {
 } from "../types";
 import { IFD_MAP, catalogExifFields, exifCategory, formatExifValue } from "./exif-catalog";
 import { describeC2pa, jumbfFromApp11 } from "../c2pa-manifest";
+import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 
 // ── JPEG marker-segment walker ────────────────────────────────────────────
 // piexif only understands EXIF (APP1). A JPEG can also carry a C2PA content
@@ -90,6 +91,16 @@ function parseMetadataSegments(b: Uint8Array): Segment[] {
   return segs;
 }
 
+const LATIN1 = new TextDecoder("latin1");
+const XMP_KEY = "XML:com.adobe.xmp"; // the name ai-signatures knows an XMP packet by
+
+/** Whether the file's XMP carries an AI marker or a C2PA manifest link. The
+ *  review then shows it under AI and it is removed with the AI toggle, so the
+ *  two cannot disagree. */
+function xmpIsAi(b: Uint8Array, segs: Segment[]): boolean {
+  return segs.some((s) => s.kind === "xmp" && aiCategoryFor(XMP_KEY, LATIN1.decode(b.subarray(s.start + 4, s.end))) === "ai");
+}
+
 /** Report fields for the non-EXIF metadata segments (EXIF is cataloged via
  *  piexif). C2PA maps to the `ai` category — the UI's content-credentials
  *  toggle. */
@@ -103,16 +114,18 @@ function catalogSegmentFields(b: Uint8Array, segs: Segment[]): MetadataField[] {
     const boxes = jumbfFromApp11(jumbfSegs.map((s) => b.subarray(s.start + 4, s.end)));
     fields.push(...(boxes.length ? boxes.flatMap((box) => describeC2pa(box, total)) : describeC2pa(new Uint8Array(0), total)));
   }
+  const aiXmp = xmpIsAi(b, segs);
   for (const s of segs) {
     const bytes = s.end - s.start;
     if (s.kind === "jumbf") {
       continue; // reported above, once, from the rejoined segments
     } else if (s.kind === "xmp") {
+      const text = LATIN1.decode(b.subarray(s.start + 4, s.end));
       fields.push({
-        category: "custom",
+        category: aiXmp ? "ai" : "custom",
         key: "XMP",
-        label: "XMP Metadata",
-        value: `(${bytes} bytes)`,
+        label: aiValueLabel(XMP_KEY, text) ?? "XMP Metadata",
+        value: aiDisplayValue(XMP_KEY, text) ?? `(${bytes} bytes)`,
         removable: true,
       });
     } else if (s.kind === "iptc") {
@@ -262,10 +275,10 @@ export async function processJpeg(
   // Non-EXIF metadata: remove the segment types whose category is being stripped.
   const kinds = new Set<SegKind>();
   if (categoriesToStrip.includes("ai")) kinds.add("jumbf");
-  if (categoriesToStrip.includes("custom")) {
-    kinds.add("xmp");
-    kinds.add("iptc");
-  }
+  // XMP goes with the category the review showed it under: AI when it carries
+  // an AI marker or a C2PA manifest link (a Firefly download), Custom otherwise.
+  if (categoriesToStrip.includes(xmpIsAi(bytes, segs) ? "ai" : "custom")) kinds.add("xmp");
+  if (categoriesToStrip.includes("custom")) kinds.add("iptc");
   if (categoriesToStrip.includes("comments")) kinds.add("com");
   if (kinds.size > 0) outBytes = removeSegments(outBytes, kinds);
 
