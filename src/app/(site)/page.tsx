@@ -12,12 +12,12 @@ import { OG_IMAGE } from "@/lib/og";
 export const metadata: Metadata = {
   title: "MetaStrip, strip hidden metadata from files",
   description:
-    "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from photos, PDFs, and documents. Free, client-side, and private; files never leave your device.",
+    "Remove AI tags and C2PA Content Credentials, plus GPS, camera and author details, from photos, videos, PDFs and docs. Free; files never leave your device.",
   alternates: { canonical: "https://metastrip.app" },
   openGraph: {
     title: "MetaStrip, strip hidden metadata from files",
     description:
-      "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from your files. 100% client-side; files never leave your device.",
+      "Remove AI tags and C2PA Content Credentials, plus GPS, camera and author details, from your files. 100% client-side; files never leave your device.",
     url: "https://metastrip.app",
     images: [OG_IMAGE],
   },
@@ -29,7 +29,7 @@ const webAppLd = {
   name: "MetaStrip",
   url: "https://metastrip.app",
   description:
-    "Remove hidden metadata from photos, PDFs, Word documents, and more. GPS coordinates, camera info, author names, timestamps, and AI generation tags, stripped entirely in your browser.",
+    "Remove hidden metadata from photos, videos, PDFs, Word documents, and more. AI generation tags and C2PA Content Credentials, GPS coordinates, camera info, author names and timestamps, stripped entirely in your browser.",
   applicationCategory: "UtilitiesApplication",
   operatingSystem: "Any",
   browserRequirements: "Requires a modern web browser",

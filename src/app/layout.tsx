@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://metastrip.app"),
   title: "MetaStrip, strip hidden metadata from files",
   description:
-    "Remove GPS coordinates, camera info, author names, timestamps, and AI generation tags from your files. 100% client-side; files never leave your device.",
+    "Remove AI tags and C2PA Content Credentials, plus GPS, camera and author details, from your files. 100% client-side; files never leave your device.",
   openGraph: {
     type: "website",
     siteName: "MetaStrip",
