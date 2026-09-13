@@ -35,6 +35,9 @@ interface Props {
   onRun: () => void;
   /** Every file in the batch failed to read, so there is nothing to remove. */
   allFailed?: boolean;
+  /** Every file is unreadable or clean: offer another file instead of a strip. */
+  nothingToRemove?: boolean;
+  onCheckAnother?: () => void;
 }
 
 function valueToString(v: unknown): string {
@@ -45,7 +48,7 @@ function valueToString(v: unknown): string {
 
 export function CardReview({
   entry, fileCount, visibleCategories, busy, allFilesAllOn,
-  onToggle, onToggleAll, onRun, allFailed = false,
+  onToggle, onToggleAll, onRun, allFailed = false, nothingToRemove = false, onCheckAnother,
 }: Props) {
   const options = entry.options;
   const coords = useMemo(() => extractGpsCoordinates(entry.scan.fieldsFound), [entry]);
@@ -97,7 +100,7 @@ export function CardReview({
           </div>
         ) : nothingFound ? (
           <div className="rounded-[var(--radius-sm)] bg-[var(--card)] p-6 text-[15px] text-[var(--text-body)]">
-            No removable metadata found; this file is already clean.
+            No removable metadata found. This file is already clean, so you can share the original as it is.
           </div>
         ) : (
           <div className="grid min-w-0 gap-3 lg:grid-cols-2 [grid-auto-flow:row_dense]">
@@ -155,15 +158,19 @@ export function CardReview({
         </span>
         <Button
           size="lg"
-          onClick={onRun}
-          disabled={busy || allFailed}
+          // Nothing to remove anywhere: a strip would change nothing and the
+          // download would be the same bytes, so move them on to the next file.
+          onClick={nothingToRemove ? onCheckAnother : onRun}
+          disabled={busy}
           hoverIcon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16M10 4h4M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            nothingToRemove ? undefined : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M4 7h16M10 4h4M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )
           }
         >
-          {busy ? "Removing…" : allFailed ? "Nothing to remove" : allFilesAllOn ? "Remove all metadata" : `Remove selected${fileCount > 1 ? ` · ${fileCount} files` : ` (${selectedCount})`}`}
+          {busy ? "Removing…" : nothingToRemove ? (allFailed ? "Try another file" : "Check another file") : allFilesAllOn ? "Remove all metadata" : `Remove selected${fileCount > 1 ? ` · ${fileCount} files` : ` (${selectedCount})`}`}
         </Button>
       </div>
     </div>

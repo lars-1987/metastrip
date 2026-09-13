@@ -5,7 +5,7 @@ import { processFile, failureReason } from "@/lib/processing/coordinator";
 import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
-import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, categoriesOf } from "@/lib/analytics";
+import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, categoriesOf } from "@/lib/analytics";
 import { shareFlagOn, canShareFiles, shareSupportReport } from "@/lib/share";
 import { prefersReducedMotion } from "../motion";
 
@@ -139,6 +139,12 @@ export function useV3Tool() {
           setSelectedId(scanned[0].id);
           setPhase("review");
         }
+      }
+      // A batch with nothing to remove in any file no longer goes through
+      // Remove (the button becomes "Check another file"), so record its outcome
+      // here or it leaves none at all.
+      if (scanned.length > 0 && scanned.every((s) => !s.error && s.scan.fieldsFound.length === 0)) {
+        scanned.forEach((s) => trackFileClean({ file_type: s.file.type || "unknown", file_size: s.file.size }));
       }
     } finally {
       setScanProgress(null);
@@ -346,10 +352,16 @@ export function useV3Tool() {
 
   const allFilesAllOn = useMemo(() => entries.every((e) => optionsAllOn(e.options)), [entries]);
   const allFailed = useMemo(() => entries.length > 0 && entries.every((e) => Boolean(e.error)), [entries]);
+  /** Every file is either unreadable or has nothing removable, so a strip would
+   *  change nothing and a download would hand back the same bytes. */
+  const nothingToRemove = useMemo(
+    () => !scanProgress && entries.length > 0 && entries.every((e) => Boolean(e.error) || e.scan.fieldsFound.length === 0),
+    [entries, scanProgress]
+  );
 
   return {
     phase, entries, selectedId, activeEntry, addError, skipped, downloadError, busy, running, tickedIds, scanProgress,
-    visibleCategories, allFilesAllOn, allFailed, canShare, shareDebug,
+    visibleCategories, allFilesAllOn, allFailed, nothingToRemove, canShare, shareDebug,
     addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download, share,
   };
 }

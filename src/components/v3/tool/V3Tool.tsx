@@ -179,6 +179,8 @@ export function V3Tool() {
               onToggleAll={t.setAll}
               onRun={t.runRemoval}
               allFailed={t.allFailed}
+              nothingToRemove={t.nothingToRemove}
+              onCheckAnother={t.reset}
             />
           )}
         </div>
