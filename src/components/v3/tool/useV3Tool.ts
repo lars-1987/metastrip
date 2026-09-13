@@ -5,7 +5,8 @@ import { processFile, failureReason } from "@/lib/processing/coordinator";
 import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
-import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileFailed, categoriesOf } from "@/lib/analytics";
+import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, categoriesOf } from "@/lib/analytics";
+import { shareFlagOn, canShareFiles } from "@/lib/share";
 import { prefersReducedMotion } from "../motion";
 
 export type Phase = "drop" | "review" | "done";
@@ -294,6 +295,33 @@ export function useV3Tool() {
     }
   }, [entries]);
 
+  // The cleaned files as File objects, built once per result so the tap can
+  // call navigator.share straight away: iOS drops the user gesture across an
+  // await and then refuses to open the sheet. Unreadable files never go in.
+  const shareFiles = useMemo(
+    () =>
+      phase !== "done"
+        ? []
+        : entries
+            .filter((e) => e.cleanedBlob && e.finalReport && !e.error)
+            .map((e) => new File([e.cleanedBlob!], `cleaned_${e.file.name}`, { type: e.file.type || "application/octet-stream" })),
+    [entries, phase]
+  );
+  const canShare = useMemo(() => phase === "done" && shareFlagOn() && canShareFiles(shareFiles), [phase, shareFiles]);
+
+  const share = useCallback(() => {
+    if (shareFiles.length === 0) return;
+    setDownloadError(null);
+    navigator.share({ files: shareFiles }).then(
+      () => shareFiles.forEach((f) => trackFileShared({ file_type: f.type })),
+      (err: unknown) => {
+        // Closing the sheet without picking anything rejects with AbortError.
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setDownloadError("Sharing didn't work here; use Download instead.");
+      }
+    );
+  }, [shareFiles]);
+
   const activeEntry = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? entries[0] ?? null,
     [entries, selectedId]
@@ -316,7 +344,7 @@ export function useV3Tool() {
 
   return {
     phase, entries, selectedId, activeEntry, addError, skipped, downloadError, busy, running, tickedIds, scanProgress,
-    visibleCategories, allFilesAllOn, allFailed,
-    addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download,
+    visibleCategories, allFilesAllOn, allFailed, canShare,
+    addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download, share,
   };
 }

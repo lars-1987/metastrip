@@ -16,6 +16,9 @@ interface Props {
   onReset: () => void;
   /** Set when building or saving the download failed. */
   downloadError?: string | null;
+  /** Phones where the share sheet can take these files (see lib/share). */
+  canShare?: boolean;
+  onShare?: () => void;
 }
 
 const CATEGORY_ORDER: MetadataCategory[] = [
@@ -38,7 +41,7 @@ function groupByCategory(fields: MetadataField[]): [MetadataCategory, MetadataFi
   return CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => [c, map.get(c)!]);
 }
 
-export function CardReport({ entries, onDownload, onReset, downloadError }: Props) {
+export function CardReport({ entries, onDownload, onReset, downloadError, canShare = false, onShare }: Props) {
   // Desktop opens the first file's list; phones start with every list closed,
   // since an open one pushed the download a screen further down.
   const [openId, setOpenId] = useState<string | null>(() =>
@@ -109,9 +112,27 @@ export function CardReport({ entries, onDownload, onReset, downloadError }: Prop
           the list below rather than between the reader and the button. */}
       {!nothingCleaned && (
         <div className="mb-6 md:hidden">
-          <Button size="lg" className="w-full" onClick={onDownload}>
-            {downloadLabel}
-          </Button>
+          {canShare ? (
+            // A download on an iPhone lands in Files, not Photos. The share
+            // sheet offers "Save Image" or sends it straight to an app.
+            // Stacked: side by side, "Save or share" wrapped onto two lines at 390px.
+            <div className="flex flex-col gap-3">
+              <Button size="lg" className="w-full whitespace-nowrap" onClick={onShare}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3v12m0-12l-4 4m4-4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 10H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                Save or share
+              </Button>
+              <Button size="lg" variant="soft" className="w-full" onClick={onDownload}>
+                {downloadLabel}
+              </Button>
+            </div>
+          ) : (
+            <Button size="lg" className="w-full" onClick={onDownload}>
+              {downloadLabel}
+            </Button>
+          )}
           {downloadError && <p role="alert" className="mt-3 text-[14px] text-[var(--danger)]">{downloadError}</p>}
         </div>
       )}

@@ -54,6 +54,12 @@ export function trackFileDownloaded(props: { file_type: string }) {
   posthog.capture("file_downloaded", props);
 }
 
+/** A cleaned file handed to the phone's share sheet (saved to Photos, sent to
+ *  an app) instead of downloaded. Same shape as file_downloaded. */
+export function trackFileShared(props: { file_type: string }) {
+  posthog.capture("file_shared", props);
+}
+
 /**
  * A file the user tried to clean but we didn't. Three stages:
  *   "add"   — rejected before processing (unsupported type, over batch limit).
