@@ -93,6 +93,15 @@
   --card-inverse-text: #f4f3f0;
   --card-inverse-muted: #b4b4b7;
 }
+/* The page behind the site. html and body kept globals.css's eggshell
+   (#efe9d9), which follows the phone's own light/dark setting, while the site
+   renders its own theme (dark by default). On a phone in light mode iOS painted
+   a cream status bar and a cream band when scrolling past either end. The page
+   now follows the v3 theme; keep these in step with .v3-root's --bg above. */
+html:has(.v3-root) { background-color: #e3e2de; }
+html:has(.v3-root[data-theme="dark"]) { background-color: #1b1b21; }
+body:has(.v3-root) { background: transparent; }
+
 .v3-root[data-theme="dark"] .v3-card-row {
   /* Drop shadow only for lift. A full inset white hairline bloomed along the
      top edge against the dark page and read as a glowing band — dropped it;

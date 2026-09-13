@@ -28,6 +28,8 @@ export function ThemeToggle() {
     setDark(next);
     if (next) root.setAttribute("data-theme", "dark");
     else root.removeAttribute("data-theme");
+    // Same page colours as .v3-root's --bg; the (site) layout script sets the first value.
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", next ? "#1b1b21" : "#e3e2de");
     try { localStorage.setItem("metastrip-v3-theme", next ? "dark" : "light"); } catch {}
   };
 
