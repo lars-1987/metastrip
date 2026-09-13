@@ -39,7 +39,11 @@ function groupByCategory(fields: MetadataField[]): [MetadataCategory, MetadataFi
 }
 
 export function CardReport({ entries, onDownload, onReset, downloadError }: Props) {
-  const [openId, setOpenId] = useState<string | null>(entries[0]?.id ?? null);
+  // Desktop opens the first file's list; phones start with every list closed,
+  // since an open one pushed the download a screen further down.
+  const [openId, setOpenId] = useState<string | null>(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches ? null : entries[0]?.id ?? null
+  );
 
   const stats = useMemo(() => {
     let removed = 0, kept = 0, originalSize = 0, cleanedSize = 0;
@@ -64,6 +68,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError }: Prop
   // this showed a green tick and "Nothing left to remove", which reads as "all
   // clean" about files we never opened.
   const nothingCleaned = cleanedCount === 0;
+  const downloadLabel = `Download clean ${entries.length > 1 ? "files (.zip)" : "file"}`;
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
@@ -98,6 +103,18 @@ export function CardReport({ entries, onDownload, onReset, downloadError }: Prop
           </p>
         </div>
       </div>
+
+      {/* Phones: the outcome, then the download, straight away. Stripping on a
+          phone is an on-the-go job, so the removed fields stay one tap away in
+          the list below rather than between the reader and the button. */}
+      {!nothingCleaned && (
+        <div className="mb-6 md:hidden">
+          <Button size="lg" className="w-full" onClick={onDownload}>
+            {downloadLabel}
+          </Button>
+          {downloadError && <p role="alert" className="mt-3 text-[14px] text-[var(--danger)]">{downloadError}</p>}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
@@ -181,7 +198,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError }: Prop
       </ul>
 
       {downloadError && (
-        <p role="alert" className="mb-3 text-[14px] text-[var(--danger)] sm:text-right">{downloadError}</p>
+        <p role="alert" className="mb-3 hidden text-[14px] text-[var(--danger)] md:block md:text-right">{downloadError}</p>
       )}
       <div className="mt-auto flex flex-col flex-wrap sm:flex-row items-center justify-end gap-3">
         <Button
@@ -198,6 +215,8 @@ export function CardReport({ entries, onDownload, onReset, downloadError }: Prop
         >
           Start over
         </Button>
+        {/* On phones the download sits at the top of the card instead. */}
+        <div className="hidden md:contents">
         <Button
           size="lg"
           className="shrink-0 whitespace-nowrap"
@@ -209,8 +228,9 @@ export function CardReport({ entries, onDownload, onReset, downloadError }: Prop
             </svg>
           }
         >
-          Download clean {entries.length > 1 ? "files (.zip)" : "file"}
+          {downloadLabel}
         </Button>
+        </div>
         {/* The two support asks share one row on mobile. Stacked, the fourth
             button lands below the fold on a 390x844 screen, which is where most
             completed strips happen. `sm:contents` dissolves this wrapper at

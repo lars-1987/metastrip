@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import { useV3Tool, type Phase } from "./useV3Tool";
 import { CardDropzone } from "./CardDropzone";
 import { FilesCard } from "./FilesCard";
@@ -101,6 +101,16 @@ export function V3Tool() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t.phase]);
 
+  // Phones: Remove is tapped at the bottom of a long review card, and the page
+  // kept that scroll position when the report replaced it, landing the reader
+  // part-way down the removed-fields list with the outcome above the fold.
+  // Bring the report's top (the outcome and the download) into view instead.
+  useEffect(() => {
+    if (t.phase !== "done" || window.innerWidth >= 768) return;
+    slotRefs[2].current?.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t.phase]);
+
   const handleReset = () => {
     if (prefersReducedMotion() || (typeof window !== "undefined" && window.innerWidth < 768)) { t.reset(); return; }
     // Hold the report at its current width for the same reason: collapsing it
@@ -175,7 +185,8 @@ export function V3Tool() {
       </div>
 
       {/* Slot 3 — report */}
-      <div ref={slotRefs[2]} className="v3-card-slot" style={slotStyle(2)} data-active={t.phase === "done"}>
+      {/* scroll-mt clears the floating nav when the report is scrolled to on phones */}
+      <div ref={slotRefs[2]} className="v3-card-slot scroll-mt-24" style={slotStyle(2)} data-active={t.phase === "done"}>
         <div ref={contentRefs[2]} className="h-full min-h-0">
           {t.phase === "done" && (
             <CardReport entries={t.entries} onDownload={t.download} onReset={handleReset} downloadError={t.downloadError} />
