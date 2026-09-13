@@ -11,14 +11,52 @@
 const FLAG_KEY = "metastrip:share";
 
 export function shareFlagOn(): boolean {
+  let q: string | null = null;
   try {
-    const q = new URLSearchParams(window.location.search).get("share");
-    if (q === "1") localStorage.setItem(FLAG_KEY, "1");
-    if (q === "0") localStorage.removeItem(FLAG_KEY);
-    return localStorage.getItem(FLAG_KEY) === "1";
+    q = new URLSearchParams(window.location.search).get("share");
   } catch {
     return false;
   }
+  try {
+    if (q === "1") localStorage.setItem(FLAG_KEY, "1");
+    if (q === "0") localStorage.removeItem(FLAG_KEY);
+    return q === "1" || (q !== "0" && localStorage.getItem(FLAG_KEY) === "1");
+  } catch {
+    // Storage blocked: the URL still counts. This used to return false, which
+    // switched the flag off even with ?share=1 in the address bar.
+    return q === "1";
+  }
+}
+
+/**
+ * Prototype only, shown to flag users when the button does not appear: which
+ * condition failed, so a test on a phone says why instead of just saving the
+ * file to Files. Goes when the flag does.
+ */
+export function shareSupportReport(files: File[]): string {
+  const yes = (b: boolean) => (b ? "yes" : "no");
+  let coarse = false;
+  try {
+    coarse = window.matchMedia("(pointer: coarse)").matches;
+  } catch {
+    // leave as "no"
+  }
+  let these = "missing";
+  let png = "missing";
+  if (typeof navigator.canShare === "function") {
+    try {
+      these = yes(navigator.canShare({ files }));
+    } catch (e) {
+      these = `threw ${e instanceof Error ? e.name : "error"}`;
+    }
+    try {
+      png = yes(navigator.canShare({ files: [new File([new Uint8Array(8)], "test.png", { type: "image/png" })] }));
+    } catch {
+      png = "threw";
+    }
+  }
+  const types = files.map((f) => f.type || "(none)").join(", ") || "(no files)";
+  return `Share check: touch ${yes(coarse)}, share() ${yes(typeof navigator.share === "function")}, these files ${these}, a PNG ${png}, types ${types}`;
 }
 
 /** Phones and tablets only, so desktop keeps a plain download even where the

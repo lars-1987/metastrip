@@ -6,7 +6,7 @@ import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, categoriesOf } from "@/lib/analytics";
-import { shareFlagOn, canShareFiles } from "@/lib/share";
+import { shareFlagOn, canShareFiles, shareSupportReport } from "@/lib/share";
 import { prefersReducedMotion } from "../motion";
 
 export type Phase = "drop" | "review" | "done";
@@ -308,6 +308,11 @@ export function useV3Tool() {
     [entries, phase]
   );
   const canShare = useMemo(() => phase === "done" && shareFlagOn() && canShareFiles(shareFiles), [phase, shareFiles]);
+  // Prototype diagnostics for flag users only (see lib/share).
+  const shareDebug = useMemo(
+    () => (phase === "done" && !canShare && shareFlagOn() ? shareSupportReport(shareFiles) : null),
+    [phase, canShare, shareFiles]
+  );
 
   const share = useCallback(() => {
     if (shareFiles.length === 0) return;
@@ -344,7 +349,7 @@ export function useV3Tool() {
 
   return {
     phase, entries, selectedId, activeEntry, addError, skipped, downloadError, busy, running, tickedIds, scanProgress,
-    visibleCategories, allFilesAllOn, allFailed, canShare,
+    visibleCategories, allFilesAllOn, allFailed, canShare, shareDebug,
     addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download, share,
   };
 }

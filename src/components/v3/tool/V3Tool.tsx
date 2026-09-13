@@ -189,7 +189,7 @@ export function V3Tool() {
       <div ref={slotRefs[2]} className="v3-card-slot scroll-mt-24" style={slotStyle(2)} data-active={t.phase === "done"}>
         <div ref={contentRefs[2]} className="h-full min-h-0">
           {t.phase === "done" && (
-            <CardReport entries={t.entries} onDownload={t.download} onReset={handleReset} downloadError={t.downloadError} canShare={t.canShare} onShare={t.share} />
+            <CardReport entries={t.entries} onDownload={t.download} onReset={handleReset} downloadError={t.downloadError} canShare={t.canShare} onShare={t.share} shareDebug={t.shareDebug} />
           )}
         </div>
       </div>

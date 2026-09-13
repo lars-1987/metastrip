@@ -19,6 +19,8 @@ interface Props {
   /** Phones where the share sheet can take these files (see lib/share). */
   canShare?: boolean;
   onShare?: () => void;
+  /** Prototype only: why the share button is missing, for flag users. */
+  shareDebug?: string | null;
 }
 
 const CATEGORY_ORDER: MetadataCategory[] = [
@@ -41,7 +43,7 @@ function groupByCategory(fields: MetadataField[]): [MetadataCategory, MetadataFi
   return CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => [c, map.get(c)!]);
 }
 
-export function CardReport({ entries, onDownload, onReset, downloadError, canShare = false, onShare }: Props) {
+export function CardReport({ entries, onDownload, onReset, downloadError, canShare = false, onShare, shareDebug }: Props) {
   // Desktop opens the first file's list; phones start with every list closed,
   // since an open one pushed the download a screen further down.
   const [openId, setOpenId] = useState<string | null>(() =>
@@ -134,6 +136,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
             </Button>
           )}
           {downloadError && <p role="alert" className="mt-3 text-[14px] text-[var(--danger)]">{downloadError}</p>}
+          {shareDebug && <p className="v3-mono mt-3 break-words text-[11px] leading-relaxed text-[var(--text-muted)]">{shareDebug}</p>}
         </div>
       )}
 
