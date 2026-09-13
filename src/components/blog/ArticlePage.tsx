@@ -10,12 +10,12 @@ import InlineCTA from "@/components/blog/InlineCTA";
 import dynamic from "next/dynamic";
 
 // The tool pulls in every format processor (pdf-lib, piexifjs and the rest), so
-// it loads as its own chunk and only on the posts that ask for it. The article
-// text renders and indexes without waiting for any of it.
-const V3Tool = dynamic(() => import("@/components/v3/tool/V3Tool").then((m) => m.V3Tool), {
-  ssr: false,
-  loading: () => <div className="min-h-[460px]" aria-hidden />,
-});
+// it loads as its own chunk and only on the posts that ask for it. It is still
+// pre-rendered: with ssr:false a 460px placeholder stood in until the chunk
+// arrived, the real tool was taller (668px at 1440x900), and the article below
+// jumped 208px on every load. The homepage and landing pages already render it
+// on the server.
+const V3Tool = dynamic(() => import("@/components/v3/tool/V3Tool").then((m) => m.V3Tool));
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import { getCategoryLabel } from "@/lib/blog-data";
 import type { BlogArticle } from "@/lib/blog-data";
