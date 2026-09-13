@@ -9,7 +9,6 @@ export const SUPPORTED_IMAGE_TYPES = [
   "image/heic",
   "image/heif",
   "image/tiff",
-  "image/gif",
 ];
 
 export const SUPPORTED_DOCUMENT_TYPES = [
@@ -50,6 +49,7 @@ export const ACCEPTED_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "image/gif",
   "image/heic",
   "image/heif",
   "application/pdf",
