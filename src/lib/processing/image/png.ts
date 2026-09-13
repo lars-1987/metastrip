@@ -5,6 +5,7 @@ import type {
   MetadataCategory,
 } from "../types";
 import { aiCategoryFor, aiTextLabel } from "../ai-signatures";
+import { describeC2pa } from "../c2pa-manifest";
 
 // PNG signature: 8 bytes
 const PNG_SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -218,13 +219,8 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
       removable: true,
     });
   } else if (chunk.type === "caBX") {
-    fields.push({
-      category: "ai",
-      key: "C2PA",
-      label: "C2PA Content Credential",
-      value: `(${chunk.data.length} bytes)`,
-      removable: true,
-    });
+    // What made the image and whose certificate signed it, not just a size.
+    fields.push(...describeC2pa(chunk.data));
   }
 
   return fields;

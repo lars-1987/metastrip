@@ -6,6 +6,7 @@ import type {
   MetadataCategory,
 } from "../types";
 import { IFD_MAP, catalogExifFields, exifCategory, formatExifValue } from "./exif-catalog";
+import { describeC2pa, jumbfFromApp11 } from "../c2pa-manifest";
 
 // ── JPEG marker-segment walker ────────────────────────────────────────────
 // piexif only understands EXIF (APP1). A JPEG can also carry a C2PA content
@@ -94,16 +95,18 @@ function parseMetadataSegments(b: Uint8Array): Segment[] {
  *  toggle. */
 function catalogSegmentFields(b: Uint8Array, segs: Segment[]): MetadataField[] {
   const fields: MetadataField[] = [];
+  // A C2PA manifest is often split across several APP11 segments, which
+  // showed as one "C2PA Content Credential" line each. Rejoin and read it once.
+  const jumbfSegs = segs.filter((s) => s.kind === "jumbf");
+  if (jumbfSegs.length) {
+    const total = jumbfSegs.reduce((n, s) => n + (s.end - s.start), 0);
+    const boxes = jumbfFromApp11(jumbfSegs.map((s) => b.subarray(s.start + 4, s.end)));
+    fields.push(...(boxes.length ? boxes.flatMap((box) => describeC2pa(box, total)) : describeC2pa(new Uint8Array(0), total)));
+  }
   for (const s of segs) {
     const bytes = s.end - s.start;
     if (s.kind === "jumbf") {
-      fields.push({
-        category: "ai",
-        key: "C2PA",
-        label: "C2PA Content Credential",
-        value: `(${bytes} bytes)`,
-        removable: true,
-      });
+      continue; // reported above, once, from the rejoined segments
     } else if (s.kind === "xmp") {
       fields.push({
         category: "custom",

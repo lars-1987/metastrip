@@ -4,6 +4,7 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
+import { describeC2pa } from "../c2pa-manifest";
 
 // RIFF header: "RIFF" + 4-byte LE size + "WEBP"
 const RIFF_HEADER = new TextEncoder().encode("RIFF");
@@ -153,15 +154,8 @@ function catalogueChunkFields(chunk: RiffChunk): MetadataField[] {
   } else if (chunk.fourcc === "XMP ") {
     return catalogueXmpFields(chunk.data);
   } else if (chunk.fourcc === "C2PA") {
-    return [
-      {
-        category: "ai",
-        key: "C2PA",
-        label: "C2PA Content Credential",
-        value: `(${chunk.data.length} bytes)`,
-        removable: true,
-      },
-    ];
+    // What made the image and whose certificate signed it, not just a size.
+    return describeC2pa(chunk.data);
   }
   return [];
 }

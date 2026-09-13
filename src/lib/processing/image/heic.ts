@@ -7,6 +7,7 @@ import type {
   MetadataReport,
 } from "../types";
 import { catalogExifFields } from "./exif-catalog";
+import { describeC2pa } from "../c2pa-manifest";
 import {
   readBox,
   iterBoxes,
@@ -115,13 +116,11 @@ export async function processHeic(
       fieldsFound.push(...fields);
       return { item: it, fields };
     });
-    const c2paFields: MetadataField[] = c2paBoxes.map((box) => ({
-      category: "ai" as MetadataCategory,
-      key: "C2PA",
-      label: "C2PA Content Credential",
-      value: `(${box.end - box.contentStart} bytes)`,
-      removable: true,
-    }));
+    // The manifest follows the box's 16-byte UUID (then version, purpose and
+    // an offset, which describeC2pa skips by finding the JUMBF itself).
+    const c2paFields: MetadataField[] = c2paBoxes.flatMap((box) =>
+      describeC2pa(original.subarray(box.contentStart + 16, box.end), box.end - box.contentStart)
+    );
     fieldsFound.push(...c2paFields);
 
     // ── Decide what to strip ────────────────────────────────────
