@@ -5,7 +5,7 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
-import { TAG_CATEGORIES, IFD_MAP, catalogExifFields } from "./exif-catalog";
+import { IFD_MAP, catalogExifFields, exifCategory, formatExifValue } from "./exif-catalog";
 
 // ── JPEG marker-segment walker ────────────────────────────────────────────
 // piexif only understands EXIF (APP1). A JPEG can also carry a C2PA content
@@ -235,7 +235,9 @@ export async function processJpeg(
           const tagInfo =
             piexif.TAGS[ifd]?.[tagId] ?? piexif.TAGS[ifdKey]?.[tagId];
           const tagName = tagInfo?.["name"] ?? `Unknown_${ifd}_${tagId}`;
-          const category = TAG_CATEGORIES[tagName as string] || "custom";
+          // Same classifier as the review, value included, so a generation
+          // record in UserComment goes with the AI toggle here too.
+          const category = exifCategory(tagName as string, formatExifValue(exifObj[ifd][tagId]));
           if (categoriesToStrip.includes(category)) {
             delete exifObj[ifd][tagId];
           }

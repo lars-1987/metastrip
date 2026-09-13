@@ -1,5 +1,6 @@
 import piexif from "piexifjs";
 import type { MetadataField, MetadataCategory } from "../types";
+import { aiCategoryFor } from "../ai-signatures";
 
 /** Maps EXIF tag names to metadata categories. Shared by the JPEG and HEIC
  *  processors so an EXIF block is classified identically wherever it lives. */
@@ -59,6 +60,30 @@ export const IFD_MAP: Record<string, string> = {
   Interop: "InteropIFD",
 };
 
+/** A tag's category, reading the value where a free-text tag can hold an AI
+ *  generation record (AUTOMATIC1111 writes its settings to UserComment in a
+ *  JPEG). Shared with the JPEG stripper so what is removed under a category
+ *  always matches what the review showed under it. */
+export function exifCategory(tagName: string, formattedValue: string): MetadataCategory {
+  return aiCategoryFor(tagName, formattedValue) ?? (TAG_CATEGORIES[tagName] || "custom");
+}
+
+/** EXIF UserComment opens with an 8-byte character code. AUTOMATIC1111 writes
+ *  "UNICODE" and UTF-16, which showed as "UNICODE  a   c a t", a gap between
+ *  every letter. Decode it for display; anything unrecognised is shown as is. */
+function decodeUserComment(raw: string): string {
+  const code = raw.slice(0, 8).replace(/\0+$/, "");
+  const body = raw.slice(8);
+  if (code === "ASCII") return body.replace(/\0+$/, "");
+  if (code !== "UNICODE") return raw;
+  const bytes = Uint8Array.from(body, (c) => c.charCodeAt(0) & 0xff);
+  // Byte order is not recorded: for text that is mostly Latin, the high byte
+  // of each pair is the NUL, so whichever position holds more NULs wins.
+  let evenNul = 0, oddNul = 0;
+  bytes.forEach((b, i) => { if (b === 0) { if (i % 2) oddNul++; else evenNul++; } });
+  return new TextDecoder(evenNul >= oddNul ? "utf-16be" : "utf-16le").decode(bytes).replace(/\0+$/, "");
+}
+
 export function formatExifValue(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (Array.isArray(value)) {
@@ -101,12 +126,13 @@ export function catalogExifFields(exifObj: ExifObj): MetadataField[] {
       const ifdKey = IFD_MAP[ifd] || "ImageIFD";
       const tagInfo = piexif.TAGS[ifd]?.[tagId] ?? piexif.TAGS[ifdKey]?.[tagId];
       const tagName = (tagInfo?.["name"] ?? `Unknown_${ifd}_${tagId}`) as string;
-      const category = TAG_CATEGORIES[tagName] || "custom";
+      const formatted = formatExifValue(value);
+      const category = exifCategory(tagName, formatted);
       fields.push({
         category,
         key: tagName,
         label: humanizeTagName(tagName),
-        value: formatExifValue(value),
+        value: tagName === "UserComment" ? decodeUserComment(formatted) : formatted,
         removable: true,
       });
     }

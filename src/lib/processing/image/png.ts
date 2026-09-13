@@ -4,6 +4,7 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
+import { aiCategoryFor, aiTextLabel } from "../ai-signatures";
 
 // PNG signature: 8 bytes
 const PNG_SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -162,11 +163,13 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
   if (chunk.type === "tEXt") {
     const parsed = parseTextChunk(chunk.data);
     if (parsed) {
-      const category = TEXT_KEYWORD_CATEGORIES[parsed.keyword] || "custom";
+      // A generation record ("parameters", a ComfyUI workflow, NovelAI's JSON
+      // Comment) is AI, whatever the keyword's usual category.
+      const category = aiCategoryFor(parsed.keyword, parsed.value) ?? (TEXT_KEYWORD_CATEGORIES[parsed.keyword] || "custom");
       fields.push({
         category,
         key: parsed.keyword,
-        label: parsed.keyword,
+        label: aiTextLabel(parsed.keyword) ?? parsed.keyword,
         value: parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value,
         removable: true,
       });
@@ -174,11 +177,11 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
   } else if (chunk.type === "iTXt") {
     const parsed = parseITxtChunk(chunk.data);
     if (parsed) {
-      const category = TEXT_KEYWORD_CATEGORIES[parsed.keyword] || "custom";
+      const category = aiCategoryFor(parsed.keyword, parsed.value) ?? (TEXT_KEYWORD_CATEGORIES[parsed.keyword] || "custom");
       fields.push({
         category,
         key: parsed.keyword,
-        label: `${parsed.keyword} (iTXt)`,
+        label: `${aiTextLabel(parsed.keyword) ?? parsed.keyword} (iTXt)`,
         value: parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value,
         removable: true,
       });
@@ -188,11 +191,12 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
     const nullIdx = chunk.data.indexOf(0);
     if (nullIdx >= 0) {
       const keyword = new TextDecoder("latin1").decode(chunk.data.slice(0, nullIdx));
-      const category = TEXT_KEYWORD_CATEGORIES[keyword] || "custom";
+      // Compressed, so only the keyword can be checked.
+      const category = aiCategoryFor(keyword, "") ?? (TEXT_KEYWORD_CATEGORIES[keyword] || "custom");
       fields.push({
         category,
         key: keyword,
-        label: `${keyword} (compressed)`,
+        label: `${aiTextLabel(keyword) ?? keyword} (compressed)`,
         value: "(compressed text data)",
         removable: true,
       });
