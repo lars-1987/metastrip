@@ -522,6 +522,13 @@ export const ARTICLES: BlogArticle[] = [
     toolFirst: {
       label: "REMOVE C2PA CONTENT CREDENTIALS: FREE, NOTHING UPLOADED",
     },
+    // The 84-character heading plus ", MetaStrip Blog" truncated in results and
+    // never said "remover", the word in the page's biggest queries ("c2pa
+    // remover", "content credentials remover"). The tool sits at the top, so
+    // the name is accurate.
+    seoTitle: "C2PA Remover: Strip Content Credentials From Any Image",
+    seoDescription:
+      "Free C2PA remover that runs in your browser: strip Content Credentials, the usual trigger for “Made with AI” labels, from your images. Nothing is uploaded.",
     title: "How to Remove C2PA Content Credentials from an Image (and What Happens When You Do)",
     excerpt:
       "C2PA content credentials are the invisible manifest that gets your AI image auto-labeled on Instagram, X, and LinkedIn. Here’s how to remove them, what survives removal, and the legal nuance worth knowing first.",
