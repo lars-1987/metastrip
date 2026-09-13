@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, type CSSProperties } from "react";
 import { useV3Tool, type Phase } from "./useV3Tool";
 import { CardDropzone } from "./CardDropzone";
 import { FilesCard } from "./FilesCard";
@@ -33,7 +33,13 @@ export function V3Tool() {
   const prevPhase = useRef<Phase | null>(null);
   const skipAnim = useRef(false);
 
-  useEffect(() => {
+  // A layout effect, not a plain one. React commits the new phase's widths
+  // straight from `slotStyle`, and a plain effect only runs after the browser
+  // has painted them, so one frame showed the finished layout before the reset
+  // below snapped every slot back to its starting width to animate. That snap
+  // was a single 0.17 layout shift at "done" on desktop, most of the homepage's
+  // field CLS (p75 0.24). Running before paint, the reset is never seen.
+  useLayoutEffect(() => {
     const from = prevPhase.current;
     prevPhase.current = t.phase;
     if (skipAnim.current) { skipAnim.current = false; return; }
