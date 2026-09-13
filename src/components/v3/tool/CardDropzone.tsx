@@ -6,8 +6,9 @@ import { ACCEPTED_TYPES } from "@/lib/constants";
 import { Button } from "../ui/Button";
 
 interface Props {
-  onFiles: (files: File[]) => void;
-  /** Files the dropzone turned away, so the tool can message and track them. */
+  /** Accepted files, plus any the same drop turned away. */
+  onFiles: (files: File[], rejected?: File[]) => void;
+  /** A drop where nothing was accepted, so the tool can message and track it. */
   onRejected?: (files: File[]) => void;
   busy: boolean;
   error: string | null;

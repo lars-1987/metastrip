@@ -14,6 +14,8 @@ interface Props {
   entries: ToolEntry[];
   onDownload: () => void;
   onReset: () => void;
+  /** Set when building or saving the download failed. */
+  downloadError?: string | null;
 }
 
 const CATEGORY_ORDER: MetadataCategory[] = [
@@ -36,7 +38,7 @@ function groupByCategory(fields: MetadataField[]): [MetadataCategory, MetadataFi
   return CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => [c, map.get(c)!]);
 }
 
-export function CardReport({ entries, onDownload, onReset }: Props) {
+export function CardReport({ entries, onDownload, onReset, downloadError }: Props) {
   const [openId, setOpenId] = useState<string | null>(entries[0]?.id ?? null);
 
   const stats = useMemo(() => {
@@ -58,23 +60,41 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
   // never read it.
   const failedCount = entries.filter((e) => e.error).length;
   const cleanedCount = entries.length - failedCount;
+  // Every file failed. The headline used to key off "fields removed" alone, so
+  // this showed a green tick and "Nothing left to remove", which reads as "all
+  // clean" about files we never opened.
+  const nothingCleaned = cleanedCount === 0;
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
       <div className="flex items-center gap-3 mb-6">
-        <span className="grid place-items-center h-10 w-10 rounded-full bg-[color-mix(in_srgb,var(--success)_22%,transparent)]">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M4 10.5l4 4 8-9" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
+        {nothingCleaned ? (
+          <span className="grid place-items-center h-10 w-10 rounded-full bg-[var(--card-elevated)]">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M5 10h10" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+        ) : (
+          <span className="grid place-items-center h-10 w-10 rounded-full bg-[color-mix(in_srgb,var(--success)_22%,transparent)]">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10.5l4 4 8-9" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        )}
         <div>
           <h3 className="text-[clamp(20px,2.4vw,28px)] font-semibold text-[var(--text)] leading-tight">
-            {stats.removed > 0 ? "Metadata removed" : "Nothing left to remove"}
+            {nothingCleaned ? "Nothing was cleaned" : stats.removed > 0 ? "Metadata removed" : "Nothing left to remove"}
           </h3>
           <p className="text-[14px] text-[var(--text-body)]">
-            {cleanedCount} file{cleanedCount !== 1 ? "s" : ""} cleaned, in your browser.
-            {failedCount > 0 &&
-              ` ${failedCount} could not be read and ${failedCount === 1 ? "was" : "were"} left unchanged.`}
+            {nothingCleaned ? (
+              `${failedCount === 1 ? "This file" : `All ${failedCount} files`} could not be read, so nothing was changed.`
+            ) : (
+              <>
+                {cleanedCount} file{cleanedCount !== 1 ? "s" : ""} cleaned, in your browser.
+                {failedCount > 0 &&
+                  ` ${failedCount} could not be read and ${failedCount === 1 ? "was" : "were"} left unchanged.`}
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -160,6 +180,9 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
         })}
       </ul>
 
+      {downloadError && (
+        <p role="alert" className="mb-3 text-[14px] text-[var(--danger)] sm:text-right">{downloadError}</p>
+      )}
       <div className="mt-auto flex flex-col flex-wrap sm:flex-row items-center justify-end gap-3">
         <Button
           variant="ghost"
@@ -192,6 +215,8 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
             button lands below the fold on a 390x844 screen, which is where most
             completed strips happen. `sm:contents` dissolves this wrapper at
             desktop so the row there is unchanged. */}
+        {/* No tip or star ask when nothing worked. */}
+        {!nothingCleaned && (
         <div className="flex w-full items-center justify-center gap-3 sm:contents">
         <Button
           variant="soft"
@@ -224,6 +249,7 @@ export function CardReport({ entries, onDownload, onReset }: Props) {
           Star on GitHub
         </Button>
         </div>
+        )}
       </div>
     </div>
   );

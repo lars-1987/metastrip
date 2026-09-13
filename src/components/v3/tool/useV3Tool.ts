@@ -41,6 +41,11 @@ export function useV3Tool() {
   const [entries, setEntries] = useState<ToolEntry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
+  /** Files left out of an otherwise accepted batch. The add error only shows in
+   *  the dropzone, which the review screen replaces, so these need their own
+   *  line or they vanish without a word. */
+  const [skipped, setSkipped] = useState<string[]>([]);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [running, setRunning] = useState(false);
   const [tickedIds, setTickedIds] = useState<string[]>([]);
@@ -48,13 +53,15 @@ export function useV3Tool() {
    *  batch needs real feedback rather than one static "reading files" label. */
   const [scanProgress, setScanProgress] = useState<{ done: number; total: number; large: boolean } | null>(null);
 
-  const addFiles = useCallback(async (incoming: File[]) => {
+  const addFiles = useCallback(async (incoming: File[], rejectedAtDrop: File[] = []) => {
     setAddError(null);
+    setSkipped([]);
     const supported = incoming.filter((f) => detectFileType(f) !== null);
+    const unsupported = [...rejectedAtDrop, ...incoming.filter((f) => detectFileType(f) === null)];
 
     // Anything we turned away is worth knowing about: the rejected mime types
     // are a direct read on which formats to support next.
-    for (const f of incoming.filter((f) => detectFileType(f) === null)) {
+    for (const f of unsupported) {
       trackFileFailed({
         file_type: f.type || "unknown",
         file_size: f.size,
@@ -84,11 +91,14 @@ export function useV3Tool() {
         reason: "batch_size_cap",
       });
       setAddError(
-        `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(BATCH_SIZE_HARD_CAP_BYTES)} at a time.`
+        supported.length === 1
+          ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(BATCH_SIZE_HARD_CAP_BYTES)} at a time.`
+          : `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(BATCH_SIZE_HARD_CAP_BYTES)} at a time, so try fewer files at once.`
       );
       return;
     }
 
+    setSkipped(unsupported.map((f) => f.name));
     setBusy(true);
     trackFileAdded({
       file_type: supported.map((f) => f.type).join(","),
@@ -253,6 +263,8 @@ export function useV3Tool() {
     setEntries([]);
     setSelectedId(null);
     setAddError(null);
+    setSkipped([]);
+    setDownloadError(null);
     setPhase("drop");
   }, []);
 
@@ -260,6 +272,7 @@ export function useV3Tool() {
     // Never ship a file we could not read as "cleaned_<name>".
     const done = entries.filter((e) => e.cleanedBlob && e.finalReport && !e.error);
     if (done.length === 0) return;
+    setDownloadError(null);
     try {
       if (done.length === 1) {
         const { saveAs } = await import("file-saver");
@@ -275,7 +288,9 @@ export function useV3Tool() {
         done.forEach((e) => trackFileDownloaded({ file_type: e.file.type }));
       }
     } catch {
-      setAddError("Download failed; please reload and try again.");
+      // Its own state, shown on the report card: the add error only renders in
+      // the dropzone, which is not on screen once the report is.
+      setDownloadError("Download failed; please reload and try again.");
     }
   }, [entries]);
 
@@ -297,10 +312,11 @@ export function useV3Tool() {
   }, [activeEntry]);
 
   const allFilesAllOn = useMemo(() => entries.every((e) => optionsAllOn(e.options)), [entries]);
+  const allFailed = useMemo(() => entries.length > 0 && entries.every((e) => Boolean(e.error)), [entries]);
 
   return {
-    phase, entries, selectedId, activeEntry, addError, busy, running, tickedIds, scanProgress,
-    visibleCategories, allFilesAllOn,
+    phase, entries, selectedId, activeEntry, addError, skipped, downloadError, busy, running, tickedIds, scanProgress,
+    visibleCategories, allFilesAllOn, allFailed,
     addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download,
   };
 }

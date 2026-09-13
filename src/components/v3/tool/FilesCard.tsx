@@ -12,6 +12,14 @@ interface Props {
   tickedIds?: string[];
   /** Set while files are still being scanned, so the header can count up. */
   scanProgress?: { done: number; total: number; large: boolean } | null;
+  /** Names of files turned away because MetaStrip can't read their format yet. */
+  skipped?: string[];
+}
+
+function skippedLine(names: string[]): string {
+  const shown = names.slice(0, 2).join(", ");
+  const more = names.length > 2 ? ` and ${names.length - 2} more` : "";
+  return `Skipped ${names.length} ${names.length === 1 ? "file" : "files"} MetaStrip can't read yet: ${shown}${more}.`;
 }
 
 function Spinner() {
@@ -28,10 +36,22 @@ function Tick() {
   );
 }
 
+/** Stands in for the tick on a file that could not be read: nothing happened to
+ *  it, so it must not get the same green mark as a cleaned one. */
+function NotRead() {
+  return (
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--card-elevated)]" aria-label="Not read">
+      <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+        <path d="M2.5 6h7" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
 /** Left column once files are loaded — click a file to review/select its
  *  metadata in the panel to the right. During removal each file shows a
  *  spinner that flips to a tick, one after another. */
-export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, running, tickedIds = [], scanProgress }: Props) {
+export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, running, tickedIds = [], scanProgress, skipped = [] }: Props) {
   const selectable = !running && !!onSelect && entries.length > 1;
 
   return (
@@ -42,6 +62,11 @@ export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, runnin
           : `${entries.length} ${entries.length === 1 ? "file" : "files"}`}
         {selectable && !scanProgress && <span className="ml-2 normal-case tracking-normal text-[var(--text-muted)]">· tap to review each</span>}
       </h3>
+      {skipped.length > 0 && (
+        <p role="status" className="mb-4 break-words text-[13px] leading-relaxed text-[var(--text-muted)]">
+          {skippedLine(skipped)}
+        </p>
+      )}
       <ul className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 -mr-1">
         {entries.map((e) => {
           const active = selectable && e.id === selectedId;
@@ -64,10 +89,11 @@ export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, runnin
                   <p className="truncate text-[15px] text-[var(--text)]">{e.file.name}</p>
                   <p className="v3-mono mt-1 text-[12px] text-[var(--text-muted)]">
                     {getFileTypeLabel(e.file.type)} · {formatBytes(e.file.size)}
+                    {e.error && " · not read"}
                   </p>
                 </div>
                 {running ? (
-                  tickedIds.includes(e.id) ? <Tick /> : <Spinner />
+                  tickedIds.includes(e.id) ? (e.error ? <NotRead /> : <Tick />) : <Spinner />
                 ) : (
                   onRemoveEntry && (
                     <button

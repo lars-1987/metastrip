@@ -33,6 +33,8 @@ interface Props {
   onToggle: (cat: MetadataCategory, on: boolean) => void;
   onToggleAll: (on: boolean) => void;
   onRun: () => void;
+  /** Every file in the batch failed to read, so there is nothing to remove. */
+  allFailed?: boolean;
 }
 
 function valueToString(v: unknown): string {
@@ -43,7 +45,7 @@ function valueToString(v: unknown): string {
 
 export function CardReview({
   entry, fileCount, visibleCategories, busy, allFilesAllOn,
-  onToggle, onToggleAll, onRun,
+  onToggle, onToggleAll, onRun, allFailed = false,
 }: Props) {
   const options = entry.options;
   const coords = useMemo(() => extractGpsCoordinates(entry.scan.fieldsFound), [entry]);
@@ -66,6 +68,9 @@ export function CardReview({
   // clean one. Telling someone their file is clean when we never managed to
   // open it is the worst failure this tool has, so the error takes priority.
   const failed = Boolean(entry.error);
+  // Some parser errors end without a full stop ("Invalid PNG file"), which ran
+  // straight into the sentence after it.
+  const reason = entry.error && !/[.!?]$/.test(entry.error) ? `${entry.error}.` : entry.error;
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
@@ -86,7 +91,7 @@ export function CardReview({
               This file could not be read.
             </p>
             <p className="text-[14px] leading-relaxed text-[var(--text-body)]">
-              {entry.error} Nothing was changed, and we cannot tell you whether it
+              {reason} Nothing was changed, and we cannot tell you whether it
               carries metadata, so treat it as unchecked rather than clean.
             </p>
           </div>
@@ -151,14 +156,14 @@ export function CardReview({
         <Button
           size="lg"
           onClick={onRun}
-          disabled={busy}
+          disabled={busy || allFailed}
           hoverIcon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M4 7h16M10 4h4M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           }
         >
-          {busy ? "Removing…" : allFilesAllOn ? "Remove all metadata" : `Remove selected${fileCount > 1 ? ` · ${fileCount} files` : ` (${selectedCount})`}`}
+          {busy ? "Removing…" : allFailed ? "Nothing to remove" : allFilesAllOn ? "Remove all metadata" : `Remove selected${fileCount > 1 ? ` · ${fileCount} files` : ` (${selectedCount})`}`}
         </Button>
       </div>
     </div>

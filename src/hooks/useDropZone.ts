@@ -4,13 +4,19 @@ import { useState, useCallback, type DragEvent } from "react";
 import { isAcceptedForUpload } from "@/lib/file-utils";
 
 interface UseDropZoneOptions {
-  onFiles: (files: File[]) => void;
+  /**
+   * The accepted files, with any rejected from the same drop riding along so
+   * one handler can report both. Calling onRejected first instead meant the
+   * accepted batch cleared its message in the same tick, and a mixed drop lost
+   * its unsupported files without a word.
+   */
+  onFiles: (files: File[], rejected: File[]) => void;
   acceptedTypes: string[];
   /**
-   * Files the dropzone turned away. Optional so existing consumers keep their
-   * current behaviour; without it an unsupported drop is silently discarded,
-   * which leaves the user with no feedback and us with no signal about which
-   * formats people are actually bringing.
+   * A drop where nothing was accepted. Optional so existing consumers keep
+   * their current behaviour; without it an unsupported drop is silently
+   * discarded, which leaves the user with no feedback and us with no signal
+   * about which formats people are actually bringing.
    */
   onRejected?: (files: File[]) => void;
 }
@@ -35,8 +41,8 @@ export function useDropZone({ onFiles, acceptedTypes, onRejected }: UseDropZoneO
       if (!dropped.length) return;
       const accepted = dropped.filter((f) => isAcceptedForUpload(f, acceptedTypes));
       const rejected = dropped.filter((f) => !isAcceptedForUpload(f, acceptedTypes));
-      if (rejected.length) onRejected?.(rejected);
-      if (accepted.length) onFiles(accepted);
+      if (accepted.length) onFiles(accepted, rejected);
+      else if (rejected.length) onRejected?.(rejected);
     },
     [onFiles, onRejected, acceptedTypes]
   );
