@@ -57,6 +57,10 @@ export interface ProcessingResult {
   cleanedBlob: Blob;
   report: MetadataReport;
   error?: string;
+  /** Set when a parser threw instead of returning an error. Holds the error's
+   *  class name only (e.g. "RangeError"), never its message, so telemetry can
+   *  tell crashes apart without carrying anything read from the file. */
+  crashed?: string;
 }
 
 export type SupportedFileType =

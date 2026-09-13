@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { processFile } from "@/lib/processing/coordinator";
+import { processFile, failureReason } from "@/lib/processing/coordinator";
 import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
@@ -100,35 +100,39 @@ export function useV3Tool() {
     setScanProgress({ done: 0, total: supported.length, large });
 
     const scanned: ToolEntry[] = [];
-    for (const file of supported) {
-      const r = await processFile(file, { ...ALL_ON });
-      if (r.error) {
-        trackFileFailed({
-          file_type: file.type || "unknown",
-          file_size: file.size,
-          stage: "scan",
-          reason: r.error,
+    // `finally` so the tool can never be left on "reading files" for good.
+    try {
+      for (const file of supported) {
+        const r = await processFile(file, { ...ALL_ON });
+        if (r.error) {
+          trackFileFailed({
+            file_type: file.type || "unknown",
+            file_size: file.size,
+            stage: "scan",
+            reason: failureReason(r),
+          });
+        }
+        scanned.push({
+          id: `${file.name}-${file.size}-${scanned.length}-${file.lastModified}`,
+          file,
+          scan: r.report,
+          fullyStrippedBlob: r.cleanedBlob,
+          options: { ...ALL_ON },
+          error: r.error,
         });
+        // Publish as we go: each file appears in the list the moment it is really
+        // done, so a 75-file batch shows genuine progress instead of looking hung.
+        setEntries([...scanned]);
+        setScanProgress({ done: scanned.length, total: supported.length, large });
+        if (scanned.length === 1) {
+          setSelectedId(scanned[0].id);
+          setPhase("review");
+        }
       }
-      scanned.push({
-        id: `${file.name}-${file.size}-${scanned.length}-${file.lastModified}`,
-        file,
-        scan: r.report,
-        fullyStrippedBlob: r.cleanedBlob,
-        options: { ...ALL_ON },
-        error: r.error,
-      });
-      // Publish as we go: each file appears in the list the moment it is really
-      // done, so a 75-file batch shows genuine progress instead of looking hung.
-      setEntries([...scanned]);
-      setScanProgress({ done: scanned.length, total: supported.length, large });
-      if (scanned.length === 1) {
-        setSelectedId(scanned[0].id);
-        setPhase("review");
-      }
+    } finally {
+      setScanProgress(null);
+      setBusy(false);
     }
-    setScanProgress(null);
-    setBusy(false);
   }, []);
 
   /** Files the dropzone turned away before they reached addFiles. Same message
@@ -179,61 +183,65 @@ export function useV3Tool() {
     setRunning(true);
     setTickedIds([]);
 
-    // do the real work (instant for the all-on fast path, a beat for partial)
-    const finished: ToolEntry[] = [];
-    for (const e of entries) {
-      let cleanedBlob = e.fullyStrippedBlob;
-      let finalReport = e.scan;
-      let error = e.error;
-      // A file that already failed its scan is not re-read: it would only fail
-      // again and log a second, misleading strip-stage failure.
-      if (!error && !optionsAllOn(e.options)) {
-        const r = await processFile(e.file, { ...e.options });
-        cleanedBlob = r.cleanedBlob;
-        finalReport = r.report;
-        if (r.error) {
-          // The error has to travel with the entry. Without it the report
-          // listed this file as "cleaned_<name>, −0 removed" and the download
-          // shipped the untouched original under that name.
-          error = r.error;
-          trackFileFailed({
-            file_type: e.file.type || "unknown",
-            file_size: e.file.size,
-            stage: "strip",
-            reason: r.error,
-          });
+    // `finally` so a failure part-way can't leave the button stuck on "Removing…".
+    try {
+      // do the real work (instant for the all-on fast path, a beat for partial)
+      const finished: ToolEntry[] = [];
+      for (const e of entries) {
+        let cleanedBlob = e.fullyStrippedBlob;
+        let finalReport = e.scan;
+        let error = e.error;
+        // A file that already failed its scan is not re-read: it would only fail
+        // again and log a second, misleading strip-stage failure.
+        if (!error && !optionsAllOn(e.options)) {
+          const r = await processFile(e.file, { ...e.options });
+          cleanedBlob = r.cleanedBlob;
+          finalReport = r.report;
+          if (r.error) {
+            // The error has to travel with the entry. Without it the report
+            // listed this file as "cleaned_<name>, −0 removed" and the download
+            // shipped the untouched original under that name.
+            error = r.error;
+            trackFileFailed({
+              file_type: e.file.type || "unknown",
+              file_size: e.file.size,
+              stage: "strip",
+              reason: failureReason(r),
+            });
+          }
         }
+        trackFileStripped({
+          file_type: e.file.type,
+          file_size: e.file.size,
+          fields_removed_count: finalReport.fieldsRemoved.length,
+          categories_found: categoriesOf(finalReport.fieldsFound),
+          categories_removed: categoriesOf(finalReport.fieldsRemoved),
+        });
+        finished.push({ ...e, cleanedBlob, finalReport, error });
       }
-      trackFileStripped({
-        file_type: e.file.type,
-        file_size: e.file.size,
-        fields_removed_count: finalReport.fieldsRemoved.length,
-        categories_found: categoriesOf(finalReport.fieldsFound),
-        categories_removed: categoriesOf(finalReport.fieldsRemoved),
-      });
-      finished.push({ ...e, cleanedBlob, finalReport, error });
-    }
-    setEntries(finished);
+      setEntries(finished);
 
-    // staggered spinner → tick over each file. It's mostly psychological: the
-    // strip is near-instant, but an instant jump to "done" reads as suspicious.
-    if (!prefersReducedMotion()) {
-      const ids = entries.map((e) => e.id);
-      // Spread the ticks over a fixed window rather than a fixed per-file delay.
-      // The strip itself is near-instant, so this is reassurance, not progress;
-      // at 75 files a per-file delay added ~12s on top of a scan already watched.
-      const stagger = Math.min(420, Math.max(16, Math.round(1500 / ids.length)));
-      await sleep(450); // everything spins first
-      for (let i = 0; i < ids.length; i++) {
-        setTickedIds(ids.slice(0, i + 1));
-        await sleep(stagger);
+      // staggered spinner → tick over each file. It's mostly psychological: the
+      // strip is near-instant, but an instant jump to "done" reads as suspicious.
+      if (!prefersReducedMotion()) {
+        const ids = entries.map((e) => e.id);
+        // Spread the ticks over a fixed window rather than a fixed per-file delay.
+        // The strip itself is near-instant, so this is reassurance, not progress;
+        // at 75 files a per-file delay added ~12s on top of a scan already watched.
+        const stagger = Math.min(420, Math.max(16, Math.round(1500 / ids.length)));
+        await sleep(450); // everything spins first
+        for (let i = 0; i < ids.length; i++) {
+          setTickedIds(ids.slice(0, i + 1));
+          await sleep(stagger);
+        }
+        await sleep(450); // let the last tick land
       }
-      await sleep(450); // let the last tick land
-    }
 
-    setRunning(false);
-    setPhase("done");
-    setBusy(false);
+      setPhase("done");
+    } finally {
+      setRunning(false);
+      setBusy(false);
+    }
   }, [entries, running]);
 
   const reset = useCallback(() => {

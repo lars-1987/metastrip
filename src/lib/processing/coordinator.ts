@@ -69,6 +69,29 @@ export async function processFile(
   file: File,
   options: StripOptions = DEFAULT_STRIP_OPTIONS
 ): Promise<ProcessingResult> {
+  // Parsers are meant to return an error rather than throw, but not all of them
+  // wrap their reads (PNG, WebP and GIF have no try at all). A single throw used
+  // to reject the whole scan, leaving the tool on "reading files" for good with
+  // nothing logged, so the guard lives here once instead of in every parser.
+  try {
+    return await dispatch(file, options);
+  } catch (err) {
+    return {
+      ...failed(file, detectFileType(file) ?? "jpeg",
+        "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet."),
+      crashed: err instanceof Error ? err.name : "unknown",
+    };
+  }
+}
+
+/** Telemetry reason for a result that failed. A crash is logged by its error
+ *  class alone ("crash: RangeError"), never the message, which could quote
+ *  content from the file. */
+export function failureReason(r: ProcessingResult): string {
+  return r.crashed ? `crash: ${r.crashed}` : r.error ?? "unknown";
+}
+
+async function dispatch(file: File, options: StripOptions): Promise<ProcessingResult> {
   // Trust the bytes over the file name. `File.type` is the OS guessing from the
   // extension, so a JPEG saved as photo.png arrived tagged image/png, reached
   // processPng and failed its signature check. That was the most common error
