@@ -210,13 +210,18 @@ export function useV3Tool() {
             });
           }
         }
-        trackFileStripped({
-          file_type: e.file.type,
-          file_size: e.file.size,
-          fields_removed_count: finalReport.fieldsRemoved.length,
-          categories_found: categoriesOf(finalReport.fieldsFound),
-          categories_removed: categoriesOf(finalReport.fieldsRemoved),
-        });
+        // Only a file we actually cleaned counts as stripped. An unreadable one
+        // used to log file_stripped with no categories, inflating both the
+        // strip count and the "nothing found" share.
+        if (!error) {
+          trackFileStripped({
+            file_type: e.file.type,
+            file_size: e.file.size,
+            fields_removed_count: finalReport.fieldsRemoved.length,
+            categories_found: categoriesOf(finalReport.fieldsFound),
+            categories_removed: categoriesOf(finalReport.fieldsRemoved),
+          });
+        }
         finished.push({ ...e, cleanedBlob, finalReport, error });
       }
       setEntries(finished);
