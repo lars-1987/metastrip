@@ -76,12 +76,27 @@ export async function processFile(
   try {
     return await dispatch(file, options);
   } catch (err) {
+    const name = err instanceof Error ? err.name : "unknown";
     return {
-      ...failed(file, detectFileType(file) ?? "jpeg",
-        "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet."),
-      crashed: err instanceof Error ? err.name : "unknown",
+      ...failed(file, detectFileType(file) ?? "jpeg", crashMessage(name)),
+      crashed: name,
     };
   }
+}
+
+/**
+ * What to tell someone when a read failed. NotFoundError and NotReadableError
+ * come from the browser, not a parser: the file moved, was still being
+ * written, or is a cloud placeholder that was never synced locally, and the
+ * browser reports it as 0 bytes. A real case on 15 Sep: a cleaned download
+ * dropped straight back in threw NotFoundError, and the review blamed the
+ * file ("may be damaged"), which sent them looking in the wrong place.
+ */
+function crashMessage(name: string): string {
+  if (name === "NotFoundError" || name === "NotReadableError") {
+    return "Your browser couldn't open it. If you just downloaded it, make sure the download has finished, or save it to a folder on this device (not a cloud-only one) and try again.";
+  }
+  return "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
 }
 
 /** Telemetry reason for a result that failed. A crash is logged by its error
