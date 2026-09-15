@@ -44,6 +44,14 @@ export async function processPdf(
   const fieldsRemoved: MetadataField[] = [];
   const fieldsKept: MetadataField[] = [];
 
+  // Dates are deleted outright. Setting them to the epoch left a 1 Jan 1970
+  // date that any re-read, ours included, still reports as a date.
+  const dropInfoKey = (name: string) => {
+    const infoRef = pdfDoc.context.trailerInfo.Info;
+    const info = infoRef ? pdfDoc.context.lookup(infoRef, PDFDict) : undefined;
+    info?.delete(PDFName.of(name));
+  };
+
   const metadataMap: Array<{
     getter: () => string | Date | string[] | undefined;
     setter: () => void;
@@ -95,14 +103,14 @@ export async function processPdf(
     },
     {
       getter: () => pdfDoc.getCreationDate(),
-      setter: () => pdfDoc.setCreationDate(new Date(0)),
+      setter: () => dropInfoKey("CreationDate"),
       category: "dates",
       key: "CreationDate",
       label: "Creation Date",
     },
     {
       getter: () => pdfDoc.getModificationDate(),
-      setter: () => pdfDoc.setModificationDate(new Date(0)),
+      setter: () => dropInfoKey("ModDate"),
       category: "dates",
       key: "ModDate",
       label: "Modification Date",
