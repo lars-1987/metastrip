@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { processFile, failureReason } from "@/lib/processing/coordinator";
+import { verifyCleaned, type VerifyResult } from "@/lib/processing/verify";
 import { detectFileType, getFileCategory, formatBytes } from "@/lib/file-utils";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
-import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, categoriesOf } from "@/lib/analytics";
+import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, trackFileVerified, categoriesOf } from "@/lib/analytics";
 import { canShareFiles } from "@/lib/share";
 import { prefersReducedMotion } from "../motion";
 
@@ -31,6 +32,8 @@ export interface ToolEntry {
   cleanedBlob?: Blob;
   finalReport?: MetadataReport;
   error?: string;
+  /** The verify-clean re-read of cleanedBlob. Unset while it is still running. */
+  verify?: VerifyResult;
 }
 
 function optionsAllOn(o: StripOptions): boolean {
@@ -53,6 +56,9 @@ export function useV3Tool() {
   /** Live scan progress. Scanning is the slow part (~500ms/file), so a large
    *  batch needs real feedback rather than one static "reading files" label. */
   const [scanProgress, setScanProgress] = useState<{ done: number; total: number; large: boolean } | null>(null);
+  /** Bumped by each removal and by Start over, so a re-check still running
+   *  from an earlier batch can't write into the current one. */
+  const runId = useRef(0);
 
   const addFiles = useCallback(async (incoming: File[], rejectedAtDrop: File[] = []) => {
     setAddError(null);
@@ -194,8 +200,32 @@ export function useV3Tool() {
     );
   }, [selectedId]);
 
+  /** Verify clean: re-read each cleaned file, the way a careful person checks
+   *  by dropping the download back in. It runs in the background and the report
+   *  fills each result in as it lands, so a big batch never waits on it to
+   *  reach the download. */
+  const verifyAll = useCallback(async (list: ToolEntry[], run: number) => {
+    for (const e of list) {
+      if (e.error || !e.cleanedBlob) continue;
+      let verify: VerifyResult;
+      try {
+        verify = await verifyCleaned(e.cleanedBlob, e.file.name, e.file.type, e.options);
+      } catch {
+        verify = { status: "unchecked", remaining: 0, leftoverCategories: [] };
+      }
+      if (runId.current !== run) return;
+      trackFileVerified({
+        file_type: e.file.type || "unknown",
+        status: verify.status,
+        leftover_categories: verify.leftoverCategories,
+      });
+      setEntries((prev) => prev.map((x) => (x.id === e.id ? { ...x, verify } : x)));
+    }
+  }, []);
+
   const runRemoval = useCallback(async () => {
     if (running) return;
+    const run = ++runId.current;
     setBusy(true);
     setRunning(true);
     setTickedIds([]);
@@ -242,6 +272,8 @@ export function useV3Tool() {
         finished.push({ ...e, cleanedBlob, finalReport, error });
       }
       setEntries(finished);
+      // Not awaited: neither the ticks nor the report wait for the re-check.
+      void verifyAll(finished, run);
 
       // staggered spinner → tick over each file. It's mostly psychological: the
       // strip is near-instant, but an instant jump to "done" reads as suspicious.
@@ -264,9 +296,10 @@ export function useV3Tool() {
       setRunning(false);
       setBusy(false);
     }
-  }, [entries, running]);
+  }, [entries, running, verifyAll]);
 
   const reset = useCallback(() => {
+    runId.current++;
     setEntries([]);
     setSelectedId(null);
     setAddError(null);

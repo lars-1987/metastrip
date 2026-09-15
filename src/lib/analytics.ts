@@ -54,6 +54,12 @@ export function trackFileDownloaded(props: { file_type: string }) {
   posthog.capture("file_downloaded", props);
 }
 
+/** The verify-clean re-read after a strip. Categories only, never values. A
+ *  "leftovers" status means a processor missed something: worth a look. */
+export function trackFileVerified(props: { file_type: string; status: string; leftover_categories: MetadataCategory[] }) {
+  posthog.capture("file_verified", props);
+}
+
 /** Every file in the batch was read and nothing removable was found, so the
  *  tool offered "Check another file" instead of a pointless strip. This used to
  *  surface as a file_stripped with no categories. */
