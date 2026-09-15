@@ -110,7 +110,7 @@ export default function BlogIndex() {
                 fontSize: 15,
               }}
             >
-              MetaStrip is free, no ads, no accounts, no tracking. If
+              MetaStrip is free, no ads, no accounts, no cookies. If
               an article helped you understand what your files were leaking,
               or you used the tool to fix it, I&apos;d genuinely
               appreciate a coffee.{" "}

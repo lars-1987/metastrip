@@ -280,7 +280,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
           <div className="flex flex-wrap items-center gap-1.5 mt-6 pt-3 border-t border-white/[0.04] font-[family-name:var(--font-mono)] text-[11px] animate-card-slide-in [animation-delay:200ms]">
             <span className="px-2 py-0.5 rounded bg-purple/20 text-purple-light">v3.0</span>
             <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">client-side</span>
-            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">no tracking</span>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] text-white/40">no cookies</span>
             <a
               href={GITHUB_REPO_URL}
               target="_blank"

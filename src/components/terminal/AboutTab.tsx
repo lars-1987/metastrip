@@ -92,12 +92,12 @@ export function AboutTab() {
           {[
             {
               title: "Files never leave your device",
-              detail: "Zero network requests during processing. Verify in DevTools.",
+              detail: "No request ever carries your file. Verify in DevTools.",
               tag: "ARCHITECTURE",
             },
             {
-              title: "No accounts, no tracking, no profiles",
-              detail: "PostHog analytics — cookieless, Do Not Track respected.",
+              title: "No accounts, no cookies, no profiles",
+              detail: "PostHog analytics: cookieless, Do Not Track respected, tool text masked in replays.",
               tag: "PRIVACY",
             },
             {
@@ -107,7 +107,7 @@ export function AboutTab() {
             },
             {
               title: "Verifiably private",
-              detail: "Open DevTools → Network tab → process a file → zero outbound requests.",
+              detail: "Open DevTools → Network tab → process a file → no request carries it.",
               tag: "VERIFIABLE",
             },
           ].map((p) => (
@@ -142,7 +142,7 @@ export function AboutTab() {
               <div><span className="text-cyan-400">3.</span> <span className="text-white/60">Clean file generated in memory → browser download</span></div>
             </div>
             <div className="mt-3 pt-3 border-t border-white/[0.06] text-xs text-red-400/50 font-[family-name:var(--font-mono)]">
-              ⚠ No server. No API calls. No file uploads. Verify in DevTools.
+              ⚠ No server. No file uploads. Verify in DevTools.
             </div>
           </div>
         </div>

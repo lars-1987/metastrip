@@ -66,9 +66,10 @@ function PrivacyPolicyContent() {
         </div>
         <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7]">
           Your files are processed entirely in your browser. We never see,
-          store, or transmit your files. We don&apos;t track individual users.
-          We collect minimal analytics data that cannot identify you. MetaStrip
-          is completely free with no accounts required.
+          store, or transmit your files or the metadata in them. We collect
+          anonymous usage analytics and record some visits as masked session
+          replays to find bugs; neither includes your filenames or file
+          contents. MetaStrip is completely free with no accounts required.
         </p>
       </div>
 
@@ -106,10 +107,20 @@ function PrivacyPolicyContent() {
           <span className="font-semibold">Analytics data:</span>{" "}
           We use PostHog for product analytics, configured to use localStorage
           instead of cookies and to respect the Do Not Track browser setting.
-          PostHog collects page views, click interactions, referral sources,
-          browser type, and country-level location. No personal profiles are
-          created for anonymous visitors. This data cannot identify individual
-          users.
+          PostHog collects page views, click interactions (without the text or
+          attributes of what was clicked), referral sources, browser type, and
+          approximate location derived from your IP address. The tool also
+          records which file types are cleaned and which kinds of metadata they
+          carried, such as GPS or AI tags; never filenames, file contents or
+          metadata values. No personal profiles are created for anonymous
+          visitors.
+        </p>
+        <p className="mb-3">
+          <span className="font-semibold">Session replays:</span>{" "}
+          Some visits are recorded as session replays so we can find and fix
+          bugs. Text inside the tool, including your filenames and the metadata
+          it shows you, is masked in your browser before anything is sent, and
+          the location map is left out of recordings entirely.
         </p>
         <p>
           <span className="font-semibold">
@@ -166,12 +177,13 @@ function PrivacyPolicyContent() {
 
       <LegalSection number="4" title="Cookies and Local Storage">
         <p className="mb-3">
-          MetaStrip does not use tracking cookies or browser localStorage for
-          any tracking purposes.
+          MetaStrip does not use cookies.
         </p>
         <p>
-          Our analytics provider (PostHog) is configured to use localStorage
-          instead of cookies and respects the Do Not Track browser setting.
+          Our analytics provider (PostHog) stores an anonymous, randomly
+          generated ID in your browser&apos;s localStorage so visits can be
+          counted, and respects the Do Not Track browser setting. Clearing this
+          site&apos;s data in your browser removes it.
         </p>
       </LegalSection>
 
@@ -563,7 +575,7 @@ export function PrivacyPage() {
           >
             <span>Effective: March 1, 2026</span>
             <span style={{ opacity: 0.4 }}>·</span>
-            <span>Last updated: March 1, 2026</span>
+            <span>Last updated: September 15, 2026</span>
           </div>
 
           {/* Content — dark card */}

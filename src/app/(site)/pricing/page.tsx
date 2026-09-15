@@ -110,7 +110,7 @@ export default function PricingPage() {
                   className="text-[14px] mb-6"
                   style={{ color: "var(--card-inverse-muted)" }}
                 >
-                  No catch. No ads. No tracking.
+                  No catch. No ads. No cookies.
                 </p>
                 <ul
                   className="space-y-2.5 list-none p-0 m-0 mb-7"

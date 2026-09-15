@@ -32,7 +32,7 @@ ___  ___     _        _____ _        _
 
 Photos carry GPS coordinates, device serial numbers, camera info, and timestamps. PDFs carry author names, edit history, and software fingerprints. AI-generated images carry C2PA content credentials identifying which tool made them. Videos from your phone carry GPS coordinates, device fingerprints, and per-track handler vendor IDs. Audio files carry artist tags, encoder signatures, recording-device names (ZOOM, etc.), and Broadcast Wave timestamps. MetaStrip removes all of it.
 
-The whole tool runs client-side. Files never leave your device: there is no server, no upload, no API. You can verify it yourself: open DevTools → Network tab → drop a file → watch zero outbound requests fire.
+The whole tool runs client-side. Files never leave your device: there is no server, no upload, no processing API. You can verify it yourself: open DevTools → Network tab → drop a file; no request carries it. The site does send anonymous usage events to PostHog (file types and the kinds of metadata found, never filenames, contents or values), and masks the tool's text in session replays before anything leaves the browser.
 
 ## Why it exists
 

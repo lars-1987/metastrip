@@ -302,7 +302,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
               className="mb-6"
               style={{ color: "var(--card-inverse-muted)", fontSize: 14 }}
             >
-              Free, no account, no upload, no tracking.
+              Free, no account, no upload, no cookies.
             </p>
             <Link
               href="/"

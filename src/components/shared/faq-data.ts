@@ -8,7 +8,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "Are my files actually private?",
     answer:
-      "Yes. Every file is processed entirely in your browser using JavaScript. Nothing is uploaded, nothing is cached on a server, nothing is sent anywhere. You can verify this yourself: open DevTools → Network tab → process a file → watch zero requests fire. The whole tool ships with the page on first load and runs locally from then on.",
+      "Yes. Every file is processed entirely in your browser using JavaScript. Your files are never uploaded or cached on a server. You can verify this yourself: open DevTools, go to the Network tab and process a file; no request carries it. The only things the page sends are anonymous usage events, such as which file types get cleaned, never filenames, contents or metadata values. The whole tool ships with the page on first load and runs locally from then on.",
   },
   {
     question: "What metadata does MetaStrip remove?",
@@ -18,12 +18,12 @@ export const FAQS: FAQItem[] = [
   {
     question: "What file types are supported?",
     answer:
-      "Images: JPEG, PNG, WebP, HEIC (Apple's iPhone photo format). Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx). Video: MP4, MOV, M4V. Audio: MP3, M4A, FLAC, WAV. TIFF, GIF, and additional document formats are on the roadmap.",
+      "Images: JPEG, PNG, WebP, HEIC (Apple's iPhone photo format), GIF. Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx). Video: MP4, MOV, M4V. Audio: MP3, M4A, FLAC, WAV. TIFF and additional document formats are on the roadmap.",
   },
   {
     question: "Is MetaStrip really free?",
     answer:
-      "Yes. No ads, no tracking, no signup, no upload limits, no premium tier. The source is open on GitHub under MIT license. If the tool helps you, you can buy me a coffee on Ko-fi, completely optional, never required to use anything.",
+      "Yes. No ads, no cookies, no signup, no upload limits, no premium tier. The source is open on GitHub under MIT license. If the tool helps you, you can buy me a coffee on Ko-fi, completely optional, never required to use anything.",
   },
   {
     question: "Will stripping metadata change how my file looks?",

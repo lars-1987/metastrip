@@ -16,12 +16,12 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
     icon: "Lock",
     title: "Your files never leave your device",
     body: "MetaStrip processes files entirely in your browser using client-side JavaScript. We don't upload, store, transmit, or even see your files. There is no server that receives your data; the processing engine runs locally in your browser tab.",
-    tech: "Zero network requests during file processing",
+    tech: "No request ever carries your file",
   },
   {
     icon: "Ghost",
-    title: "No accounts, no tracking, no profiles",
-    body: "We don't ask for your name, email, or any identifying information. There are no accounts, no sign-ups, and no tracking. We don't build user profiles or track individual behavior.",
+    title: "No accounts, no cookies, no profiles",
+    body: "We don't ask for your name, email, or any identifying information, and there are no accounts or sign-ups. The site uses PostHog for anonymous usage analytics: which file types get cleaned and which kinds of metadata they carried, never filenames, contents or metadata values. Some visits are recorded as session replays to find bugs; text inside the tool is masked in your browser before anything is sent.",
     tech: "PostHog Analytics: cookieless, Do Not Track respected",
   },
   {
@@ -34,7 +34,7 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
     icon: "MagnifyingGlass",
     title: "Verifiably private",
     body: "Because MetaStrip runs client-side, you can verify our privacy claims yourself. Open your browser's network inspector while using the tool; you'll see zero outbound file transfers. We don't ask you to trust us blindly; we've built the tool so trust isn't required.",
-    tech: "Open DevTools → Network tab → process a file → zero outbound requests",
+    tech: "Open DevTools → Network tab → process a file → no request carries it",
   },
 ];
 
@@ -342,7 +342,7 @@ export function AboutPage() {
                 className="text-[12px] font-[family-name:var(--font-mono)]"
                 style={{ color: "var(--accent-strong)" }}
               >
-                No server involved. No API calls. No file uploads. Verify in
+                No server involved. No file uploads. Verify in
                 DevTools.
               </span>
             </div>

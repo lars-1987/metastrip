@@ -37,7 +37,7 @@ const PRIVACY_SECTIONS = [
       "Video (MP4, MOV, M4V)         → custom MP4 atom walker",
       "Audio (MP3, M4A, FLAC, WAV)   → custom ID3 / Vorbis / RIFF parsers",
       "",
-      "No network requests during processing. Verify in DevTools > Network.",
+      "No request ever carries your file. Verify in DevTools > Network.",
       "Processed files download directly. Page close = all data discarded.",
     ],
   },
@@ -45,8 +45,9 @@ const PRIVACY_SECTIONS = [
     num: "04",
     title: "COOKIES AND LOCAL STORAGE",
     lines: [
-      "No tracking cookies. No localStorage for tracking.",
+      "No cookies. PostHog keeps an anonymous ID in localStorage.",
       "PostHog configured: localStorage mode, Do Not Track respected.",
+      "Session replays mask the tool's text in your browser before sending.",
     ],
   },
   {

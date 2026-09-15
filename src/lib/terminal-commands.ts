@@ -69,8 +69,8 @@ function getManPage(): string[] {
     "DESCRIPTION",
     "    Strips EXIF, GPS, author, device, and other metadata from",
     "    images, PDFs, and Office documents. All processing happens",
-    "    in your browser. No files are uploaded. No data leaves",
-    "    your device. Ever.",
+    "    in your browser. No files are uploaded. Your files",
+    "    never leave your device.",
     "",
     "OPTIONS",
     "    --remove-all    strip all metadata categories",
@@ -131,7 +131,7 @@ export function executeCommand(input: string): CommandResult {
       output: [
         "",
         "metastrip — privacy-first metadata removal",
-        "your files never leave your browser. no servers, no uploads, no tracking.",
+        "your files never leave your browser. no servers, no uploads, no cookies.",
         "built in melbourne by an indie dev with a cybersecurity background.",
         "free forever. supported by voluntary tips via ko-fi.",
         "",
@@ -177,7 +177,7 @@ export function executeCommand(input: string): CommandResult {
   if (cmd === "whoami") {
     return {
       command: trimmed,
-      output: ["anonymous — no tracking, no accounts, no profiles"],
+      output: ["anonymous: no accounts, no cookies, no profiles"],
       style: "success",
     };
   }
@@ -208,8 +208,9 @@ export function executeCommand(input: string): CommandResult {
           "# privacy.txt",
           "your files are processed in your browser.",
           "we never see, store, or transmit them.",
-          "we don't track individual users.",
-          "we collect minimal analytics (posthog, cookieless).",
+          "we collect anonymous analytics (posthog, cookieless):",
+          "file types and metadata categories, never filenames.",
+          "session replays mask the tool's text before sending.",
           "no accounts. no ads. ever.",
           "contact: hello@metastrip.app",
           "",

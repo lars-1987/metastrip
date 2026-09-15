@@ -840,10 +840,10 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#4ade80",
         title: "Reading a header should not need a server",
         description:
-          "Almost every PDF metadata viewer online works by uploading your file, reading it server-side, and sending the answer back. The files people want to check are usually the confidential ones, which makes uploading the exact wrong move. MetaStrip parses the PDF in your browser with pdf-lib. Nothing is sent anywhere, and you can confirm that in DevTools.",
+          "Almost every PDF metadata viewer online works by uploading your file, reading it server-side, and sending the answer back. The files people want to check are usually the confidential ones, which makes uploading the exact wrong move. MetaStrip parses the PDF in your browser with pdf-lib. Your PDF is never uploaded, and you can confirm that in DevTools.",
         example: {
-          label: "Network requests",
-          value: "Zero. Open the network tab and drop a file in to check",
+          label: "Uploads",
+          value: "None. Open the network tab and drop a file in to check",
         },
         risk: "Uploading a confidential PDF to an unknown server to find out whether it is confidential defeats the point.",
       },
