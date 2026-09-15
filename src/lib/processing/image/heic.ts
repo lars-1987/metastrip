@@ -494,6 +494,10 @@ function rebuildExifInPlace(
 
 /** Lightweight XMP category sniffing (XMP is XML/text). */
 function catalogXmp(xml: string): MetadataField[] {
+  // A strip zeroes the item rather than removing it (so the iloc offsets stay
+  // valid), and zeroes decode to NULs. That carries nothing, so re-reading a
+  // cleaned file must not report it as "XMP metadata".
+  if (!xml.replace(/[\0\s]/g, "")) return [];
   const fields: MetadataField[] = [];
   const add = (category: MetadataCategory, key: string, label: string) =>
     fields.push({ category, key, label, value: "present", removable: true });
