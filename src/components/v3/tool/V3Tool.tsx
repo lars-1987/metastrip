@@ -143,7 +143,7 @@ export function V3Tool() {
   const slotStyle = (i: number): CSSProperties => ({ ["--w" as string]: `${w[i]}%` } as CSSProperties);
 
   return (
-    <div className="v3-card-row">
+    <div className="v3-card-row" data-private>
       {/* Slot 1 — dropzone → files */}
       <div ref={slotRefs[0]} className="v3-card-slot" style={slotStyle(0)} data-active="true">
         <div ref={contentRefs[0]} className="h-full min-h-0">

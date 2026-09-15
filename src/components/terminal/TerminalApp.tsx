@@ -31,7 +31,7 @@ export function TerminalApp() {
     // before the error boundary — white-screened the whole app. Exempting the
     // terminal from translation prevents the crash at its source; the marketing
     // copy, blog, and FAQ outside this subtree stay fully translatable.
-    <div className="w-full max-w-5xl mx-auto notranslate" translate="no">
+    <div className="w-full max-w-5xl mx-auto notranslate" translate="no" data-private>
       <TerminalWindow>
         <TerminalTitleBar />
         <TerminalTabBar

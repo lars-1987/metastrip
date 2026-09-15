@@ -58,8 +58,24 @@ export function PostHogProviderWrapper({
       capture_pageview: false, // Manual via PostHogPageview
       capture_pageleave: true,
       autocapture: true,
+      // Autocapture used to send a clicked element's text and attributes: a
+      // file row's text is its filename, and the remove button's aria-label is
+      // "Remove <filename>". Keep the click, drop the words.
+      mask_all_text: true,
+      mask_all_element_attributes: true,
       persistence: "localStorage", // No cookies — privacy-first
       respect_dnt: true,
+      // Session replay records ordinary page text unless told not to, which
+      // put every filename and every metadata value shown in the review (GPS,
+      // author names, prompts, usernames) into recordings. The files never
+      // left the device; what they carried did. Text inside anything marked
+      // data-private (the tool, the terminal) is masked in the browser before
+      // sending, so replays keep the layout and clicks for debugging. The map
+      // carries ph-no-capture, which blocks it outright: its pin gives the
+      // location away even with every label masked.
+      session_recording: {
+        maskTextSelector: "[data-private], [data-private] *",
+      },
     });
   }, []);
 

@@ -25,7 +25,9 @@ export function V3LocationMap({ coords }: { coords: LatLng }) {
   const hemisphere = `${coords.lat >= 0 ? "N" : "S"} · ${coords.lng >= 0 ? "E" : "W"}`;
 
   return (
-    <figure className="m-0 rounded-[var(--radius-sm)] bg-[var(--card)] p-4">
+    // ph-no-capture blocks the map from session replay entirely: masking its
+    // labels would still leave the pin showing where the file was made.
+    <figure className="ph-no-capture m-0 rounded-[var(--radius-sm)] bg-[var(--card)] p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <span className="grid h-9 w-9 place-items-center rounded-[10px]" style={{ background: "color-mix(in srgb, var(--danger) 18%, transparent)" }}>
