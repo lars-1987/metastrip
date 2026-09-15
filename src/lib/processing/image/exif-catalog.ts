@@ -137,5 +137,19 @@ export function catalogExifFields(exifObj: ExifObj): MetadataField[] {
       });
     }
   }
+  // IFD1's thumbnail: a small JPEG copy of the photo, which can predate a crop
+  // or an edit. It was never listed, so a partial strip that kept it (which
+  // every partial strip did) said nothing about it. Filed under Custom, the
+  // technical leftovers, and removed with that toggle.
+  const thumb = (exifObj as Record<string, unknown>)["thumbnail"];
+  if (typeof thumb === "string" && thumb.length > 0) {
+    fields.push({
+      category: "custom",
+      key: "Thumbnail",
+      label: "Embedded thumbnail",
+      value: `a small copy of the photo (${(thumb.length / 1024).toFixed(1)} KB)`,
+      removable: true,
+    });
+  }
   return fields;
 }

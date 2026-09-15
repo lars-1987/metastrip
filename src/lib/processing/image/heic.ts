@@ -469,6 +469,12 @@ function rebuildExifInPlace(
         if (one[0] && enabled.has(one[0].category)) delete exifObj[ifd][tagId];
       }
     }
+    // piexif.dump re-embeds the thumbnail whatever happened to IFD1's tags, so
+    // every partial strip kept it. It is reported under Custom and goes with it.
+    if (enabled.has("custom")) {
+      (exifObj as Record<string, unknown>)["thumbnail"] = null;
+      exifObj["1st"] = {};
+    }
 
     const dumped = piexif.dump(exifObj); // binary string: "Exif\0\0" + TIFF
     const newTiff = binaryStringToBytes(dumped).subarray(6); // drop "Exif\0\0"

@@ -260,6 +260,14 @@ export async function processJpeg(
         }
       }
     }
+    // The thumbnail went back in on every partial strip: piexif.dump re-embeds
+    // exifObj.thumbnail whatever happened to IFD1's tags. Checked on a JPEG
+    // with a red 160x120 thumbnail: keeping only Copyright still shipped it.
+    // It is reported under Custom (exif-catalog) and goes with that toggle.
+    if (categoriesToStrip.includes("custom")) {
+      (exifObj as Record<string, unknown>)["thumbnail"] = null;
+      exifObj["1st"] = {};
+    }
     try {
       const newExifBytes = piexif.dump(exifObj);
       outBytes = dataUrlToUint8(piexif.insert(newExifBytes, dataUrl));
