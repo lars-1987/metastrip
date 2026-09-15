@@ -57,26 +57,28 @@ export async function processHeic(
     report: buildReport(file, blob.size, found, removed, kept),
   });
 
+  // Every HEIF image has a meta box with iinf and iloc; a file without them is
+  // damaged or not HEIF. These returns used to hand the file back with no
+  // error, so a truncated HEIC read as "no metadata found, already clean".
+  // Still untouched, but now reported as unreadable.
+  const unreadable = (): ProcessingResult => ({
+    ...passthrough(new Blob([original], { type: file.type || "image/heic" })),
+    error: "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.",
+  });
+
   try {
     const view = new DataView(original.buffer, original.byteOffset, original.byteLength);
 
-    if (!isHeifFile(view)) {
-      // Not a parseable HEIF — hand the file back untouched rather than corrupt it.
-      return passthrough(new Blob([original], { type: file.type || "image/heic" }));
-    }
+    if (!isHeifFile(view)) return unreadable();
 
     const meta = findTopLevelBox(view, "meta");
-    if (!meta) {
-      return passthrough(new Blob([original], { type: file.type || "image/heic" }));
-    }
+    if (!meta) return unreadable();
     const { childrenStart: metaChildren } = readFullBoxHeader(view, meta);
 
     const iinf = findBox(view, metaChildren, meta.end, "iinf");
     const iloc = findBox(view, metaChildren, meta.end, "iloc");
     const idat = findBox(view, metaChildren, meta.end, "idat");
-    if (!iinf || !iloc) {
-      return passthrough(new Blob([original], { type: file.type || "image/heic" }));
-    }
+    if (!iinf || !iloc) return unreadable();
 
     const types = parseIinf(view, iinf); // id -> { type, contentType }
     const locations = parseIloc(view, iloc, idat); // id -> extents[]
@@ -183,12 +185,18 @@ export async function processHeic(
       cleanedBlob: blob,
       report: buildReport(file, blob.size, fieldsFound, fieldsRemoved, fieldsKept),
     };
-  } catch {
-    // Any parse failure: never corrupt the user's file — return it as-is.
+  } catch (err) {
+    // Any parse failure: never corrupt the user's file, return it as-is. But
+    // say so. With no error set, an empty report read as "no metadata found",
+    // and the untouched file went into the download as cleaned_<name>: the
+    // failure the coordinator's crash guard exists to prevent, caught here
+    // first and so never seen by it.
     return {
       originalFile: file,
       cleanedBlob: new Blob([original], { type: file.type || "image/heic" }),
       report: buildReport(file, original.byteLength, [], [], []),
+      error: "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.",
+      crashed: err instanceof Error ? err.name : "unknown",
     };
   }
 }
