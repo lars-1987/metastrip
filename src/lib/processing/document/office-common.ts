@@ -29,12 +29,6 @@ export function removeZipParts(
   return { found, removed };
 }
 
-export const METADATA_FILES = {
-  core: "docProps/core.xml",
-  app: "docProps/app.xml",
-  custom: "docProps/custom.xml",
-};
-
 export const SENSITIVE_FILES: Record<string, MetadataCategory> = {
   "word/comments.xml": "comments",
   "word/commentsExtended.xml": "comments",

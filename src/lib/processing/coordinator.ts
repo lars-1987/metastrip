@@ -139,18 +139,3 @@ async function dispatch(file: File, options: StripOptions): Promise<ProcessingRe
   return processor(file, options);
 }
 
-export async function processBatch(
-  files: File[],
-  options: StripOptions = DEFAULT_STRIP_OPTIONS,
-  onProgress?: (completed: number, total: number) => void
-): Promise<ProcessingResult[]> {
-  const results: ProcessingResult[] = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const result = await processFile(files[i], options);
-    results.push(result);
-    onProgress?.(i + 1, files.length);
-  }
-
-  return results;
-}

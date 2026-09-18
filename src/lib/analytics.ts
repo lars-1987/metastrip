@@ -96,10 +96,3 @@ export function trackFileFailed(props: {
   });
 }
 
-export function trackBatchProcessed(props: {
-  file_count: number;
-  success_count: number;
-}) {
-  posthog.capture("batch_processed", props);
-}
-

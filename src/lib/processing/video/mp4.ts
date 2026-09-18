@@ -205,7 +205,7 @@ function stripMp4Metadata(input: ArrayBuffer, options: StripOptions): StripResul
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
 
-  function walk(start: number, end: number, parentType: string) {
+  function walk(start: number, end: number) {
     for (const box of iterBoxes(view, start, end)) {
       const isAppleTag = box.type.charCodeAt(0) === 0xa9; // '©' prefix
       const stripThis = STRIP_ATOMS.has(box.type) || isAppleTag;
@@ -295,12 +295,12 @@ function stripMp4Metadata(input: ArrayBuffer, options: StripOptions): StripResul
 
       // Recurse into containers
       if (CONTAINER_ATOMS.has(box.type)) {
-        walk(box.contentStart, box.end, box.type);
+        walk(box.contentStart, box.end);
       }
     }
   }
 
-  walk(0, view.byteLength, "root");
+  walk(0, view.byteLength);
 
   return { cleaned, fieldsFound, fieldsRemoved };
 }

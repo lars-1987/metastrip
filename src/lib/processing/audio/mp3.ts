@@ -135,7 +135,6 @@ function parseId3v2(view: DataView): Id3v2Info | null {
   // Walk frames for the report. We don't need to parse content, just enumerate IDs.
   const frames: MetadataField[] = [];
   const frameIdLen = major === 2 ? 3 : 4;
-  const frameSizeLen = major === 2 ? 3 : 4;
   const frameHeaderLen = major === 2 ? 6 : 10;
   const tagEnd = totalSize;
 

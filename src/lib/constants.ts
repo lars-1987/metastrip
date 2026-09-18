@@ -1,50 +1,7 @@
 import type { MetadataCategory, FileCategory } from "./processing/types";
 import type { IconName } from "@/components/shared/Icon";
 
-export const SUPPORTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/heic",
-  "image/heif",
-  "image/tiff",
-];
-
-export const SUPPORTED_DOCUMENT_TYPES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-];
-
-export const SUPPORTED_VIDEO_TYPES = [
-  "video/mp4",
-  "video/quicktime",
-  "video/x-m4v",
-];
-
-export const SUPPORTED_AUDIO_TYPES = [
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/aac",
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/flac",
-  "audio/x-flac",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/wave",
-];
-
-export const ALL_SUPPORTED_TYPES = [
-  ...SUPPORTED_IMAGE_TYPES,
-  ...SUPPORTED_DOCUMENT_TYPES,
-  ...SUPPORTED_VIDEO_TYPES,
-  ...SUPPORTED_AUDIO_TYPES,
-];
-
-// Phase 2: All supported types
+// Every MIME type the tool accepts.
 export const ACCEPTED_TYPES = [
   "image/jpeg",
   "image/png",
@@ -90,11 +47,6 @@ export const BATCH_LIMIT = 50;
  */
 export const BATCH_SIZE_WARN_BYTES = 300 * 1024 * 1024; // 300 MB, flagged but allowed
 export const BATCH_SIZE_HARD_CAP_BYTES = 750 * 1024 * 1024; // 750 MB, refused
-
-/** Soft warning threshold — videos above this take longer + use more memory */
-export const VIDEO_SIZE_WARN_BYTES = 250 * 1024 * 1024; // 250 MB
-/** Hard cap to prevent browser tab crashes on very large files */
-export const VIDEO_SIZE_HARD_CAP_BYTES = 1.5 * 1024 * 1024 * 1024; // 1.5 GB
 
 export interface CategoryConfig {
   label: string;

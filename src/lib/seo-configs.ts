@@ -3,7 +3,6 @@
 // ============================================================
 
 import type { IconName } from "@/components/shared/Icon";
-import { BATCH_LIMIT } from "./constants";
 
 export interface MockMetadataField {
   label: string;
@@ -40,11 +39,6 @@ export interface SupportedFormatCard {
   color: string;
 }
 
-export interface BatchCTA {
-  text: string;
-  subtext: string;
-}
-
 export interface SEOPageConfig {
   slug: string;
   /** Real first-published date, from this file's git history. Emitted as
@@ -56,14 +50,10 @@ export interface SEOPageConfig {
   title: string;
   subtitle: string;
   heroLabel: string;
-  acceptedTypes: string[];
-  acceptedLabel: string;
-  fileIcon: IconName;
   metadataCategories: MockMetadataCategory[];
   explainerTabs: ExplainerTab[];
   seoContent: SEOContentBlock;
   supportedFormats: SupportedFormatCard[];
-  batchCta: BatchCTA;
   metaTitle: string;
   metaDescription: string;
 }
@@ -81,9 +71,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip GPS coordinates, camera info, AI generation tags, and hidden data from your images, instantly, privately, for free.",
     heroLabel: "REMOVE PHOTO METADATA: FREE, NOTHING UPLOADED",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
-    fileIcon: "ImageSquare",
     metadataCategories: [
       {
         category: "gps",
@@ -226,11 +213,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#4ade80",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Remove Metadata from Photos Online: Free, No Upload | MetaStrip",
     metaDescription:
@@ -245,9 +227,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip author names, creator applications, company info, and hidden document properties from PDF files, instantly, in your browser.",
     heroLabel: "REMOVE PDF AUTHOR & METADATA: FREE, NOTHING UPLOADED",
-    acceptedTypes: ["application/pdf"],
-    acceptedLabel: "PDF files",
-    fileIcon: "FileText",
     metadataCategories: [
       {
         category: "author",
@@ -377,11 +356,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#f472b6",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Remove Author from PDF Online, Free, No Upload | MetaStrip",
     metaDescription:
@@ -396,9 +370,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Remove EXIF, IPTC, XMP, and all embedded metadata from photos, free, private, no upload required.",
     heroLabel: "STRIP EXIF DATA: FREE, 100% CLIENT-SIDE",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
-    fileIcon: "ImageSquare",
     metadataCategories: [
       {
         category: "gps",
@@ -552,11 +523,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#4ade80",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "EXIF Remover: View & Strip Photo Metadata Online | MetaStrip",
     metaDescription:
@@ -571,9 +537,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip C2PA content credentials from JPEG, PNG, WebP, and HEIC images in your browser. Unlimited files, no signup, nothing uploaded.",
     heroLabel: "REMOVE C2PA CONTENT CREDENTIALS: UNLIMITED, NOTHING UPLOADED",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
-    acceptedLabel: "JPEG · PNG · WebP · HEIC",
-    fileIcon: "LockKey",
     metadataCategories: [
       {
         category: "ai",
@@ -717,11 +680,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#818cf8",
       },
     ],
-    batchCta: {
-      text: "Strip C2PA Free →",
-      subtext:
-        "Unlimited strips, no daily cap, no account, nothing uploaded.",
-    },
     metaTitle:
       "Remove C2PA Metadata from Images: Free & Unlimited | MetaStrip",
     metaDescription:
@@ -736,9 +694,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "See every hidden property inside a PDF: author, timestamps, editing software, and the XMP packet most viewers never open. Read it in your browser, then strip it if you want to.",
     heroLabel: "CHECK WHAT A PDF IS CARRYING: FREE, NOTHING UPLOADED",
-    acceptedTypes: ["application/pdf"],
-    acceptedLabel: "PDF files",
-    fileIcon: "MagnifyingGlass",
     metadataCategories: [
       {
         category: "author",
@@ -879,11 +834,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#fbbf24",
       },
     ],
-    batchCta: {
-      text: "Check a PDF Free →",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Check PDF Metadata Online, Free, No Upload | MetaStrip",
     metaDescription:
@@ -897,9 +847,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip C2PA content credentials, XMP AI generation tags, and tool fingerprints from Midjourney, DALL-E, Stable Diffusion, and Adobe Firefly images.",
     heroLabel: "STRIP AI GENERATION TAGS: FREE, 100% CLIENT-SIDE",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
-    fileIcon: "Robot",
     metadataCategories: [
       {
         category: "ai",
@@ -1047,11 +994,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#38bdf8",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Remove AI Metadata & Generation Tags from Images | MetaStrip",
     metaDescription:
@@ -1066,11 +1008,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Remove author names, tracked changes, comments, company info, and hidden properties from DOCX files, privately, in your browser.",
     heroLabel: "STRIP WORD DOCUMENT METADATA: FREE, NOTHING UPLOADED",
-    acceptedTypes: [
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ],
-    acceptedLabel: "DOCX files",
-    fileIcon: "NotePencil",
     metadataCategories: [
       {
         category: "author",
@@ -1200,11 +1137,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#f472b6",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Word Metadata Remover (.docx): Free | MetaStrip",
     metaDescription:
@@ -1219,9 +1151,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Strip embedded GPS coordinates, altitude, speed, and direction data from your photos before sharing them online.",
     heroLabel: "REMOVE GPS LOCATION FROM PHOTOS: FREE & PRIVATE",
-    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/heic"],
-    acceptedLabel: "JPEG \u00b7 PNG \u00b7 WebP \u00b7 HEIC",
-    fileIcon: "MapPin",
     metadataCategories: [
       {
         category: "gps",
@@ -1347,11 +1276,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#4ade80",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Remove GPS Location from Photos: Free & Private | MetaStrip",
     metaDescription:
@@ -1366,18 +1290,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     subtitle:
       "Clean hidden data from photos and documents before uploading, emailing, or posting; protect your privacy in seconds.",
     heroLabel: "CLEAN FILES BEFORE SHARING: FREE, NOTHING UPLOADED",
-    acceptedTypes: [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/heic",
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ],
-    acceptedLabel: "Images \u00b7 PDFs \u00b7 DOCX \u00b7 XLSX \u00b7 PPTX",
-    fileIcon: "ShieldCheck",
     metadataCategories: [
       {
         category: "gps",
@@ -1548,11 +1460,6 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#06b6d4",
       },
     ],
-    batchCta: {
-      text: "Strip Files Free \u2192",
-      subtext:
-        `Up to ${BATCH_LIMIT} files per batch. No account, no upload, no cost.`,
-    },
     metaTitle:
       "Remove Metadata Before Sharing: Photos, PDFs & Docs | MetaStrip",
     metaDescription:

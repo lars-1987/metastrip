@@ -129,13 +129,6 @@ export function formatBytes(bytes: number): string {
   return (bytes / 1073741824).toFixed(2) + " GB";
 }
 
-export function getFileIcon(mimeType: string): string {
-  if (mimeType.startsWith("image/")) return "\u{1F5BC}";
-  if (mimeType.startsWith("video/")) return "\u{1F39E}️"; // 🎞️ film frames
-  if (mimeType === "application/pdf") return "\u{1F4C4}";
-  return "\u{1F4CE}";
-}
-
 const TYPE_LABELS: Record<string, string> = {
   "image/jpeg": "JPEG",
   "image/png": "PNG",
