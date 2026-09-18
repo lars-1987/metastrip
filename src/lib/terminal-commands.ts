@@ -61,7 +61,7 @@ function getManPage(): string[] {
     "METASTRIP(1)              Privacy Tools Manual              METASTRIP(1)",
     "",
     "NAME",
-    "    metastrip — remove metadata from files, client-side",
+    "    metastrip - remove metadata from files, client-side",
     "",
     "SYNOPSIS",
     "    metastrip [--remove-all] [--keep category] file ...",
@@ -130,7 +130,7 @@ export function executeCommand(input: string): CommandResult {
       command: trimmed,
       output: [
         "",
-        "metastrip — privacy-first metadata removal",
+        "metastrip: privacy-first metadata removal",
         "your files never leave your browser. no servers, no uploads, no cookies.",
         "built in melbourne by an indie dev with a cybersecurity background.",
         "free forever. supported by voluntary tips via ko-fi.",
@@ -143,7 +143,7 @@ export function executeCommand(input: string): CommandResult {
   if (cmd === "version" || lower === "--version" || lower === "-v") {
     return {
       command: trimmed,
-      output: ["metastrip v3.0.0 — client-side metadata removal"],
+      output: ["metastrip v3.0.0: client-side metadata removal"],
       style: "info",
     };
   }
@@ -236,7 +236,7 @@ export function executeCommand(input: string): CommandResult {
       output: [
         "",
         "error: you've entered vim. there is no escape.",
-        "just kidding — this is metastrip, not a hostage situation.",
+        "just kidding. this is metastrip, not a hostage situation.",
         "(try :q! to exit vim, or just drag some files in)",
         "",
       ],
@@ -414,7 +414,7 @@ export function executeCommand(input: string): CommandResult {
         "",
         "  PID  COMMAND        CPU   MEM   PRIVACY",
         "  1    metastrip      0.1%  low   ██████████ 100%",
-        "  2    trackers        —     —    (not found)",
+        "  2    trackers        -     -    (not found)",
         "  3    analytics      0.0%  min   cookieless",
         "",
       ],

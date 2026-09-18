@@ -1,4 +1,10 @@
+import { useId } from "react";
+
 export function MetaStripIcon({ size = 36 }: { size?: number }) {
+  // Per-instance gradient ids. With fixed ids every icon on the page painted
+  // with the first one's gradients, and when that first icon sat in a hidden
+  // subtree (the /terminal menubar on a phone) the bars didn't paint at all.
+  const id = useId();
   return (
     <svg
       width={size}
@@ -9,7 +15,7 @@ export function MetaStripIcon({ size = 36 }: { size?: number }) {
     >
       <defs>
         <linearGradient
-          id="ms-grad"
+          id={`${id}-grad`}
           x1="0"
           y1="0"
           x2="120"
@@ -20,7 +26,7 @@ export function MetaStripIcon({ size = 36 }: { size?: number }) {
           <stop offset="100%" stopColor="#06b6d4" />
         </linearGradient>
         <linearGradient
-          id="ms-fade"
+          id={`${id}-fade`}
           x1="30"
           y1="0"
           x2="90"
@@ -33,9 +39,9 @@ export function MetaStripIcon({ size = 36 }: { size?: number }) {
         </linearGradient>
       </defs>
       <rect width="120" height="120" rx="26" fill="#09090b" />
-      <rect x="30" y="38" width="60" height="6" rx="3" fill="url(#ms-grad)" />
-      <rect x="30" y="57" width="60" height="6" rx="3" fill="url(#ms-fade)" />
-      <rect x="30" y="76" width="60" height="6" rx="3" fill="url(#ms-grad)" />
+      <rect x="30" y="38" width="60" height="6" rx="3" fill={`url(#${id}-grad)`} />
+      <rect x="30" y="57" width="60" height="6" rx="3" fill={`url(#${id}-fade)`} />
+      <rect x="30" y="76" width="60" height="6" rx="3" fill={`url(#${id}-grad)`} />
     </svg>
   );
 }

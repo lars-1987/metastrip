@@ -7,7 +7,7 @@ interface TerminalTitleBarProps {
 export function TerminalTitleBar({ onDragStart }: TerminalTitleBarProps) {
   return (
     <div
-      className="h-11 flex items-center px-4 bg-white/[0.03] border-b border-white/[0.06] select-none shrink-0 cursor-grab active:cursor-grabbing"
+      className="h-11 flex items-center px-4 bg-white/[0.03] border-b border-white/[0.06] select-none shrink-0 lg:cursor-grab lg:active:cursor-grabbing"
       onPointerDown={onDragStart}
     >
       {/* Traffic lights */}

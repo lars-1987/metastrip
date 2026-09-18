@@ -52,7 +52,7 @@ export function AboutTab() {
           </div>
           <div className="pl-4 border-l border-white/[0.06] text-sm text-white/60 font-[family-name:var(--font-mono)] leading-[1.9] flex flex-col gap-2.5">
             <p>
-              It started the way most side projects do — I had a problem and
+              It started the way most side projects do: I had a problem and
               nothing solved it properly. I needed to strip metadata from a
               batch of files and went looking for a tool. What I found was bleak:
               half-abandoned web apps plastered with ads, sketchy services that
@@ -65,11 +65,11 @@ export function AboutTab() {
               it was last updated when Ubuntu still shipped with Unity.
             </p>
             <p>
-              So I built the clean, modern version I actually wanted to use —
+              So I built the clean, modern version I actually wanted to use:
               everything runs in your browser, no uploads, no accounts, no
               nonsense. Then I looked at it and thought: this works, but it&apos;s
               boring. The best CLI tools I use every day are the ones that feel
-              alive — the ones with personality.
+              alive, the ones with personality.
             </p>
             <p>
               So I scrapped the generic landing page and rebuilt the whole thing

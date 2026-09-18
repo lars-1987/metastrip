@@ -202,7 +202,7 @@ function FileProcessingBlock({
       {entry.status === "error" && summaryVisible && (
         <div className="pl-4 mt-1">
           <span className="text-danger">✗ error</span>
-          {entry.error && <span className="text-danger/60 ml-1">— {entry.error}</span>}
+          {entry.error && <span className="text-danger/60">: {entry.error}</span>}
         </div>
       )}
 
@@ -210,7 +210,7 @@ function FileProcessingBlock({
       {entry.status === "done" && summaryVisible && (
         <div className="pl-4 mt-1 animate-card-slide-in">
           <span className="text-success">✓ done</span>
-          <span className="text-white/50"> — {entry.fieldsRemoved ?? 0} fields removed</span>
+          <span className="text-white/50">, {entry.fieldsRemoved ?? 0} fields removed</span>
         </div>
       )}
     </div>

@@ -30,7 +30,7 @@ function SystemClockPill() {
       className="px-2 py-0.5 rounded bg-white/[0.04] text-white/60 tabular-nums"
       suppressHydrationWarning
     >
-      {label || "—"}
+      {label || "--:--"}
     </span>
   );
 }
@@ -131,7 +131,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
       // fetch fresh chunks. If it's something else, surface it gently rather
       // than letting it bubble to the error boundary.
       if (isChunkLoadError(err) && reloadForStaleChunk()) return;
-      setAddError("Download failed — please reload the page and try again.");
+      setAddError("Download failed. Please reload the page and try again.");
     }
   }, [doneFiles, downloadZip]);
 
@@ -216,7 +216,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
 
             <div className="font-[family-name:var(--font-mono)] text-sm space-y-1.5 mb-4 animate-card-slide-in [animation-delay:100ms]">
               <div className="text-white/65">
-                metastrip v3.0 — client-side metadata removal
+                metastrip v3.0: client-side metadata removal
               </div>
               <div className="text-white/65">
                 batch limit: {BATCH_LIMIT} files | all processing happens in your browser
