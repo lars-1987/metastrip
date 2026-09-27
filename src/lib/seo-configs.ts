@@ -216,7 +216,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     metaTitle:
       "Remove Metadata from Photos Online: Free, No Upload | MetaStrip",
     metaDescription:
-      "Remove GPS, EXIF, camera info, and AI tags from photos in your browser. JPG, PNG, WebP, HEIC. No upload, no account, no cost.",
+      "Remove GPS, EXIF, camera info, and AI tags from photos in your browser. JPG, PNG, WebP, HEIC, AVIF. No upload, no account, no cost.",
   },
 
   "remove-author-from-pdf": {
@@ -535,7 +535,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "remove C2PA metadata from images",
     title: "Remove C2PA Metadata",
     subtitle:
-      "Strip C2PA content credentials from JPEG, PNG, WebP, and HEIC images in your browser. Unlimited files, no signup, nothing uploaded.",
+      "Strip C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images in your browser. Unlimited files, no signup, nothing uploaded.",
     heroLabel: "REMOVE C2PA CONTENT CREDENTIALS: UNLIMITED, NOTHING UPLOADED",
     metadataCategories: [
       {
@@ -600,7 +600,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         example: {
           label: "Where it lives",
           value:
-            "JUMBF boxes in JPEG, a caBX chunk in PNG, a C2PA chunk in WebP, a uuid box in HEIC",
+            "JUMBF boxes in JPEG, a caBX chunk in PNG, a C2PA chunk in WebP, a uuid box in HEIC and AVIF",
         },
         risk: "The manifest travels with the file, so anyone who receives it can read your tool, timestamps, and edit history.",
       },
@@ -624,12 +624,12 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         label: "Every Format",
         icon: "ImageSquare",
         color: "#38bdf8",
-        title: "Including JPEG and HEIC",
+        title: "Including JPEG, HEIC and AVIF",
         description:
-          "C2PA binds differently in each format, which is why many tools only handle one or two. MetaStrip reads all four bindings: APP11 JUMBF segments in JPEG, the caBX chunk in PNG, the C2PA RIFF chunk in WebP, and the uuid box in HEIC, the format every iPhone shoots by default.",
+          "C2PA binds differently in each format, which is why many tools only handle one or two. MetaStrip reads all four bindings: APP11 JUMBF segments in JPEG, the caBX chunk in PNG, the C2PA RIFF chunk in WebP, and the uuid box shared by HEIC, the format every iPhone shoots by default, and AVIF, the compact format more AI tools now export.",
         example: {
           label: "Supported",
-          value: "JPEG, PNG, WebP, HEIC, plus EXIF, XMP and IPTC alongside",
+          value: "JPEG, PNG, WebP, HEIC, AVIF, plus EXIF, XMP and IPTC alongside",
         },
         risk: "A tool that only supports PNG and WebP leaves your camera photos and iPhone shots untouched.",
       },
@@ -679,11 +679,16 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         desc: "C2PA uuid box, Exif and XMP items, iPhone's default format",
         color: "#818cf8",
       },
+      {
+        ext: "AVIF",
+        desc: "C2PA uuid box, Exif and XMP items, IPTC AI marker",
+        color: "#f472b6",
+      },
     ],
     metaTitle:
       "Remove C2PA Metadata from Images: Free & Unlimited | MetaStrip",
     metaDescription:
-      "Remove C2PA content credentials from JPEG, PNG, WebP and HEIC images. Runs entirely in your browser, nothing uploaded, unlimited files, no signup.",
+      "Remove C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images. Runs entirely in your browser, nothing uploaded, unlimited files, no signup.",
   },
 
   "check-pdf-metadata": {
