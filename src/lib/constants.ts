@@ -9,6 +9,7 @@ export const ACCEPTED_TYPES = [
   "image/gif",
   "image/heic",
   "image/heif",
+  "image/avif",
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

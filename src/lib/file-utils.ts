@@ -8,6 +8,7 @@ const MIME_TO_TYPE: Record<string, SupportedFileType> = {
   "image/heif": "heic",
   "image/heic-sequence": "heic",
   "image/heif-sequence": "heic",
+  "image/avif": "avif",
   "image/tiff": "tiff",
   "image/gif": "gif",
   "application/pdf": "pdf",
@@ -30,10 +31,12 @@ const MIME_TO_TYPE: Record<string, SupportedFileType> = {
 };
 
 // Extensions we detect by name when the browser reports no/unknown MIME.
-// (Chrome/Firefox commonly report an empty `file.type` for HEIC.)
+// (Chrome/Firefox commonly report an empty `file.type` for HEIC, and older
+// Windows builds do the same for AVIF.)
 const EXT_TO_TYPE: Record<string, SupportedFileType> = {
   heic: "heic",
   heif: "heic",
+  avif: "avif",
 };
 
 function extensionOf(name: string): string {
@@ -74,12 +77,24 @@ export function sniffFormat(head: Uint8Array): string | null {
   // ISO base media: HEIC, AVIF, MP4 and MOV all carry `ftyp` at byte 4.
   if (at(4, 4) === "ftyp") {
     const brand = at(8, 4);
-    if (brand.startsWith("hei") || brand.startsWith("mif")) return "heic";
     if (brand.startsWith("avi")) return "avif";
+    if (brand.startsWith("hei") || brand.startsWith("mif") || brand.startsWith("msf")) {
+      // A generic HEIF major brand (mif1) with AV1 images names avif among its
+      // compatible brands, which start at byte 16 after the minor version.
+      for (let i = 16; i + 4 <= head.length && i < 8 + boxSize(head); i += 4) {
+        if (at(i, 3) === "avi") return "avif";
+      }
+      return "heic";
+    }
     if (brand === "qt  ") return "mov";
     return "mp4";
   }
   return null;
+}
+
+/** The ftyp box's declared size, from its first four bytes. */
+function boxSize(head: Uint8Array): number {
+  return ((head[0] << 24) | (head[1] << 16) | (head[2] << 8) | head[3]) >>> 0;
 }
 
 /** Formats we can name but not yet process. Used to give an honest error, and
@@ -87,7 +102,6 @@ export function sniffFormat(head: Uint8Array): string | null {
  *  parser error for whatever the extension claimed. */
 export const NAMEABLE_UNSUPPORTED: Record<string, string> = {
   tiff: "TIFF",
-  avif: "AVIF",
   bmp: "BMP",
 };
 
@@ -108,10 +122,11 @@ export function isAcceptedForUpload(file: File, acceptedTypes: string[]): boolea
   if (type === "heic") {
     return acceptedTypes.includes("image/heic") || acceptedTypes.includes("image/heif");
   }
+  if (type === "avif") return acceptedTypes.includes("image/avif");
   return false;
 }
 
-const IMAGE_TYPES: SupportedFileType[] = ["jpeg", "png", "webp", "heic", "tiff", "gif"];
+const IMAGE_TYPES: SupportedFileType[] = ["jpeg", "png", "webp", "heic", "avif", "tiff", "gif"];
 const VIDEO_TYPES: SupportedFileType[] = ["mp4", "mov"];
 const AUDIO_TYPES: SupportedFileType[] = ["m4a", "mp3", "flac", "wav"];
 
@@ -135,6 +150,7 @@ const TYPE_LABELS: Record<string, string> = {
   "image/webp": "WebP",
   "image/heic": "HEIC",
   "image/heif": "HEIC",
+  "image/avif": "AVIF",
   "image/gif": "GIF",
   "application/pdf": "PDF",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",

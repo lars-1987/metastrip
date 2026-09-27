@@ -8,6 +8,7 @@ import type {
 } from "../types";
 import { catalogExifFields } from "./exif-catalog";
 import { describeC2pa } from "../c2pa-manifest";
+import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 import {
   readBox,
   iterBoxes,
@@ -19,7 +20,12 @@ import {
 } from "../isobmff";
 
 /* ──────────────────────────────────────────────────────────────────
-   HEIC / HEIF metadata stripping — in place, keeps the .heic format.
+   HEIC / HEIF / AVIF metadata stripping — in place, keeps the format.
+
+   AVIF is HEIF with AV1 image items instead of HEVC ones: same `meta`,
+   `iinf` and `iloc` boxes, same Exif and XMP items, same C2PA uuid box.
+   Only the image codec differs, and we never touch the image, so both
+   formats share this processor and differ only in the MIME they keep.
 
    HEIF is an ISOBMFF container. Metadata lives as "items": the `meta`
    box holds `iinf` (item types) and `iloc` (item byte ranges); the EXIF
@@ -45,16 +51,30 @@ interface HeifItem {
 const ASCII = new TextDecoder("ascii");
 const UTF8 = new TextDecoder("utf-8");
 
-export async function processHeic(
+type HeifFormat = "heic" | "avif";
+
+const MIME: Record<HeifFormat, string> = { heic: "image/heic", avif: "image/avif" };
+
+export function processHeic(file: File, options: StripOptions): Promise<ProcessingResult> {
+  return processHeif(file, options, "heic");
+}
+
+export function processAvif(file: File, options: StripOptions): Promise<ProcessingResult> {
+  return processHeif(file, options, "avif");
+}
+
+async function processHeif(
   file: File,
-  options: StripOptions
+  options: StripOptions,
+  format: HeifFormat
 ): Promise<ProcessingResult> {
+  const mime = MIME[format];
   const original = new Uint8Array(await file.arrayBuffer());
 
   const passthrough = (blob: Blob, found: MetadataField[] = [], removed: MetadataField[] = [], kept: MetadataField[] = []): ProcessingResult => ({
     originalFile: file,
     cleanedBlob: blob,
-    report: buildReport(file, blob.size, found, removed, kept),
+    report: buildReport(file, format, blob.size, found, removed, kept),
   });
 
   // Every HEIF image has a meta box with iinf and iloc; a file without them is
@@ -62,7 +82,7 @@ export async function processHeic(
   // error, so a truncated HEIC read as "no metadata found, already clean".
   // Still untouched, but now reported as unreadable.
   const unreadable = (): ProcessingResult => ({
-    ...passthrough(new Blob([original], { type: file.type || "image/heic" })),
+    ...passthrough(new Blob([original], { type: file.type || mime })),
     error: "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.",
   });
 
@@ -100,7 +120,7 @@ export async function processHeic(
 
     if (exifItems.length === 0 && xmpItems.length === 0 && c2paBoxes.length === 0) {
       // Nothing to strip.
-      return passthrough(new Blob([original], { type: file.type || "image/heic" }));
+      return passthrough(new Blob([original], { type: file.type || mime }));
     }
 
     // ── Catalogue found fields ──────────────────────────────────
@@ -179,11 +199,11 @@ export async function processHeic(
       fieldsKept.push(...c2paFields);
     }
 
-    const blob = new Blob([cleaned], { type: "image/heic" });
+    const blob = new Blob([cleaned], { type: mime });
     return {
       originalFile: file,
       cleanedBlob: blob,
-      report: buildReport(file, blob.size, fieldsFound, fieldsRemoved, fieldsKept),
+      report: buildReport(file, format, blob.size, fieldsFound, fieldsRemoved, fieldsKept),
     };
   } catch (err) {
     // Any parse failure: never corrupt the user's file, return it as-is. But
@@ -193,8 +213,8 @@ export async function processHeic(
     // first and so never seen by it.
     return {
       originalFile: file,
-      cleanedBlob: new Blob([original], { type: file.type || "image/heic" }),
-      report: buildReport(file, original.byteLength, [], [], []),
+      cleanedBlob: new Blob([original], { type: file.type || mime }),
+      report: buildReport(file, format, original.byteLength, [], [], []),
       error: "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.",
       crashed: err instanceof Error ? err.name : "unknown",
     };
@@ -501,6 +521,19 @@ function catalogXmp(xml: string): MetadataField[] {
   const fields: MetadataField[] = [];
   const add = (category: MetadataCategory, key: string, label: string) =>
     fields.push({ category, key, label, value: "present", removable: true });
+  // AI generators writing AVIF (Google, Midjourney, Adobe) mark the file with
+  // IPTC's digital source type or an online manifest link in XMP. Class it as
+  // AI so the AI toggle covers it, as the WebP and PNG readers already do.
+  const xmpKey = "XML:com.adobe.xmp";
+  if (aiCategoryFor(xmpKey, xml) === "ai") {
+    fields.push({
+      category: "ai",
+      key: "xmp:ai",
+      label: aiValueLabel(xmpKey, xml) ?? "AI marker in XMP",
+      value: aiDisplayValue(xmpKey, xml) ?? "present",
+      removable: true,
+    });
+  }
   if (/<dc:creator|<xmp:CreatorTool|<photoshop:Credit/i.test(xml)) add("author", "xmp:creator", "XMP Creator");
   if (/xmp:CreateDate|xmp:ModifyDate|photoshop:DateCreated/i.test(xml)) add("dates", "xmp:dates", "XMP Dates");
   if (/<dc:rights|xmpRights:/i.test(xml)) add("copyright", "xmp:rights", "XMP Rights");
@@ -558,6 +591,7 @@ function binaryStringToBytes(s: string): Uint8Array {
 
 function buildReport(
   file: File,
+  fileType: HeifFormat,
   cleanedSize: number,
   fieldsFound: MetadataField[],
   fieldsRemoved: MetadataField[],
@@ -565,7 +599,7 @@ function buildReport(
 ): MetadataReport {
   return {
     fileName: file.name,
-    fileType: "heic",
+    fileType,
     fileSize: file.size,
     cleanedFileSize: cleanedSize,
     fieldsFound,

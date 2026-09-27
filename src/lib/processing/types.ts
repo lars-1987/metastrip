@@ -68,6 +68,7 @@ export type SupportedFileType =
   | "png"
   | "webp"
   | "heic"
+  | "avif"
   | "tiff"
   | "gif"
   | "pdf"

@@ -3,7 +3,7 @@ import { processJpeg } from "./image/jpeg";
 import { processPng } from "./image/png";
 import { processWebp } from "./image/webp";
 import { processGif } from "./image/gif";
-import { processHeic } from "./image/heic";
+import { processHeic, processAvif } from "./image/heic";
 import { processPdf } from "./document/pdf";
 import { processDocx } from "./document/docx";
 import { processXlsx } from "./document/xlsx";
@@ -30,6 +30,7 @@ const processors: Partial<Record<SupportedFileType, Processor>> = {
   webp: processWebp,
   gif: processGif,
   heic: processHeic,
+  avif: processAvif,
   pdf: processPdf,
   docx: processDocx,
   xlsx: processXlsx,
