@@ -8,6 +8,7 @@ import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, trackFileVerified, categoriesOf } from "@/lib/analytics";
 import { canShareFiles } from "@/lib/share";
+import { forDownload } from "@/lib/download";
 import { prefersReducedMotion } from "../motion";
 
 export type Phase = "drop" | "review" | "done";
@@ -316,7 +317,7 @@ export function useV3Tool() {
     try {
       if (done.length === 1) {
         const { saveAs } = await import("file-saver");
-        saveAs(done[0].cleanedBlob!, `cleaned_${done[0].file.name}`);
+        saveAs(forDownload(done[0].cleanedBlob!), `cleaned_${done[0].file.name}`);
         trackFileDownloaded({ file_type: done[0].file.type });
       } else {
         const JSZip = (await import("jszip")).default;
@@ -324,7 +325,7 @@ export function useV3Tool() {
         const zip = new JSZip();
         for (const e of done) zip.file(`cleaned_${e.file.name}`, e.cleanedBlob!);
         const blob = await zip.generateAsync({ type: "blob" });
-        saveAs(blob, "metastrip-cleaned.zip");
+        saveAs(forDownload(blob), "metastrip-cleaned.zip");
         done.forEach((e) => trackFileDownloaded({ file_type: e.file.type }));
       }
     } catch {
