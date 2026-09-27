@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/write-redirects.mjs",
     "start": "next start",
     "lint": "eslint"
   },
