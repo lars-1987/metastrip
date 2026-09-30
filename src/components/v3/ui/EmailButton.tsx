@@ -20,6 +20,7 @@ export function EmailButton({ variant = "soft", size = "lg" }: { variant?: "prim
   const [addr, setAddr] = useState(`${USER} [at] ${DOMAIN}`);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional, see the comment above
     setAddr(`${USER}@${DOMAIN}`);
   }, []);
 

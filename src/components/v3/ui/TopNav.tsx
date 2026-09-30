@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import { MetaStripIcon } from "@/components/shared/Logo";
 
@@ -103,10 +104,10 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-50 px-4 pt-4">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-[var(--radius-pill)] bg-[color-mix(in_srgb,var(--surface)_72%,transparent)] px-5 py-3 backdrop-blur-xl">
-        <a href="/" className="flex items-center gap-3 no-underline">
+        <Link href="/" className="flex items-center gap-3 no-underline">
           <LogoMark />
           <span className="text-[21px] font-semibold tracking-[-0.01em] text-[var(--text)]">MetaStrip</span>
-        </a>
+        </Link>
 
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
