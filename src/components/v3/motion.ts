@@ -31,7 +31,7 @@ export function useScrollReveals() {
     let cleanup = () => {};
     let cancelled = false;
 
-    loadGsap().then(({ gsap, ScrollTrigger }) => {
+    loadGsap().then(({ gsap }) => {
       if (cancelled) return;
       root.classList.add("gsap-ready");
 

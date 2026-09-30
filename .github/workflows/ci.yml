@@ -27,8 +27,9 @@ jobs:
 
       - run: npm ci
 
+      - run: npm run lint
+
       - run: npx tsc --noEmit
 
       # No secrets: PR builds run without the PostHog key, so they send nothing.
-      # Lint joins once the existing errors on main are fixed.
       - run: npm run build

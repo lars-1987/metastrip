@@ -17,7 +17,9 @@ const Sun = (
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
+  // The server can't know the saved theme, so read it after hydration.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional post-hydration read
     setDark(document.querySelector(".v3-root")?.getAttribute("data-theme") === "dark");
   }, []);
 
