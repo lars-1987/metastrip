@@ -39,7 +39,7 @@ const EXT_TO_TYPE: Record<string, SupportedFileType> = {
   avif: "avif",
 };
 
-function extensionOf(name: string): string {
+export function extensionOf(name: string): string {
   const dot = name.lastIndexOf(".");
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
 }

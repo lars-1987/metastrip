@@ -82,17 +82,29 @@ export function trackFileShared(props: { file_type: string }) {
  *   "strip" — a processor errored during removal.
  *
  * Deliberately carries no filename and no file content, only the same mime
- * type and byte size the other file events already send.
+ * type and byte size the other file events already send, plus the extension
+ * on add-stage rejects. Browsers leave the mime type empty for formats the OS
+ * doesn't know (camera raw, JPEG XL), so without the extension those all
+ * collapse into "unknown".
  */
 export function trackFileFailed(props: {
   file_type: string;
   file_size?: number;
+  file_ext?: string;
   stage: "add" | "scan" | "strip";
   reason: string;
 }) {
   posthog.capture("file_failed", {
     ...props,
+    ...(props.file_ext !== undefined && { file_ext: safeExtension(props.file_ext) }),
     reason: props.reason.slice(0, 120),
   });
+}
+
+/** Only something shaped like a real extension gets through. "photo.from mum"
+ *  would otherwise send part of the filename. */
+function safeExtension(ext: string): string {
+  if (ext === "") return "none";
+  return /^[a-z0-9]{1,10}$/.test(ext) ? ext : "other";
 }
 
