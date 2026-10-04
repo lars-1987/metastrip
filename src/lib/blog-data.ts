@@ -214,7 +214,7 @@ export const ARTICLES: BlogArticle[] = [
     title: "Does X (Twitter) Strip Metadata From Photos?",
     seoTitle: "Does X (Twitter) Strip Metadata? Yes, With Three Gaps",
     seoDescription:
-      "X strips GPS and camera EXIF from photos posted through the app or x.com. It does not cover DMs, API uploads, or video, and X still gets the original.",
+      "X strips GPS from photos posted in its app. DMs, videos and scheduled posts are another story, and X still gets the original. Here’s what can leak.",
     excerpt:
       "Yes: for photos posted through the official X app or x.com, X re-encodes the image and strips GPS, camera, and timestamp EXIF from the copy others can download. But that doesn’t cover DMs, API and scheduling-tool uploads, or video, and X still receives the original. Here’s the full picture.",
     category: "privacy",
