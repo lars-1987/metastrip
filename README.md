@@ -11,7 +11,7 @@ ___  ___     _        _____ _        _
 
 # MetaStrip
 
-**Strip hidden metadata from photos, PDFs, Office documents, video, and audio, entirely in your browser.**
+**Strip hidden metadata, including C2PA Content Credentials and AI-generation markers, from photos, PDFs, Office documents, video, and audio, entirely in your browser.**
 
 [metastrip.app](https://metastrip.app) · [@larsitodev](https://x.com/larsitodev)
 
@@ -34,6 +34,10 @@ Photos carry GPS coordinates, device serial numbers, camera info, and timestamps
 
 The whole tool runs client-side. Files never leave your device: there is no server, no upload, no processing API. You can verify it yourself: open DevTools → Network tab → drop a file; no request carries it. The site does send anonymous usage events to PostHog (file types and the kinds of metadata found, never filenames, contents or values), and masks the tool's text in session replays before anything leaves the browser.
 
+Drop up to 100 files at once (750 MB in total) and download them one by one or as a single zip. On a phone or tablet, cleaned files can go straight to Photos or another app through the share sheet.
+
+It also checks its own work. After a strip, every cleaned file is read again with every metadata category switched on, the way you would check by dropping the download back in. Anything you chose to keep is expected to still be there; anything else it finds is reported as a leftover rather than hidden. (A file over 300 MB skips the re-read, since reading it twice could run the tab out of memory.)
+
 ## Why it exists
 
 Every other "remove metadata" tool I tried wanted me to upload my files to their server, was last updated when Ubuntu still shipped with Unity, or required installing a CLI tool with a man page. None of that felt right for a privacy tool. So I built the version I actually wanted to use.
@@ -42,7 +46,7 @@ Every other "remove metadata" tool I tried wanted me to upload my files to their
 
 | Category   | Formats                                       |
 | ---------- | --------------------------------------------- |
-| Images     | JPEG, PNG, WebP, HEIC, GIF                    |
+| Images     | JPEG, PNG, WebP, HEIC, AVIF, GIF              |
 | Documents  | PDF, DOCX, XLSX, PPTX                         |
 | Video      | MP4, MOV, M4V                                 |
 | Audio      | MP3, M4A, FLAC, WAV                           |
@@ -51,7 +55,7 @@ TIFF and additional document formats (RTF, ODT, Pages) are on the roadmap.
 
 ## What gets stripped
 
-- **Photos**: GPS coordinates, EXIF (camera make, model, serial, settings), IPTC, XMP, C2PA content credentials, AI generation tags, embedded thumbnails, timestamps
+- **Photos**: GPS coordinates, EXIF (camera make, model, serial, settings), IPTC, XMP, C2PA content credentials, AI generation tags (including IPTC's digital source type and online manifest links in XMP), embedded thumbnails, timestamps
 - **PDFs**: author, creator app, producer, title, subject, keywords, custom properties, timestamps
 - **GIFs**: comment extensions, the XMP packet, ICC profiles and other application blocks. The `NETSCAPE2.0` block is deliberately kept, because it carries the loop count and removing it stops animated GIFs looping.
 - **Office docs**: author, last-modified-by, company, tracked changes, comments, revision history, template metadata
@@ -67,7 +71,7 @@ Steganographic watermarks (e.g. Google's SynthID) are pixel-level and not addres
 - [pdf-lib](https://github.com/Hopding/pdf-lib) for PDF metadata
 - [JSZip](https://github.com/Stuk/jszip) for DOCX / XLSX / PPTX (they're ZIP archives: unpack, modify XML, repack)
 - Custom in-browser MP4 atom walker for video (MP4, MOV, M4V) replaces metadata atoms with `free` atoms of identical size so file structure stays valid
-- Custom in-browser HEIC/HEIF parser. HEIC is an ISOBMFF container (same box grammar as MP4), so it reuses the same box walker; locates the EXIF/XMP items via `iloc`/`iinf` and zeroes their byte ranges in place, leaving the image items untouched (no decode, no re-encode, output stays `.heic`)
+- Custom in-browser HEIC/HEIF and AVIF parser. Both are ISOBMFF containers (same box grammar as MP4), so they reuse the same box walker; it locates the EXIF/XMP items via `iloc`/`iinf` and zeroes their byte ranges in place, leaving the image items untouched (no decode, no re-encode, output stays `.heic` or `.avif`). AVIF is HEIF with AV1 image items instead of HEVC ones, so only the MIME type differs
 - Custom parsers for ID3v1/v2 (MP3), Vorbis comments (FLAC), and RIFF LIST/INFO + bext (WAV); FLAC PICTURE / VORBIS_COMMENT blocks are replaced with `PADDING` of equal size, RIFF chunks with `JUNK`, with no length recomputation, no risk of breaking playback
 - Custom GIF block walker: metadata lives in extension blocks and nothing in a GIF points at an absolute offset, so removal is a matter of dropping whole blocks and rejoining the rest
 - Shared XMP reader used by PDF, GIF and images, so an embedded packet is listed field by field (author, creator tool, document IDs) rather than as an opaque "present"
@@ -101,14 +105,15 @@ PRs welcome, particularly:
 
 - ~~HEIC support (the format every iPhone now defaults to)~~ · ✅ shipped Jul 2026
 - ~~GIF support~~ · ✅ shipped Sep 2026
-- TIFF support (also the keystone for most RAW formats, which are TIFF-based)
+- ~~AVIF support~~ · ✅ shipped Sep 2026
+- TIFF support (also the keystone for most RAW formats, such as DNG and CR2, which are TIFF-based)
 - Additional document formats (RTF, ODT, Pages)
 - WebM / MKV / AVI video and OGG / Opus audio
 - Web Worker offload so very large files don't block the main thread
 - Additional metadata categories on existing formats
 - Translations of the UI
 
-Open an issue first for substantial feature work so we don't end up duplicating effort.
+Open an issue first for substantial feature work so we don't end up duplicating effort. Every PR runs lint, a typecheck and the production build in CI; `npm run lint` and `npx tsc --noEmit` locally catch most problems first.
 
 ## License
 
