@@ -37,10 +37,13 @@ export const KOFI_URL = "https://ko-fi.com/larshdev";
 /** Public repo. Used by the nav, footer, terminal and the results-card star CTA. */
 export const GITHUB_REPO_URL = "https://github.com/lars-1987/metastrip";
 
-export const BATCH_LIMIT = 50;
+/** Raised from 50 in Oct 2026: 14 of 15 refused batches in the four weeks
+ *  before were 52 to 87 files, all under 240 MB. The byte caps below are the
+ *  real memory guard. */
+export const BATCH_LIMIT = 100;
 
 /**
- * Total bytes across a batch. Count alone is a poor guard: 50 photos and 50
+ * Total bytes across a batch. Count alone is a poor guard: 100 photos and 100
  * videos are wildly different loads. Profiled Aug 2026 on desktop Chrome, a
  * 75-file / 423 MB batch completed scan + strip + zip in ~12s with no trouble,
  * so the ceiling sits below what desktop can do to leave mobile headroom, which
