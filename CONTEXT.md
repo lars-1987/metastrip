@@ -31,3 +31,22 @@ _Avoid_: category (alone), media type
 **Metadata category**:
 A family of metadata fields a user can choose to keep or remove, such as GPS, device, dates or author.
 _Avoid_: category (alone)
+
+## Stripping
+
+**Metadata field**:
+One piece of metadata found in a file, such as a camera model or a GPS position. Every field belongs to exactly one metadata category.
+_Avoid_: tag, property, entry (each is one format's word for it)
+
+**Removed field**:
+A metadata field a strip took out of the file.
+
+**Kept field**:
+A metadata field still in the file after a strip, because the user chose to keep its category or because it could not be removed on its own.
+
+**Unreadable file**:
+A file in a supported format whose contents are not valid for that format, so MetaStrip hands it back untouched.
+_Avoid_: corrupt file (we can't always tell damage from a variant we don't handle)
+
+**Leftover**:
+A metadata field that verify clean still finds in a cleaned file, in a category the user asked to remove.
