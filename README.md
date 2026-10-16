@@ -113,7 +113,7 @@ PRs welcome, particularly:
 - Additional metadata categories on existing formats
 - Translations of the UI
 
-Open an issue first for substantial feature work so we don't end up duplicating effort. Every PR runs lint, a typecheck and the production build in CI; `npm run lint` and `npx tsc --noEmit` locally catch most problems first.
+Open an issue first for substantial feature work so we don't end up duplicating effort. Every PR runs lint, a typecheck, the tests and the production build in CI; `npm run lint`, `npx tsc --noEmit` and `npm test` locally catch most problems first.
 
 ## License
 
