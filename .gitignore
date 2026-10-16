@@ -37,6 +37,7 @@ yarn-error.log*
 *.md
 !README.md
 !LICENSE.md
+!/CONTEXT.md
 
 # typescript
 *.tsbuildinfo

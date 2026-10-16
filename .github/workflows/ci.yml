@@ -31,5 +31,7 @@ jobs:
 
       - run: npx tsc --noEmit
 
+      - run: npm test
+
       # No secrets: PR builds run without the PostHog key, so they send nothing.
       - run: npm run build
