@@ -1,34 +1,6 @@
 import type { MetadataCategory, FileCategory } from "./processing/types";
 import type { IconName } from "@/components/shared/Icon";
 
-// Every MIME type the tool accepts.
-export const ACCEPTED_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/heic",
-  "image/heif",
-  "image/avif",
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "video/mp4",
-  "video/quicktime",
-  "video/x-m4v",
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/aac",
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/flac",
-  "audio/x-flac",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/wave",
-];
-
 /** Ko-fi tip page. Centralised because the handle has already changed once,
  *  from /metastrip to /larshdev, and the old URL only resolves while Ko-fi
  *  chooses to keep redirecting it. */

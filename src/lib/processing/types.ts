@@ -66,25 +66,6 @@ export interface ProcessingResult {
   crashed?: string;
 }
 
-export type SupportedFileType =
-  | "jpeg"
-  | "png"
-  | "webp"
-  | "heic"
-  | "avif"
-  | "tiff"
-  | "gif"
-  | "pdf"
-  | "docx"
-  | "xlsx"
-  | "pptx"
-  | "mp4"
-  | "mov"
-  | "m4a"
-  | "mp3"
-  | "flac"
-  | "wav";
-
 export type FileCategory = "image" | "document" | "video" | "audio";
 
 export interface FileEntry {

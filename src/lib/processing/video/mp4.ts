@@ -23,8 +23,8 @@ import type {
   MetadataField,
   MetadataCategory,
   MetadataReport,
-  SupportedFileType,
 } from "../types";
+import type { SupportedFormat } from "../formats";
 
 /* ──────────────────────────────────────────────────────────────────
    Atom types we care about
@@ -563,7 +563,7 @@ export async function processMp4(
   file: File,
   options: StripOptions
 ): Promise<ProcessingResult> {
-  const fileType: SupportedFileType =
+  const fileType: SupportedFormat =
     file.type === "video/quicktime" ? "mov" : "mp4";
 
   // Refuse oversize files early instead of letting the tab crash

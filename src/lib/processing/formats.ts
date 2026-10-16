@@ -122,7 +122,8 @@ export const ACCEPT_ATTRIBUTE = ALL.flatMap((f) => [
   ...FORMATS[f].extensions.map((e) => `.${e}`),
 ]).join(",");
 
-function extensionOf(name: string): string {
+/** The lower-cased extension, or "" when the name has none. */
+export function extensionOf(name: string): string {
   const dot = name.lastIndexOf(".");
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
 }
