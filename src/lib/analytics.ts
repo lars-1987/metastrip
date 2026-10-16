@@ -93,6 +93,9 @@ export function trackFileFailed(props: {
   file_ext?: string;
   stage: "add" | "scan" | "strip";
   reason: string;
+  /** A recognised format we turned away (e.g. "tiff"): demand for the next
+   *  format, read from the bytes rather than guessed from the name. */
+  format?: string;
 }) {
   posthog.capture("file_failed", {
     ...props,

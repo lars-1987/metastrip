@@ -1,6 +1,7 @@
 "use client";
 
-import { getFileTypeLabel, formatBytes } from "@/lib/file-utils";
+import { formatBytes } from "@/lib/file-utils";
+import { labelOf } from "@/lib/processing/formats";
 import type { ToolEntry } from "./useV3Tool";
 
 interface Props {
@@ -88,7 +89,7 @@ export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, runnin
                 <div className="min-w-0">
                   <p className="truncate text-[15px] text-[var(--text)]">{e.file.name}</p>
                   <p className="v3-mono mt-1 text-[12px] text-[var(--text-muted)]">
-                    {getFileTypeLabel(e.file.type)} · {formatBytes(e.file.size)}
+                    {labelOf(e.format)} · {formatBytes(e.file.size)}
                     {e.error && " · not read"}
                   </p>
                 </div>

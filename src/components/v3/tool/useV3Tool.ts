@@ -3,7 +3,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { processFile, failureReason } from "@/lib/processing/coordinator";
 import { verifyCleaned, type VerifyResult } from "@/lib/processing/verify";
-import { detectFileType, getFileCategory, formatBytes, extensionOf } from "@/lib/file-utils";
+import { formatBytes, extensionOf } from "@/lib/file-utils";
+import { identify, notSupportedYet, categoryOf, type Identity, type SupportedFormat } from "@/lib/processing/formats";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, trackFileVerified, categoriesOf } from "@/lib/analytics";
@@ -27,6 +28,7 @@ const CATEGORY_ORDER: MetadataCategory[] = [
 export interface ToolEntry {
   id: string;
   file: File;
+  format: SupportedFormat;
   scan: MetadataReport;          // fieldsFound for this file
   fullyStrippedBlob: Blob;       // pre-computed full strip (for the all-on path)
   options: StripOptions;         // per-file selection
@@ -61,29 +63,37 @@ export function useV3Tool() {
    *  from an earlier batch can't write into the current one. */
   const runId = useRef(0);
 
-  const addFiles = useCallback(async (incoming: File[], rejectedAtDrop: File[] = []) => {
+  const addFiles = useCallback(async (incoming: File[]) => {
     setAddError(null);
     setSkipped([]);
-    const supported = incoming.filter((f) => detectFileType(f) !== null);
-    const unsupported = [...rejectedAtDrop, ...incoming.filter((f) => detectFileType(f) === null)];
-
-    // Anything we turned away is worth knowing about: the rejected mime types
-    // are a direct read on which formats to support next.
-    for (const f of unsupported) {
+    // Identified from the bytes, by the same rule the coordinator uses, so a
+    // file accepted here is never turned away as the wrong type later.
+    const identities = await Promise.all(incoming.map(identify));
+    const supported: { file: File; format: SupportedFormat }[] = [];
+    const unsupported: File[] = [];
+    const turnedAway: Identity[] = [];
+    incoming.forEach((file, i) => {
+      const id = identities[i];
+      if (id.status === "supported") { supported.push({ file, format: id.format }); return; }
+      unsupported.push(file);
+      turnedAway.push(id);
+      // Anything we turned away is worth knowing about: the rejected types are
+      // a direct read on which formats to support next.
       trackFileFailed({
-        file_type: f.type || "unknown",
-        file_size: f.size,
-        file_ext: extensionOf(f.name),
+        file_type: file.type || "unknown",
+        file_size: file.size,
+        file_ext: extensionOf(file.name),
         stage: "add",
         reason: "unsupported_type",
+        ...(id.status === "recognised" && { format: id.format }),
       });
-    }
+    });
 
-    if (supported.length === 0) { setAddError("Those file types aren't supported yet."); return; }
+    if (supported.length === 0) { setAddError(notSupportedYet(turnedAway)); return; }
     if (supported.length > BATCH_LIMIT) {
       trackFileFailed({
-        file_type: supported.map((f) => f.type).join(","),
-        file_size: supported.reduce((s, f) => s + f.size, 0),
+        file_type: supported.map((s) => s.file.type).join(","),
+        file_size: supported.reduce((n, s) => n + s.file.size, 0),
         stage: "add",
         reason: "batch_limit",
       });
@@ -91,10 +101,10 @@ export function useV3Tool() {
       return;
     }
 
-    const totalBytes = supported.reduce((s, f) => s + f.size, 0);
+    const totalBytes = supported.reduce((n, s) => n + s.file.size, 0);
     if (totalBytes > BATCH_SIZE_HARD_CAP_BYTES) {
       trackFileFailed({
-        file_type: supported.map((f) => f.type).join(","),
+        file_type: supported.map((s) => s.file.type).join(","),
         file_size: totalBytes,
         stage: "add",
         reason: "batch_size_cap",
@@ -110,8 +120,8 @@ export function useV3Tool() {
     setSkipped(unsupported.map((f) => f.name));
     setBusy(true);
     trackFileAdded({
-      file_type: supported.map((f) => f.type).join(","),
-      file_size: supported.reduce((s, f) => s + f.size, 0),
+      file_type: supported.map((s) => s.file.type).join(","),
+      file_size: supported.reduce((n, s) => n + s.file.size, 0),
       file_count: supported.length,
     });
 
@@ -121,7 +131,7 @@ export function useV3Tool() {
     const scanned: ToolEntry[] = [];
     // `finally` so the tool can never be left on "reading files" for good.
     try {
-      for (const file of supported) {
+      for (const { file, format } of supported) {
         const r = await processFile(file, { ...ALL_ON });
         if (r.error) {
           trackFileFailed({
@@ -134,6 +144,7 @@ export function useV3Tool() {
         scanned.push({
           id: `${file.name}-${file.size}-${scanned.length}-${file.lastModified}`,
           file,
+          format,
           scan: r.report,
           fullyStrippedBlob: r.cleanedBlob,
           options: { ...ALL_ON },
@@ -158,21 +169,6 @@ export function useV3Tool() {
       setScanProgress(null);
       setBusy(false);
     }
-  }, []);
-
-  /** Files the dropzone turned away before they reached addFiles. Same message
-   *  and same telemetry as an unsupported pick from the file input. */
-  const rejectFiles = useCallback((rejected: File[]) => {
-    for (const f of rejected) {
-      trackFileFailed({
-        file_type: f.type || "unknown",
-        file_size: f.size,
-        file_ext: extensionOf(f.name),
-        stage: "add",
-        reason: "unsupported_type",
-      });
-    }
-    setAddError("Those file types aren't supported yet.");
   }, []);
 
   const removeEntry = useCallback((id: string) => {
@@ -372,11 +368,10 @@ export function useV3Tool() {
   // visible category toggles for the ACTIVE file
   const visibleCategories = useMemo(() => {
     if (!activeEntry) return [];
-    const type = detectFileType(activeEntry.file);
-    const relevant = type ? RELEVANT_CATEGORIES_BY_FILE_CATEGORY[getFileCategory(type)] : null;
+    const relevant = RELEVANT_CATEGORIES_BY_FILE_CATEGORY[categoryOf(activeEntry.format)];
     const set = new Set<MetadataCategory>();
     for (const f of activeEntry.scan.fieldsFound) {
-      if (!relevant || relevant.has(f.category)) set.add(f.category);
+      if (relevant.has(f.category)) set.add(f.category);
     }
     return CATEGORY_ORDER.filter((c) => set.has(c));
   }, [activeEntry]);
@@ -393,6 +388,6 @@ export function useV3Tool() {
   return {
     phase, entries, selectedId, activeEntry, addError, skipped, downloadError, busy, running, tickedIds, scanProgress,
     visibleCategories, allFilesAllOn, allFailed, nothingToRemove, canShare,
-    addFiles, rejectFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download, share,
+    addFiles, removeEntry, selectEntry, setCategory, setAll, runRemoval, reset, download, share,
   };
 }

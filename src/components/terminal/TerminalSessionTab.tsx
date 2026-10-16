@@ -4,12 +4,11 @@ import { useRef, useCallback, useState, useEffect } from "react";
 import { useFileProcessor } from "@/hooks/useFileProcessor";
 import { useDropZone } from "@/hooks/useDropZone";
 import {
-  ACCEPTED_TYPES,
   BATCH_LIMIT,
   RELEVANT_CATEGORIES_BY_FILE_CATEGORY,
 } from "@/lib/constants";
 import type { MetadataCategory } from "@/lib/processing/types";
-import { detectFileType, getFileCategory } from "@/lib/file-utils";
+import { identify, notSupportedYet, categoryOf, ACCEPT_ATTRIBUTE, type Identity, type SupportedFormat } from "@/lib/processing/formats";
 import { TerminalPrompt } from "./TerminalPrompt";
 import { TerminalFileList } from "./TerminalFileList";
 import { TerminalStripTags } from "./TerminalStripTags";
@@ -59,10 +58,21 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
   const [addError, setAddError] = useState<string | null>(null);
 
   const handleFiles = useCallback(
-    (newFiles: File[]) => {
+    async (newFiles: File[]) => {
       setAddError(null);
-      const result = addFiles(newFiles);
+      // Identified from the bytes, the same rule processing uses. Drops used to
+      // be filtered by name and MIME type and anything else vanished silently.
+      const identities = await Promise.all(newFiles.map(identify));
+      const supported: { file: File; format: SupportedFormat }[] = [];
+      const turnedAway: Identity[] = [];
+      newFiles.forEach((file, i) => {
+        const id = identities[i];
+        if (id.status === "supported") supported.push({ file, format: id.format });
+        else turnedAway.push(id);
+      });
+      const result = supported.length ? addFiles(supported) : {};
       if (result.error) setAddError(result.error);
+      else if (turnedAway.length) setAddError(notSupportedYet(turnedAway));
     },
     [addFiles]
   );
@@ -77,10 +87,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
     return () => window.removeEventListener("metastrip-demo-file", handleDemoFile);
   }, [handleFiles]);
 
-  const { isDragOver, dragHandlers } = useDropZone({
-    onFiles: handleFiles,
-    acceptedTypes: ACCEPTED_TYPES,
-  });
+  const { isDragOver, dragHandlers } = useDropZone({ onFiles: handleFiles });
 
   const isProcessing = files.some((f) => f.status === "processing");
 
@@ -104,10 +111,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
   const relevantCategories = (() => {
     const union = new Set<MetadataCategory>();
     for (const f of files) {
-      const type = detectFileType(f.file);
-      if (!type) continue;
-      const cat = getFileCategory(type);
-      for (const m of RELEVANT_CATEGORIES_BY_FILE_CATEGORY[cat]) union.add(m);
+      for (const m of RELEVANT_CATEGORIES_BY_FILE_CATEGORY[categoryOf(f.format)]) union.add(m);
     }
     return union;
   })();
@@ -182,7 +186,7 @@ export function TerminalSessionTab({ onOpenSupport }: TerminalSessionTabProps) {
           ref={inputRef}
           type="file"
           multiple
-          accept={ACCEPTED_TYPES.join(",")}
+          accept={ACCEPT_ATTRIBUTE}
           onChange={handleInputChange}
           className="hidden"
         />

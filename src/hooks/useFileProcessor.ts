@@ -9,6 +9,7 @@ import type {
 } from "@/lib/processing/types";
 import { DEFAULT_STRIP_OPTIONS } from "@/lib/processing/types";
 import { BATCH_LIMIT } from "@/lib/constants";
+import type { SupportedFormat } from "@/lib/processing/formats";
 import type { MetadataCategory } from "@/lib/processing/types";
 import {
   trackFileAdded,
@@ -53,7 +54,7 @@ export function useFileProcessor() {
   const [processingLog, setProcessingLog] = useState<ProcessingLogEntry[]>([]);
 
   const addFiles = useCallback(
-    (newFiles: File[]): { error?: string } => {
+    (newFiles: { file: File; format: SupportedFormat }[]): { error?: string } => {
       const currentCount = files.length;
       const available = BATCH_LIMIT - currentCount;
 
@@ -63,15 +64,16 @@ export function useFileProcessor() {
 
       const toAdd = newFiles.slice(0, available);
 
-      const entries: FileEntry[] = toAdd.map((file) => ({
+      const entries: FileEntry[] = toAdd.map(({ file, format }) => ({
         file,
+        format,
         id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         status: "pending" as const,
       }));
 
       trackFileAdded({
-        file_type: toAdd.map((f) => f.type).join(","),
-        file_size: toAdd.reduce((sum, f) => sum + f.size, 0),
+        file_type: toAdd.map((e) => e.file.type).join(","),
+        file_size: toAdd.reduce((sum, e) => sum + e.file.size, 0),
         file_count: toAdd.length,
       });
 

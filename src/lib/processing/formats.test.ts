@@ -5,6 +5,7 @@ import {
   categoryOf,
   identify,
   labelOf,
+  notSupportedYet,
   type Format,
 } from "./formats";
 import { HEADER_CASES } from "./format-headers.fixture";
@@ -45,6 +46,13 @@ describe("identify", () => {
     }
   });
 
+  it("falls back to MIME type and extension when the bytes can't be read", async () => {
+    const file = new File([], "IMG_0001.HEIC", { type: "" });
+    file.slice = () =>
+      ({ arrayBuffer: () => Promise.reject(new DOMException("gone", "NotReadableError")) }) as unknown as Blob;
+    expect(await identify(file)).toEqual({ status: "supported", format: "heic" });
+  });
+
   it("marks supported, recognised and unknown files", async () => {
     const jpeg = HEADER_CASES.find((c) => c.label === "JPEG")!;
     const tiff = HEADER_CASES.find((c) => c.label === "TIFF, little-endian")!;
@@ -52,6 +60,24 @@ describe("identify", () => {
     expect(await identify(fileOf(jpeg))).toEqual({ status: "supported", format: "jpeg" });
     expect(await identify(fileOf(tiff))).toEqual({ status: "recognised", format: "tiff" });
     expect(await identify(fileOf(text))).toEqual({ status: "unknown" });
+  });
+});
+
+describe("notSupportedYet", () => {
+  it("names recognised formats", () => {
+    expect(notSupportedYet([
+      { status: "recognised", format: "tiff" },
+      { status: "recognised", format: "tiff" },
+    ])).toBe("TIFF files aren't supported yet.");
+    expect(notSupportedYet([
+      { status: "recognised", format: "tiff" },
+      { status: "recognised", format: "bmp" },
+    ])).toBe("TIFF and BMP files aren't supported yet.");
+  });
+
+  it("stays general when any file is unknown", () => {
+    expect(notSupportedYet([{ status: "recognised", format: "tiff" }, { status: "unknown" }]))
+      .toBe("Those file types aren't supported yet.");
   });
 });
 

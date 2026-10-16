@@ -1,27 +1,18 @@
 "use client";
 
 import { useState, useCallback, type DragEvent } from "react";
-import { isAcceptedForUpload } from "@/lib/file-utils";
 
 interface UseDropZoneOptions {
   /**
-   * The accepted files, with any rejected from the same drop riding along so
-   * one handler can report both. Calling onRejected first instead meant the
-   * accepted batch cleared its message in the same tick, and a mixed drop lost
-   * its unsupported files without a word.
+   * Every dropped file, unfiltered. The consumer identifies each one from its
+   * bytes and reports the ones it can't take. Filtering here by name and MIME
+   * type used to turn files away before they could be identified, so a TIFF
+   * never got its "not supported yet" message.
    */
-  onFiles: (files: File[], rejected: File[]) => void;
-  acceptedTypes: string[];
-  /**
-   * A drop where nothing was accepted. Optional so existing consumers keep
-   * their current behaviour; without it an unsupported drop is silently
-   * discarded, which leaves the user with no feedback and us with no signal
-   * about which formats people are actually bringing.
-   */
-  onRejected?: (files: File[]) => void;
+  onFiles: (files: File[]) => void;
 }
 
-export function useDropZone({ onFiles, acceptedTypes, onRejected }: UseDropZoneOptions) {
+export function useDropZone({ onFiles }: UseDropZoneOptions) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const onDragOver = useCallback((e: DragEvent) => {
@@ -38,13 +29,9 @@ export function useDropZone({ onFiles, acceptedTypes, onRejected }: UseDropZoneO
       e.preventDefault();
       setIsDragOver(false);
       const dropped = Array.from(e.dataTransfer.files);
-      if (!dropped.length) return;
-      const accepted = dropped.filter((f) => isAcceptedForUpload(f, acceptedTypes));
-      const rejected = dropped.filter((f) => !isAcceptedForUpload(f, acceptedTypes));
-      if (accepted.length) onFiles(accepted, rejected);
-      else if (rejected.length) onRejected?.(rejected);
+      if (dropped.length) onFiles(dropped);
     },
-    [onFiles, onRejected, acceptedTypes]
+    [onFiles]
   );
 
   return {
