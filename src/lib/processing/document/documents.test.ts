@@ -185,6 +185,42 @@ const OFFICE_PROPERTY_FIELDS = [
   "software:Template",
 ];
 
+/** What Word and Excel check before offering to "repair" a file: every
+ *  content-type override and internal relationship points at a part that
+ *  exists, and no core or app property is left empty. */
+async function expectOpensCleanly(blob: Blob) {
+  const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+  const parts = new Set(Object.values(zip.files).filter((f) => !f.dir).map((f) => f.name.toLowerCase()));
+  const problems: string[] = [];
+
+  const types = (await zip.file("[Content_Types].xml")?.async("text")) ?? "";
+  for (const [, partName] of types.matchAll(/PartName="\/([^"]+)"/g)) {
+    if (!parts.has(partName.toLowerCase())) problems.push(`content type for missing ${partName}`);
+  }
+  for (const rels of zip.file(/(^|\/)_rels\/[^/]*\.rels$/)) {
+    const base = rels.name.replace(/(^|\/)_rels\/[^/]*$/, "");
+    for (const [rel] of (await rels.async("text")).matchAll(/<Relationship\b[^>]*\/>/g)) {
+      if (/TargetMode="External"/i.test(rel)) continue;
+      const target = /Target="([^"]*)"/.exec(rel)![1];
+      const segments = target.startsWith("/") ? [] : base.split("/").filter(Boolean);
+      for (const s of target.split("/")) {
+        if (s === "..") segments.pop();
+        else if (s && s !== ".") segments.push(s);
+      }
+      const resolved = segments.join("/").toLowerCase();
+      if (!parts.has(resolved)) problems.push(`${rels.name} points at missing ${resolved}`);
+    }
+  }
+  for (const path of ["docProps/core.xml", "docProps/app.xml"]) {
+    const xml = await zip.file(path)?.async("text");
+    // An empty root is fine (every property is optional); an empty property isn't.
+    for (const [empty, tag] of xml?.matchAll(/<([\w:]+)(?:\s[^>]*)?\/>/g) ?? []) {
+      if (tag !== "cp:coreProperties" && tag !== "Properties") problems.push(`${path} has empty ${empty}`);
+    }
+  }
+  expect(problems).toEqual([]);
+}
+
 const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
 
 /** The contract's one failure shape: the original file handed back untouched,
@@ -267,39 +303,15 @@ describe("DOCX", () => {
     expect(summary(again.result.report.fieldsFound)).toEqual(sorted([...OFFICE_AUTHOR_FIELDS, ...authorParts]));
   });
 
-  it("blanks properties in place and leaves references to the parts it removed", async () => {
+  it("leaves no reference to a removed part or comment, and no empty property", async () => {
     const { result } = await run(await buildDocx(), name, DOCX_MIME, ALL_ON);
-
-    // Quirk: stripped properties stay as empty elements, including the W3CDTF
-    // dates, whose empty value is not a valid date.
-    const core = await zipText(result.cleanedBlob, "docProps/core.xml");
-    expect(core).toContain("<dc:creator/>");
-    expect(core).toContain(`<dcterms:created xsi:type="dcterms:W3CDTF"/>`);
-    const app = await zipText(result.cleanedBlob, "docProps/app.xml");
-    expect(app).toContain("<Company/>");
-
-    // Quirk: the comment, people and custom parts are deleted, but their
-    // content-type overrides, relationships and the comment anchors in the
-    // body all still point at them. office-common.ts notes Office tolerates it.
-    expect(await zipPaths(result.cleanedBlob)).toEqual([
-      "[Content_Types].xml",
-      "_rels/",
-      "_rels/.rels",
-      "docProps/",
-      "docProps/app.xml",
-      "docProps/core.xml",
-      "word/",
-      "word/_rels/",
-      "word/_rels/document.xml.rels",
-      "word/document.xml",
-    ]);
-    const types = await zipText(result.cleanedBlob, "[Content_Types].xml");
-    expect(types).toContain(`PartName="/word/comments.xml"`);
-    expect(types).toContain(`PartName="/docProps/custom.xml"`);
-    const rels = await zipText(result.cleanedBlob, "word/_rels/document.xml.rels");
-    expect(rels).toContain(`Target="people.xml"`);
+    // This used to leave the parts' content-type entries and relationships,
+    // the comment anchors in the body, and properties blanked to empty values
+    // such as an empty W3CDTF date. Word called that "unreadable content".
+    await expectOpensCleanly(result.cleanedBlob);
     const body = await zipText(result.cleanedBlob, "word/document.xml");
-    expect(body).toContain(`<w:commentReference w:id="0"/>`);
+    expect(body).not.toMatch(/<w:comment(RangeStart|RangeEnd|Reference)\b/);
+    expect(body).toContain("<w:t>");
   });
 
   it("refuses a zip that won't open", async () => {
@@ -390,5 +402,19 @@ describe("every document format", () => {
   ] as const)("%s finds the same fields whatever the options", async (_, build, name, mime) => {
     const bytes = await build();
     await expectFoundIgnoresOptions(() => new File([bytes as BlobPart], name, { type: mime }));
+  });
+});
+
+describe("every Office format opens cleanly", () => {
+  it.each([
+    ["DOCX", buildDocx, "letter.docx", DOCX_MIME],
+    ["XLSX", buildXlsx, "sheet.xlsx", XLSX_MIME],
+    ["PPTX", buildPptx, "deck.pptx", PPTX_MIME],
+  ] as const)("%s, whatever is kept", async (_, build, name, mime) => {
+    const bytes = await build();
+    for (const options of [ALL_ON, allBut("author"), allBut("comments"), allBut("custom"), allBut("dates")]) {
+      const { result } = await run(bytes, name, mime, options);
+      await expectOpensCleanly(result.cleanedBlob);
+    }
   });
 });
