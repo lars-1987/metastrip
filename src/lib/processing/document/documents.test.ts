@@ -2,15 +2,16 @@
 // DOMParser and XMLSerializer (used by the Office processors) don't exist in
 // Node, hence the happy-dom environment above.
 
-/** Characterisation tests for the document processors (PDF, DOCX, XLSX,
- *  PPTX). They pin what each processor does TODAY, quirks included, so the
- *  move onto the shared processor contract shows every behaviour change as a
- *  failing, reviewed assertion. Comments marked "Quirk" are behaviours the
- *  contract is expected to change. */
+/** Behaviour tests for the document processors (PDF, DOCX, XLSX, PPTX),
+ *  driven through processFile as the app drives them. They began as
+ *  characterisation tests pinning the old behaviour; where the processor
+ *  contract changed it, a comment says what it used to do. Comments marked
+ *  "Quirk" are known gaps left for later. */
 
 import JSZip from "jszip";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { processFile } from "../coordinator";
+import { expectFoundIgnoresOptions } from "../contract-checks.fixture";
 import type { MetadataCategory, MetadataField, ProcessingResult, StripOptions } from "../types";
 import {
   DOCX_MIME,
@@ -110,18 +111,15 @@ describe("PDF", () => {
     const again = await reread(result, name, PDF_MIME);
     expect(again.result.error).toBeUndefined();
     expect(summary(again.result.report.fieldsFound)).toEqual([]);
-    // Quirk: a file with nothing left to remove is still re-saved by pdf-lib
-    // and handed back as a new blob rather than the input.
-    expect(summary(again.result.report.fieldsRemoved)).toEqual([]);
-    expect(again.result.cleanedBlob).not.toBe(again.file);
+    await expectUntouched(again);
   });
 
   it("keeps the Info author fields when author is off, but drops the whole XMP packet", async () => {
     const { result } = await run(await buildPdf(), name, PDF_MIME, allBut("author"));
 
     expect(result.error).toBeUndefined();
-    // Quirk (deliberate today): XMP can only be dropped whole, so its author
-    // properties are reported removed even though author was kept.
+    // XMP can only be dropped whole, and its other categories are being
+    // removed, so its author properties go too and are reported removed.
     expect(summary(result.report.fieldsRemoved)).toEqual(
       sorted([
         "custom:Keywords",
@@ -148,34 +146,19 @@ describe("PDF", () => {
       vi.restoreAllMocks();
     });
 
-    it("crashes on a PDF cut off right after its header", async () => {
+    it("refuses a PDF cut off right after its header", async () => {
       // 16 bytes: "%PDF-1.7", the binary comment line, and nothing else.
-      // pdf-lib loads this without complaint, then processPdf throws a
-      // TypeError reading the missing catalog, so the coordinator's crash
-      // guard answers instead of processPdf's own error path.
+      // pdf-lib loads it without complaint but finds no document catalog;
+      // reading it used to throw a TypeError, reported as a crash.
       const { file, result } = await run(truncated(await buildPdf(), 16), name, PDF_MIME, ALL_ON);
-
-      expect(result.error).toBe(
-        "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet."
-      );
-      expect(result.crashed).toBe("TypeError");
-      expect(result.cleanedBlob.size).toBe(16);
-      expect(result.cleanedBlob).toBe(file);
-      expect(result.report.cleanedFileSize).toBe(0);
+      expectUnreadable(file, result, "pdf");
     });
 
-    it("reports a PDF cut off inside its first object as unparseable", async () => {
-      // 64 bytes: the header plus the start of the XMP stream object.
+    it("refuses a PDF cut off inside its first object", async () => {
+      // 64 bytes: the header plus the start of the XMP stream object. This
+      // used to return "Could not parse PDF" and a copy of the bytes.
       const { file, result } = await run(truncated(await buildPdf(), 64), name, PDF_MIME, ALL_ON);
-
-      // Quirk: a terse internal error, unlike the coordinator's user-facing
-      // wording, and a copy of the bytes (with cleanedFileSize set) where the
-      // crash path above returns the file itself with cleanedFileSize 0.
-      expect(result.error).toBe("Could not parse PDF");
-      expect(result.crashed).toBeUndefined();
-      expect(result.cleanedBlob.size).toBe(64);
-      expect(result.cleanedBlob).not.toBe(file);
-      expect(result.report.cleanedFileSize).toBe(64);
+      expectUnreadable(file, result, "pdf");
     });
   });
 });
@@ -201,6 +184,27 @@ const OFFICE_PROPERTY_FIELDS = [
   "software:Application",
   "software:Template",
 ];
+
+const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
+
+/** The contract's one failure shape: the original file handed back untouched,
+ *  a plain message for the person, and a stable reason for telemetry. */
+function expectUnreadable(file: File, result: ProcessingResult, format: string) {
+  expect(result.error).toBe(DAMAGED);
+  expect(result.reason).toBe(`unreadable: ${format}`);
+  expect(result.cleanedBlob).toBe(file);
+  expect(result.report.cleanedFileSize).toBe(file.size);
+  expect(result.report.fieldsFound).toEqual([]);
+}
+
+/** Nothing left to remove: the contract hands back the original bytes, where
+ *  pdf-lib and JSZip used to re-save the file anyway. */
+async function expectUntouched(again: { file: File; result: ProcessingResult }) {
+  expect(summary(again.result.report.fieldsRemoved)).toEqual([]);
+  const before = new Uint8Array(await again.file.arrayBuffer());
+  const after = new Uint8Array(await again.result.cleanedBlob.arrayBuffer());
+  expect(after).toEqual(before);
+}
 
 const OFFICE_AUTHOR_FIELDS = OFFICE_PROPERTY_FIELDS.filter((row) => row.startsWith("author:"));
 const OFFICE_NON_AUTHOR_FIELDS = OFFICE_PROPERTY_FIELDS.filter((row) => !row.startsWith("author:"));
@@ -242,26 +246,25 @@ describe("DOCX", () => {
     const again = await reread(result, name, DOCX_MIME);
     expect(again.result.error).toBeUndefined();
     expect(summary(again.result.report.fieldsFound)).toEqual([]);
-    // Quirk: the zip is regenerated even when nothing was removed.
-    expect(summary(again.result.report.fieldsRemoved)).toEqual([]);
-    expect(again.result.cleanedBlob).not.toBe(again.file);
+    await expectUntouched(again);
   });
 
-  it("keeps the author fields when author is off, but still removes word/people.xml", async () => {
+  it("keeps the author fields and word/people.xml when author is off", async () => {
     const { result } = await run(await buildDocx(), name, DOCX_MIME, allBut("author"));
 
     expect(result.error).toBeUndefined();
-    // Quirk: people.xml is categorised "author" but removal is gated on the
-    // comments switch, so it is reported (and really is) removed while author
-    // is being kept.
+    // people.xml (the people who commented or edited) goes with Author, its
+    // category. It used to be removed with Comments while reported as Author.
+    const authorParts = DOCX_PART_FIELDS.filter((row) => row.startsWith("author:"));
+    expect(authorParts).toEqual(["author:word/people.xml"]);
     expect(summary(result.report.fieldsRemoved)).toEqual(
-      sorted([...OFFICE_NON_AUTHOR_FIELDS, ...DOCX_PART_FIELDS])
+      sorted([...OFFICE_NON_AUTHOR_FIELDS, ...DOCX_PART_FIELDS.filter((row) => !authorParts.includes(row))])
     );
-    expect(summary(result.report.fieldsKept)).toEqual(OFFICE_AUTHOR_FIELDS);
-    expect(await zipPaths(result.cleanedBlob)).not.toContain("word/people.xml");
+    expect(summary(result.report.fieldsKept)).toEqual(sorted([...OFFICE_AUTHOR_FIELDS, ...authorParts]));
+    expect(await zipPaths(result.cleanedBlob)).toContain("word/people.xml");
 
     const again = await reread(result, name, DOCX_MIME);
-    expect(summary(again.result.report.fieldsFound)).toEqual(OFFICE_AUTHOR_FIELDS);
+    expect(summary(again.result.report.fieldsFound)).toEqual(sorted([...OFFICE_AUTHOR_FIELDS, ...authorParts]));
   });
 
   it("blanks properties in place and leaves references to the parts it removed", async () => {
@@ -299,16 +302,10 @@ describe("DOCX", () => {
     expect(body).toContain(`<w:commentReference w:id="0"/>`);
   });
 
-  it("reports a zip that won't open as unparseable", async () => {
+  it("refuses a zip that won't open", async () => {
+    // This used to return "Could not parse DOCX" and a copy of the bytes.
     const { file, result } = await run(truncated(await buildDocx(), BROKEN_ZIP_LENGTH), name, DOCX_MIME, ALL_ON);
-
-    // Quirk: a terse internal error and a copy of the bytes rather than the
-    // file itself, with cleanedFileSize set (the coordinator's failures use 0).
-    expect(result.error).toBe("Could not parse DOCX");
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob.size).toBe(BROKEN_ZIP_LENGTH);
-    expect(result.cleanedBlob).not.toBe(file);
-    expect(result.report.cleanedFileSize).toBe(BROKEN_ZIP_LENGTH);
+    expectUnreadable(file, result, "docx");
   });
 });
 
@@ -329,7 +326,7 @@ describe.each([
       "comments:xl/persons/person.xml",
       "comments:xl/threadedComments/threadedComment1.xml",
     ],
-    parseError: "Could not parse XLSX",
+    format: "xlsx",
   },
   {
     label: "PPTX",
@@ -343,9 +340,9 @@ describe.each([
       "comments:ppt/commentAuthors.xml",
       "comments:ppt/comments/modernComment_100_1A2B3C4D.xml",
     ],
-    parseError: "Could not parse PPTX",
+    format: "pptx",
   },
-])("$label", ({ name, mime, build, commentParts, parseError }) => {
+])("$label", ({ name, mime, build, commentParts, format }) => {
   it("removes every field when all categories are on, and a re-read finds nothing", async () => {
     const { result } = await run(await build(), name, mime, ALL_ON);
 
@@ -360,37 +357,38 @@ describe.each([
     const again = await reread(result, name, mime);
     expect(again.result.error).toBeUndefined();
     expect(summary(again.result.report.fieldsFound)).toEqual([]);
-    // Quirk: the zip is regenerated even when nothing was removed.
-    expect(summary(again.result.report.fieldsRemoved)).toEqual([]);
-    expect(again.result.cleanedBlob).not.toBe(again.file);
+    await expectUntouched(again);
   });
 
-  it("leaves comment parts unreported when comments are off", async () => {
+  it("reports comment parts as kept when comments are off", async () => {
     const { result } = await run(await build(), name, mime, allBut("comments"));
 
     expect(result.error).toBeUndefined();
-    // Quirk: the comment parts are only looked for when they are being
-    // removed, so keeping them leaves them out of found AND kept; the report
-    // says nothing about comments the file still carries.
+    // Parts are always looked for. They used to be looked for only when being
+    // removed, so kept comments were missing from the report altogether.
     const properties = sorted([...OFFICE_PROPERTY_FIELDS, "custom:custom.xml"]);
-    expect(summary(result.report.fieldsFound)).toEqual(properties);
+    expect(summary(result.report.fieldsFound)).toEqual(sorted([...properties, ...commentParts]));
     expect(summary(result.report.fieldsRemoved)).toEqual(properties);
-    expect(summary(result.report.fieldsKept)).toEqual([]);
+    expect(summary(result.report.fieldsKept)).toEqual(commentParts);
 
-    // A re-read with everything on shows they were there all along.
     const again = await reread(result, name, mime);
     expect(summary(again.result.report.fieldsFound)).toEqual(commentParts);
   });
 
-  it("reports a zip that won't open as unparseable", async () => {
+  it("refuses a zip that won't open", async () => {
     const { file, result } = await run(truncated(await build(), BROKEN_ZIP_LENGTH), name, mime, ALL_ON);
+    expectUnreadable(file, result, format);
+  });
+});
 
-    // Quirk: same shape as DOCX: a terse internal error and a copy of the
-    // bytes rather than the file itself, with cleanedFileSize set.
-    expect(result.error).toBe(parseError);
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob.size).toBe(BROKEN_ZIP_LENGTH);
-    expect(result.cleanedBlob).not.toBe(file);
-    expect(result.report.cleanedFileSize).toBe(BROKEN_ZIP_LENGTH);
+describe("every document format", () => {
+  it.each([
+    ["PDF", buildPdf, "doc.pdf", PDF_MIME],
+    ["DOCX", buildDocx, "letter.docx", DOCX_MIME],
+    ["XLSX", buildXlsx, "sheet.xlsx", XLSX_MIME],
+    ["PPTX", buildPptx, "deck.pptx", PPTX_MIME],
+  ] as const)("%s finds the same fields whatever the options", async (_, build, name, mime) => {
+    const bytes = await build();
+    await expectFoundIgnoresOptions(() => new File([bytes as BlobPart], name, { type: mime }));
   });
 });

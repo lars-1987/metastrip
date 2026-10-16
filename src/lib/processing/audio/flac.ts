@@ -26,12 +26,8 @@
  *   (PADDING), and content bytes are zeroed.
  */
 
-import type {
-  StripOptions,
-  ProcessingResult,
-  MetadataField,
-  MetadataReport,
-} from "../types";
+import type { StripOptions, MetadataField } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 
 const ASCII = new TextDecoder("ascii");
 
@@ -57,13 +53,6 @@ function readBlockHeader(view: DataView, offset: number): BlockInfo | null {
   const end = contentStart + size;
   if (end > view.byteLength) return null;
   return { offset, type, size, isLast, contentStart, end };
-}
-
-function categoryEnabled(
-  category: MetadataField["category"],
-  options: StripOptions
-): boolean {
-  return options[category] ?? true;
 }
 
 /**
@@ -148,105 +137,65 @@ function vorbisLabel(key: string): string {
   return labels[key] ?? `Vorbis ${key}`;
 }
 
-export async function processFlac(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  try {
-    const buffer = await file.arrayBuffer();
-    const cleaned = new Uint8Array(buffer.byteLength);
-    cleaned.set(new Uint8Array(buffer));
-    const view = new DataView(cleaned.buffer);
+export function stripFlac(bytes: Uint8Array, options: StripOptions): Stripped {
+  if (ASCII.decode(bytes.subarray(0, 4)) !== "fLaC") throw new Unreadable();
+  const cleaned = bytes.slice();
+  const view = new DataView(cleaned.buffer);
 
-    // Verify "fLaC" magic
-    const magic = ASCII.decode(new Uint8Array(view.buffer, 0, 4));
-    if (magic !== "fLaC") {
-      return errorResult(file, "Not a FLAC file (missing fLaC magic)");
-    }
+  const fieldsFound: MetadataField[] = [];
+  const fieldsRemoved: MetadataField[] = [];
 
-    const fieldsFound: MetadataField[] = [];
-    const fieldsRemoved: MetadataField[] = [];
-
-    // Walk metadata blocks starting at offset 4
-    let pos = 4;
-    while (pos < view.byteLength) {
-      const block = readBlockHeader(view, pos);
-      if (!block) break;
-
-      if (block.type === 4) {
-        // VORBIS_COMMENT
-        const comments = enumerateVorbisComments(view, block.contentStart, block.end);
-        fieldsFound.push(...comments);
-        const shouldStrip = comments.some((c) => categoryEnabled(c.category, options));
-        if (shouldStrip || comments.length === 0) {
-          // Replace block type with PADDING (1), keep size, zero content
-          // Header byte: preserve "is last" bit, set type to 1
-          const newHeader = (block.isLast ? 0x80 : 0x00) | 0x01;
-          cleaned[block.offset] = newHeader;
-          cleaned.fill(0, block.contentStart, block.end);
-          fieldsRemoved.push(...comments);
-        }
-      } else if (block.type === 6) {
-        // PICTURE — embedded album art. Often large, can leak source software.
-        const f: MetadataField = {
-          category: "custom",
-          key: "FLAC_PICTURE",
-          label: "Embedded picture (album art)",
-          value: `(${block.size} bytes)`,
-          removable: true,
-        };
-        fieldsFound.push(f);
-        if (categoryEnabled("custom", options)) {
-          const newHeader = (block.isLast ? 0x80 : 0x00) | 0x01;
-          cleaned[block.offset] = newHeader;
-          cleaned.fill(0, block.contentStart, block.end);
-          fieldsRemoved.push(f);
-        }
-      }
-
-      if (block.isLast) break;
-      pos = block.end;
-    }
-
-    const cleanedBlob = new Blob([cleaned as BlobPart], { type: file.type });
-
-    const report: MetadataReport = {
-      fileName: file.name,
-      fileType: "flac",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept: fieldsFound.filter((f) => !fieldsRemoved.includes(f)),
-      processedAt: new Date(),
-    };
-
-    return {
-      originalFile: file,
-      cleanedBlob,
-      report,
-    };
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error processing FLAC";
-    return errorResult(file, message);
-  }
-}
-
-function errorResult(file: File, message: string): ProcessingResult {
-  return {
-    originalFile: file,
-    cleanedBlob: new Blob(),
-    report: {
-      fileName: file.name,
-      fileType: "flac",
-      fileSize: file.size,
-      cleanedFileSize: 0,
-      fieldsFound: [],
-      fieldsRemoved: [],
-      fieldsKept: [],
-      processedAt: new Date(),
-    },
-    error: `FLAC processing failed: ${message}`,
+  /** Turn a block into PADDING of the same size, keeping its "is last" bit. */
+  const pad = (block: BlockInfo) => {
+    cleaned[block.offset] = (block.isLast ? 0x80 : 0x00) | 0x01;
+    cleaned.fill(0, block.contentStart, block.end);
   };
+
+  // Walk the metadata blocks, which end at the one marked last. One that runs
+  // past the end of the file was cut short: unreadable, rather than passing
+  // the file through with whatever the cut block held.
+  let pos = 4;
+  for (;;) {
+    const block = readBlockHeader(view, pos);
+    if (!block) throw new Unreadable();
+
+    let fields: MetadataField[] | null = null;
+    if (block.type === 4) {
+      // VORBIS_COMMENT
+      fields = enumerateVorbisComments(view, block.contentStart, block.end);
+    } else if (block.type === 6) {
+      // PICTURE: embedded album art. Often large, can leak source software.
+      fields = [{
+        category: "custom",
+        key: "FLAC_PICTURE",
+        label: "Embedded picture (album art)",
+        value: `(${block.size} bytes)`,
+        removable: true,
+      }];
+    } else if (block.type === 2) {
+      // APPLICATION: private data a program attached, under its 4-byte id.
+      // It went through untouched and unreported, whatever it held.
+      const id = ASCII.decode(cleaned.subarray(block.contentStart, Math.min(block.contentStart + 4, block.end)));
+      fields = [{
+        category: "custom",
+        key: `FLAC_APPLICATION:${id}`,
+        label: `Application data (${id})`,
+        value: `(${block.size} bytes)`,
+        removable: true,
+      }];
+    }
+
+    if (fields) {
+      fieldsFound.push(...fields);
+      if (blockGoes(fields, options)) {
+        pad(block);
+        fieldsRemoved.push(...fields);
+      }
+    }
+
+    if (block.isLast) break;
+    pos = block.end;
+  }
+
+  return { cleaned, fieldsFound, fieldsRemoved };
 }

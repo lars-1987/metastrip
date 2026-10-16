@@ -19,12 +19,11 @@
 
 import type {
   StripOptions,
-  ProcessingResult,
   MetadataField,
   MetadataCategory,
-  MetadataReport,
 } from "../types";
-import type { SupportedFormat } from "../formats";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
+import { readBox, iterBoxes, writeAscii, zeroBytes, type BoxInfo } from "../isobmff";
 
 /* ──────────────────────────────────────────────────────────────────
    Atom types we care about
@@ -58,73 +57,26 @@ const CONTAINER_ATOMS = new Set([
   "traf", // track fragment
 ]);
 
-interface BoxInfo {
-  offset: number;
-  size: number;
-  type: string;
-  /** byte offset where children begin (header end) */
-  contentStart: number;
-  /** byte offset where this box ends */
-  end: number;
-  /** true if size was specified as 64-bit */
-  largeSize: boolean;
-}
-
 /* ──────────────────────────────────────────────────────────────────
    Reading helpers
    ────────────────────────────────────────────────────────────────── */
 
 const ASCII = new TextDecoder("ascii");
 
-function readBox(view: DataView, offset: number): BoxInfo | null {
-  if (offset + 8 > view.byteLength) return null;
-  const size32 = view.getUint32(offset);
-  const typeBytes = new Uint8Array(view.buffer, view.byteOffset + offset + 4, 4);
-  const type = ASCII.decode(typeBytes);
-
-  let size = size32;
-  let headerSize = 8;
-  let largeSize = false;
-
-  if (size32 === 0) {
-    // Box extends to end of file
-    size = view.byteLength - offset;
-  } else if (size32 === 1) {
-    // 64-bit size follows the type
-    if (offset + 16 > view.byteLength) return null;
-    const high = view.getUint32(offset + 8);
-    const low = view.getUint32(offset + 12);
-    // JS can safely handle integers up to 2^53; large videos can exceed
-    // 4GB but we cap our processing well below that.
-    size = high * 0x100000000 + low;
-    headerSize = 16;
-    largeSize = true;
-  }
-
-  // Sanity check
-  if (size < headerSize || offset + size > view.byteLength) return null;
-
-  return {
-    offset,
-    size,
-    type,
-    contentStart: offset + headerSize,
-    end: offset + size,
-    largeSize,
-  };
-}
-
-function* iterBoxes(
-  view: DataView,
-  start: number,
-  end: number
-): Generator<BoxInfo> {
+/** Sibling boxes across [start, end), strictly. A box that runs past the end
+ *  was cut short: unreadable, rather than stopping quietly and passing the file
+ *  through with whatever the cut box held. Media data (mdat) is the exception:
+ *  a partial download is usually cut inside it, it never holds metadata, and
+ *  everything before it has already been handled. */
+function* boxesStrict(view: DataView, start: number, end: number): Generator<BoxInfo> {
   let pos = start;
-  while (pos < end) {
+  while (pos + 8 <= end) {
     const box = readBox(view, pos);
-    if (!box) break;
+    if (!box) {
+      if (ASCII.decode(new Uint8Array(view.buffer, view.byteOffset + pos + 4, 4)) === "mdat") return;
+      throw new Unreadable();
+    }
     yield box;
-    if (box.size === 0) break; // safety
     pos = box.end;
   }
 }
@@ -132,12 +84,6 @@ function* iterBoxes(
 /* ──────────────────────────────────────────────────────────────────
    Mutation helpers — write into a Uint8Array buffer
    ────────────────────────────────────────────────────────────────── */
-
-function writeAscii(buf: Uint8Array, offset: number, text: string) {
-  for (let i = 0; i < text.length; i++) {
-    buf[offset + i] = text.charCodeAt(i);
-  }
-}
 
 /**
  * Convert an existing box into a `free` box. This preserves the box's
@@ -151,14 +97,6 @@ function makeFreeBox(buf: Uint8Array, box: BoxInfo) {
   // Optionally zero out the content for paranoia. Some forensic tools
   // could still read the bytes; zeroing makes it forensically clean.
   buf.fill(0, box.contentStart, box.end);
-}
-
-/**
- * Zero specific bytes (used for resetting timestamps inside mvhd/tkhd
- * without removing the box).
- */
-function zeroBytes(buf: Uint8Array, offset: number, length: number) {
-  buf.fill(0, offset, offset + length);
 }
 
 /** Boxes with a creation/modification time pair, and how the report names them. */
@@ -190,23 +128,18 @@ function describeTimes(created: number, modified: number): string {
    The actual stripping pass
    ────────────────────────────────────────────────────────────────── */
 
-interface StripResult {
-  cleaned: Uint8Array;
-  fieldsFound: MetadataField[];
-  fieldsRemoved: MetadataField[];
-}
-
-function stripMp4Metadata(input: ArrayBuffer, options: StripOptions): StripResult {
+/** MP4, MOV and M4A share one atom structure, so one processor serves all
+ *  three; the format registry tells them apart for the report. */
+export function stripMp4(input: Uint8Array, options: StripOptions): Stripped {
   // Copy the buffer so we don't mutate the original
-  const cleaned = new Uint8Array(input.byteLength);
-  cleaned.set(new Uint8Array(input));
+  const cleaned = input.slice();
   const view = new DataView(cleaned.buffer);
 
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
 
   function walk(start: number, end: number) {
-    for (const box of iterBoxes(view, start, end)) {
+    for (const box of boxesStrict(view, start, end)) {
       const isAppleTag = box.type.charCodeAt(0) === 0xa9; // '©' prefix
       const stripThis = STRIP_ATOMS.has(box.type) || isAppleTag;
 
@@ -227,7 +160,7 @@ function stripMp4Metadata(input: ArrayBuffer, options: StripOptions): StripResul
         // The container still goes whole: rewriting inside it would mean
         // resizing every parent box. So it goes if any category it holds is
         // ticked, erring towards removing more than asked, never less.
-        if (fields.length === 0 || fields.some((f) => categoryEnabled(f.category, options))) {
+        if (blockGoes(fields, options)) {
           makeFreeBox(cleaned, box);
           fieldsRemoved.push(...fields);
         }
@@ -269,6 +202,8 @@ function stripMp4Metadata(input: ArrayBuffer, options: StripOptions): StripResul
       // box.contentStart: 1 byte version, 3 bytes flags, then two 4-byte
       // times (version 0) or two 8-byte times (version 1).
       if (TIMESTAMP_BOXES[box.type]) {
+        // Too small even for its version byte: not a valid header box.
+        if (box.contentStart >= box.end) throw new Unreadable();
         const wide = view.getUint8(box.contentStart) === 1;
         const tsStart = box.contentStart + 4;
         const tsLen = wide ? 16 : 8;
@@ -319,13 +254,6 @@ function categoriseAtom(type: string): MetadataField["category"] {
   if (type === "©swr" || type === "©hst" || type === "©too" || type === "©enc") return "software";
   if (type === "©cpy" || type === "cprt") return "copyright";
   return "custom";
-}
-
-function categoryEnabled(
-  category: MetadataField["category"],
-  options: StripOptions
-): boolean {
-  return options[category] ?? true;
 }
 
 const ATOM_LABELS: Record<string, string> = {
@@ -552,87 +480,3 @@ function describeContainer(view: DataView, box: BoxInfo): MetadataField[] {
   visit(box, 0);
   return out;
 }
-
-/* ──────────────────────────────────────────────────────────────────
-   Public API
-   ────────────────────────────────────────────────────────────────── */
-
-const SIZE_CAP_BYTES = 1.5 * 1024 * 1024 * 1024; // 1.5 GB
-
-export async function processMp4(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  const fileType: SupportedFormat =
-    file.type === "video/quicktime" ? "mov" : "mp4";
-
-  // Refuse oversize files early instead of letting the tab crash
-  if (file.size > SIZE_CAP_BYTES) {
-    return {
-      originalFile: file,
-      cleanedBlob: new Blob(),
-      report: {
-        fileName: file.name,
-        fileType,
-        fileSize: file.size,
-        cleanedFileSize: 0,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-      error: `Video too large (${(file.size / 1073741824).toFixed(1)} GB). Maximum 1.5 GB. Trim or compress first.`,
-    };
-  }
-
-  const arrayBuffer = await file.arrayBuffer();
-
-  try {
-    const { cleaned, fieldsFound, fieldsRemoved } = stripMp4Metadata(
-      arrayBuffer,
-      options
-    );
-
-    // Cast through BlobPart[] to satisfy strict TS — Uint8Array IS a valid BlobPart
-    // at runtime; only the type relationship around ArrayBufferLike trips the checker.
-    const cleanedBlob = new Blob([cleaned as BlobPart], { type: file.type });
-
-    const report: MetadataReport = {
-      fileName: file.name,
-      fileType,
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept: fieldsFound.filter((f) => !fieldsRemoved.includes(f)),
-      processedAt: new Date(),
-    };
-
-    return {
-      originalFile: file,
-      cleanedBlob,
-      report,
-    };
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error processing video";
-    return {
-      originalFile: file,
-      cleanedBlob: new Blob(),
-      report: {
-        fileName: file.name,
-        fileType,
-        fileSize: file.size,
-        cleanedFileSize: 0,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-      error: `MP4 processing failed: ${message}`,
-    };
-  }
-}
-
-// MOV files have the same atom structure as MP4 — same processor handles them.
-export const processMov = processMp4;

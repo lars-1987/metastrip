@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { processFile } from "./coordinator";
+import { expectFoundIgnoresOptions } from "./contract-checks.fixture";
 import type { MetadataField, ProcessingResult, StripOptions } from "./types";
 import {
   MPEG_FRAME,
@@ -20,10 +21,10 @@ import {
   wavBytes,
 } from "./audio-video-files.fixture";
 
-// Characterisation tests: they pin what the audio and video processors do
-// today, quirks and bugs included, so the move to a shared processor contract
-// shows every behaviour change as a failing, reviewed line. A test named
-// "today" or commented "BUG" pins something the contract is expected to change.
+// Behaviour tests for the audio and video processors, driven through
+// processFile as the app drives them. They began as characterisation tests
+// pinning the old behaviour; where the processor contract changed it, a
+// comment says what it used to do.
 
 const ALL: StripOptions = {
   gps: true,
@@ -54,6 +55,20 @@ async function reread(result: ProcessingResult, name: string, type: string) {
 async function contains(blob: Blob, text: string): Promise<boolean> {
   const bytes = new Uint8Array(await blob.arrayBuffer());
   return new TextDecoder("latin1").decode(bytes).includes(text);
+}
+
+const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
+const COULD_NOT_OPEN =
+  "Your browser couldn't open it. If you just downloaded it, make sure the download has finished, or save it to a folder on this device (not a cloud-only one) and try again.";
+
+/** The contract's one failure shape: the original file handed back untouched,
+ *  a plain message for the person, and a stable reason for telemetry. */
+function expectFailed(file: File, result: ProcessingResult, error: string, reason: string) {
+  expect(result.error).toBe(error);
+  expect(result.reason).toBe(reason);
+  expect(result.cleanedBlob).toBe(file);
+  expect(result.report.cleanedFileSize).toBe(file.size);
+  expect(result.report.fieldsFound).toEqual([]);
 }
 
 /** The browser losing the file between identification (which reads a slice)
@@ -93,74 +108,57 @@ describe("MP4 (Android-style: udta tags plus mdta keys)", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("removes the location anyway with gps off, today", async () => {
+  it("removes the location with udta when gps is off but udta's other fields go", async () => {
     const result = await processFile(fileOf(mp4Bytes(), name, type), { ...ALL, gps: false });
     expect(result.error).toBeUndefined();
-    // BUG: udta goes whole when any category in it is on, so the ©xyz location
-    // is removed (and reported removed) although gps was switched off.
+    // udta can only go whole, and its other categories are being removed, so
+    // the ©xyz location goes too and is reported removed (the whole-block
+    // rule: never leave behind something asked to be removed).
     expect(summary(result.report.fieldsRemoved)).toEqual(FOUND);
     expect(summary(result.report.fieldsKept)).toEqual([]);
     expect(await contains(result.cleanedBlob, "+59.3293+018.0686")).toBe(false);
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("silently skips a moov that runs past the end of a truncated file", async () => {
-    // Cut the last 10 bytes of moov and all of mdat: moov's declared size now
-    // runs past the end, so the walker stops at it without a word.
+  // Cut the last 10 bytes of moov and all of mdat, so moov's declared size
+  // runs past the end.
+  it("refuses a file whose moov runs past the end", async () => {
     const full = mp4Bytes();
     const cut = full.slice(0, full.length - 20 - 10);
     const file = fileOf(cut, name, type);
     const result = await processFile(file, ALL);
-    // BUG: no error, nothing found, and the metadata is handed back untouched
-    // as a "cleaned" file.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(summary(result.report.fieldsFound)).toEqual([]);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(cut.length);
-    expect(await contains(result.cleanedBlob, "Lars Holmstrom")).toBe(true);
+    // This used to pass as clean, with the metadata (the artist) still in the
+    // "cleaned" file.
+    expectFailed(file, result, DAMAGED, "unreadable: mp4");
   });
 
-  it("returns an empty Blob and the raw parser error when a box has no room for its fields, today", async () => {
-    // An mvhd of bare header as the last 8 bytes: reading its version byte
-    // goes one past the end of the DataView and throws a RangeError, which
-    // mp4.ts catches and wraps.
+  it("refuses a header box with no room for its fields", async () => {
+    // An mvhd of bare header as the last 8 bytes. Reading its version byte
+    // used to throw a RangeError that came back as an empty Blob and the raw
+    // engine text.
     const bytes = concat(
       ftypBox("isom"),
       box("moov", box("udta", box("©ART", u16be(4), u16be(0), utf8("Lars"))), box("mvhd")),
     );
     const file = fileOf(bytes, name, type);
-    const result = await processFile(file, ALL);
-    // The contract will replace the empty Blob and the raw engine text.
-    expect(result.error).toMatch(/^MP4 processing failed: /);
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(0);
-    expect(result.report.fileType).toBe("mp4");
+    expectFailed(file, await processFile(file, ALL), DAMAGED, "unreadable: mp4");
   });
 
-  it("lets a failed full read escape to the coordinator's crash guard", async () => {
-    // mp4.ts reads the file before its try, so unlike the audio processors the
-    // rejection reaches processFile, which reports a crash and hands back the
-    // original file.
+  it("explains a failed full read", async () => {
     const file = failFullRead(fileOf(mp4Bytes(), name, type));
-    const result = await processFile(file, ALL);
-    expect(result.error).toBe(
-      "Your browser couldn't open it. If you just downloaded it, make sure the download has finished, or save it to a folder on this device (not a cloud-only one) and try again.",
-    );
-    expect(result.crashed).toBe("NotFoundError");
-    expect(result.cleanedBlob === file).toBe(true);
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
   });
 
-  it("refuses a file over the 1.5 GB cap with an empty Blob, today", async () => {
+  it("refuses a file over the 1.5 GB cap without reading it", async () => {
     const file = fileOf(mp4Bytes(), name, type);
     Object.defineProperty(file, "size", { value: 2 * 1024 ** 3 });
+    // Never read: the full read would crash the tab, so make it fail loudly.
+    file.arrayBuffer = () => Promise.reject(new Error("read"));
     const result = await processFile(file, ALL);
-    expect(result.error).toBe("Video too large (2.0 GB). Maximum 1.5 GB. Trim or compress first.");
-    expect(result.crashed).toBeUndefined();
-    // The contract will hand back the original file instead of 0 bytes.
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(0);
+    expect(result.error).toBe("Too large (2.00 GB). The maximum is 1.50 GB; trim or compress it first.");
+    expect(result.reason).toBe("too_large");
+    // It used to hand back 0 bytes.
+    expect(result.cleanedBlob).toBe(file);
     expect(result.report.fileSize).toBe(2 * 1024 ** 3);
   });
 });
@@ -193,11 +191,12 @@ describe("MOV (iPhone-style: mdta keys, handler vendor, udta text atoms)", () =>
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("keeps the header timestamps but not the other dates with dates off, today", async () => {
+  it("keeps the header timestamps but not the dates inside removed containers with dates off", async () => {
     const result = await processFile(fileOf(movBytes(), name, type), { ...ALL, dates: false });
     expect(result.error).toBeUndefined();
-    // BUG: the mvhd/tkhd/mdhd times are honoured as kept, but the creation date
-    // in mdta and ©day in udta go with their containers and are reported removed.
+    // The mvhd/tkhd/mdhd times are zeroed per box, so they stay. The creation
+    // date in mdta and ©day in udta share containers with fields being removed,
+    // so they go whole with them and are reported removed.
     expect(summary(result.report.fieldsRemoved)).toEqual([
       "dates:com.apple.quicktime.creationdate",
       "dates:©day",
@@ -220,18 +219,14 @@ describe("MOV (iPhone-style: mdta keys, handler vendor, udta text atoms)", () =>
     ]);
   });
 
-  it("silently skips a moov that runs past the end of a truncated file", async () => {
+  it("refuses a file whose moov runs past the end", async () => {
     const full = movBytes();
     const cut = full.slice(0, full.length - 20 - 10);
     const file = fileOf(cut, name, type);
     const result = await processFile(file, ALL);
-    // BUG: as for MP4, no error and the location goes back out untouched.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(summary(result.report.fieldsFound)).toEqual([]);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(cut.length);
-    expect(await contains(result.cleanedBlob, "+59.3293+018.0686")).toBe(true);
+    // This used to pass as clean, with the metadata (the location) still in the
+    // "cleaned" file.
+    expectFailed(file, result, DAMAGED, "unreadable: mov");
   });
 });
 
@@ -253,9 +248,9 @@ describe("M4A (iTunes-style: udta > meta > ilst)", () => {
   it("strips everything with all categories on", async () => {
     const result = await processFile(fileOf(m4aBytes(), name, type), ALL);
     expect(result.error).toBeUndefined();
-    // BUG: mp4.ts sets fileType from the MIME type (only video/quicktime gives
-    // "mov"), so a file the registry identified as m4a reports "mp4".
-    expect(result.report.fileType).toBe("mp4");
+    // The report names the format the registry identified; mp4.ts used to set
+    // it from the MIME type, which reported every M4A as "mp4".
+    expect(result.report.fileType).toBe("m4a");
     expect(summary(result.report.fieldsFound)).toEqual(FOUND);
     expect(summary(result.report.fieldsRemoved)).toEqual(FOUND);
     expect(result.cleanedBlob.size).toBe(m4aBytes().length);
@@ -263,27 +258,24 @@ describe("M4A (iTunes-style: udta > meta > ilst)", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("removes the artist anyway with author off, today", async () => {
+  it("removes the artist with udta when author is off but udta's other fields go", async () => {
     const result = await processFile(fileOf(m4aBytes(), name, type), { ...ALL, author: false });
     expect(result.error).toBeUndefined();
-    // BUG: the whole udta goes, ©ART included, and is reported removed.
+    // The whole udta goes, ©ART included, and is reported removed.
     expect(summary(result.report.fieldsRemoved)).toEqual(FOUND);
     expect(summary(result.report.fieldsKept)).toEqual([]);
     expect(await contains(result.cleanedBlob, "Lars Holmstrom")).toBe(false);
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("silently skips a moov that runs past the end of a truncated file", async () => {
+  it("refuses a file whose moov runs past the end", async () => {
     const full = m4aBytes();
     const cut = full.slice(0, full.length - 20 - 10);
     const file = fileOf(cut, name, type);
     const result = await processFile(file, ALL);
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(summary(result.report.fieldsFound)).toEqual([]);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(cut.length);
-    expect(await contains(result.cleanedBlob, "Lars Holmstrom")).toBe(true);
+    // This used to pass as clean, with the metadata (the artist) still in the
+    // "cleaned" file.
+    expectFailed(file, result, DAMAGED, "unreadable: m4a");
   });
 });
 
@@ -315,49 +307,38 @@ describe("MP3 (ID3v2.3 at the front, ID3v1 at the end)", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("removes the artist anyway with author off, today", async () => {
+  it("removes the artist with each tag when author is off but the tag's other fields go", async () => {
     const result = await processFile(fileOf(mp3Bytes(), name, type), { ...ALL, author: false });
     expect(result.error).toBeUndefined();
-    // BUG: each tag goes whole if any category in it is on, so TPE1 and the
-    // ID3v1 artist are removed and reported removed although author was off.
+    // Each tag goes whole when any field in it is being removed, so TPE1 and
+    // the ID3v1 artist go with them and are reported removed.
     expect(summary(result.report.fieldsRemoved)).toEqual(FOUND);
     expect(summary(result.report.fieldsKept)).toEqual([]);
     expect(result.cleanedBlob.size).toBe(MPEG_FRAME.length);
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("hands back an empty file without an error when the tag size runs past the end, today", async () => {
-    // The header claims a 10,000-byte tag; the frames it does hold are still
-    // listed, then everything up to the claimed end (the whole file) is cut.
-    const body = id3v2Body();
-    const bytes = concat(id3v2Header(10_000), body, MPEG_FRAME);
+  it("refuses a tag whose size runs past the end", async () => {
+    // The header claims a 10,000-byte tag. Cutting it off used to take the
+    // whole file with it: a 0-byte "cleaned" file and no error.
+    const bytes = concat(id3v2Header(10_000), id3v2Body(), MPEG_FRAME);
     const file = fileOf(bytes, name, type);
-    const result = await processFile(file, ALL);
-    // BUG: a 0-byte "cleaned" file with no error; the audio is gone.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(summary(result.report.fieldsFound)).toEqual([
-      "author:TPE1",
-      "comments:COMM",
-      "copyright:TCOP",
-      "custom:TIT2",
-      "dates:TYER",
-      "software:TSSE",
-    ]);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(0);
+    expectFailed(file, await processFile(file, ALL), DAMAGED, "unreadable: mp3");
   });
 
-  it("returns an empty Blob and the raw error text when the full read fails, today", async () => {
-    // mp3.ts wraps everything, its read included, in a try with no throw paths
-    // left for malformed tags, so a failed read is the way to reach that catch.
+  it("refuses a file that is only a tag, rather than handing back nothing", async () => {
+    // A tag with no audio after it: removing the tag leaves 0 bytes, which the
+    // contract treats as a failure whatever the processor says.
+    const body = id3v2Body();
+    const file = fileOf(concat(id3v2Header(body.length), body), name, type);
+    expectFailed(file, await processFile(file, ALL), DAMAGED, "empty_output: mp3");
+  });
+
+  it("explains a failed full read", async () => {
+    // This used to come back as an empty Blob and the raw text "MP3 processing
+    // failed: gone".
     const file = failFullRead(fileOf(mp3Bytes(), name, type));
-    const result = await processFile(file, ALL);
-    // The contract will replace the empty Blob and the raw text.
-    expect(result.error).toBe("MP3 processing failed: gone");
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(0);
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
   });
 });
 
@@ -368,13 +349,14 @@ describe("FLAC (STREAMINFO, APPLICATION, VORBIS_COMMENT, PICTURE)", () => {
     "author:ARTIST",
     "comments:COMMENT",
     "copyright:COPYRIGHT",
+    "custom:FLAC_APPLICATION:ATCH",
     "custom:FLAC_PICTURE",
     "custom:TITLE",
     "dates:DATE",
     "software:ENCODER",
   ];
 
-  it("strips the comments and picture with all categories on", async () => {
+  it("strips the comments, picture and application data with all categories on", async () => {
     const result = await processFile(fileOf(flacBytes(), name, type), ALL);
     expect(result.error).toBeUndefined();
     expect(result.report.fileType).toBe("flac");
@@ -384,9 +366,9 @@ describe("FLAC (STREAMINFO, APPLICATION, VORBIS_COMMENT, PICTURE)", () => {
     expect(result.cleanedBlob.size).toBe(flacBytes().length);
     // The vendor string is zeroed with its block, though it was never reported.
     expect(await contains(result.cleanedBlob, "libFLAC")).toBe(false);
-    // BUG: APPLICATION blocks are neither reported nor removed, so the private
-    // data in this one (which names the author) survives.
-    expect(await contains(result.cleanedBlob, "Lars Holmstrom private notes")).toBe(true);
+    // APPLICATION blocks used to be neither reported nor removed, so the
+    // private data in this one (which names the author) survived.
+    expect(await contains(result.cleanedBlob, "Lars Holmstrom private notes")).toBe(false);
     expect(await reread(result, name, type)).toEqual([]);
   });
 
@@ -403,33 +385,23 @@ describe("FLAC (STREAMINFO, APPLICATION, VORBIS_COMMENT, PICTURE)", () => {
       "dates:DATE",
       "software:ENCODER",
     ]);
-    expect(summary(result.report.fieldsKept)).toEqual(["custom:FLAC_PICTURE"]);
-    expect(await reread(result, name, type)).toEqual(["custom:FLAC_PICTURE"]);
+    expect(summary(result.report.fieldsKept)).toEqual(["custom:FLAC_APPLICATION:ATCH", "custom:FLAC_PICTURE"]);
+    expect(await reread(result, name, type)).toEqual(["custom:FLAC_APPLICATION:ATCH", "custom:FLAC_PICTURE"]);
   });
 
-  it("silently skips a VORBIS_COMMENT block that runs past the end", async () => {
-    const bytes = truncatedFlacBytes();
-    const file = fileOf(bytes, name, type);
+  it("refuses a file whose VORBIS_COMMENT block runs past the end", async () => {
+    const file = fileOf(truncatedFlacBytes(), name, type);
     const result = await processFile(file, ALL);
-    // BUG: no error, nothing found, and the comments go back out untouched.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(summary(result.report.fieldsFound)).toEqual([]);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(bytes.length);
-    expect(await contains(result.cleanedBlob, "ARTIST=Lars Holmstrom")).toBe(true);
+    // This used to pass as clean, with the metadata (the comments) still in the
+    // "cleaned" file.
+    expectFailed(file, result, DAMAGED, "unreadable: flac");
   });
 
-  it("returns an empty Blob and the raw error text when the full read fails, today", async () => {
-    // As with MP3, flac.ts bounds every read, so a failed read is the way into
-    // its catch.
+  it("explains a failed full read", async () => {
+    // This used to come back as an empty Blob and the raw text "FLAC processing
+    // failed: gone".
     const file = failFullRead(fileOf(flacBytes(), name, type));
-    const result = await processFile(file, ALL);
-    // The contract will replace the empty Blob and the raw text.
-    expect(result.error).toBe("FLAC processing failed: gone");
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(0);
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
   });
 });
 
@@ -479,26 +451,31 @@ describe("WAV (fmt, LIST/INFO, bext, iXML, data)", () => {
     expect(await reread(result, name, type)).toEqual(["author:bext"]);
   });
 
-  it("silently skips a LIST chunk that runs past the end", async () => {
-    const bytes = truncatedWavBytes();
-    const file = fileOf(bytes, name, type);
+  it("refuses a file whose LIST chunk runs past the end", async () => {
+    const file = fileOf(truncatedWavBytes(), name, type);
     const result = await processFile(file, ALL);
-    // BUG: no error, nothing found, and the INFO text goes back out untouched.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(summary(result.report.fieldsFound)).toEqual([]);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(bytes.length);
-    expect(await contains(result.cleanedBlob, "Lars Holmstrom")).toBe(true);
+    // This used to pass as clean, with the metadata (the INFO text) still in the
+    // "cleaned" file.
+    expectFailed(file, result, DAMAGED, "unreadable: wav");
   });
 
-  it("returns an empty Blob and the raw error text when the full read fails, today", async () => {
+  it("explains a failed full read", async () => {
+    // This used to come back as an empty Blob and the raw text "WAV processing
+    // failed: gone".
     const file = failFullRead(fileOf(wavBytes(), name, type));
-    const result = await processFile(file, ALL);
-    // The contract will replace the empty Blob and the raw text.
-    expect(result.error).toBe("WAV processing failed: gone");
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(result.cleanedBlob.size).toBe(0);
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
+  });
+});
+
+describe("every audio and video format", () => {
+  it.each([
+    ["MP4", mp4Bytes, "clip.mp4", "video/mp4"],
+    ["MOV", movBytes, "IMG_0001.MOV", "video/quicktime"],
+    ["M4A", m4aBytes, "voice.m4a", "audio/mp4"],
+    ["MP3", mp3Bytes, "song.mp3", "audio/mpeg"],
+    ["FLAC", flacBytes, "track.flac", "audio/flac"],
+    ["WAV", wavBytes, "take.wav", "audio/wav"],
+  ] as const)("%s finds the same fields whatever the options", async (_, make, name, type) => {
+    await expectFoundIgnoresOptions(() => fileOf(make(), name, type));
   });
 });

@@ -64,9 +64,6 @@ export interface ProcessingResult {
   /** Why it failed, as a short stable code for telemetry ("unreadable: png",
    *  "too_large", "crash: RangeError"). Never carries text read from the file. */
   reason?: string;
-  /** Set by processors not yet on the contract when a parser threw. Holds the
-   *  error's class name only. Goes when the last of them moves over. */
-  crashed?: string;
 }
 
 export type FileCategory = "image" | "document" | "video" | "audio";
