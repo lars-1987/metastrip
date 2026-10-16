@@ -1,3 +1,5 @@
+import type { Format, SupportedFormat } from "./formats";
+
 export type MetadataCategory =
   | "gps"
   | "device"
@@ -19,7 +21,8 @@ export interface MetadataField {
 
 export interface MetadataReport {
   fileName: string;
-  fileType: SupportedFileType;
+  /** "unknown" only when processFile was handed a file nobody could identify. */
+  fileType: Format | "unknown";
   fileSize: number;
   cleanedFileSize: number;
   fieldsFound: MetadataField[];
@@ -86,6 +89,7 @@ export type FileCategory = "image" | "document" | "video" | "audio";
 
 export interface FileEntry {
   file: File;
+  format: SupportedFormat;
   id: string;
   status: "pending" | "processing" | "done" | "error";
   result?: ProcessingResult;

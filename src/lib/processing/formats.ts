@@ -69,15 +69,36 @@ export type Identity =
 const ALL = Object.keys(FORMATS) as Format[];
 
 /** Identify a file: bytes first, then MIME type, then extension. Reads only
- *  the first 32 bytes. */
+ *  the first 32 bytes.
+ *
+ *  Never rejects. A file the browser can't read (moved, or a cloud placeholder
+ *  that was never synced) is identified by MIME type and extension alone, and
+ *  the read error surfaces when the file is processed, where it gets a
+ *  message that says what to do. */
 export async function identify(file: File): Promise<Identity> {
-  const head = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+  const head = await file.slice(0, 32).arrayBuffer().then(
+    (buf) => new Uint8Array(buf),
+    () => new Uint8Array(0)
+  );
   const format =
     formatFromBytes(head) ??
     ALL.find((f) => (FORMATS[f].mimes as readonly string[]).includes(file.type)) ??
     ALL.find((f) => (FORMATS[f].extensions as readonly string[]).includes(extensionOf(file.name)));
   if (!format) return { status: "unknown" };
   return { status: FORMATS[format].status, format } as Identity;
+}
+
+/** What to say about files that were turned away. Names the formats when
+ *  every one is recognised ("TIFF files aren't supported yet."), since that
+ *  tells someone it's the format and not their file. */
+export function notSupportedYet(turnedAway: readonly Identity[]): string {
+  const labels = new Set<string>();
+  for (const id of turnedAway) {
+    if (id.status !== "recognised") return "Those file types aren't supported yet.";
+    labels.add(labelOf(id.format));
+  }
+  if (labels.size === 0) return "Those file types aren't supported yet.";
+  return `${[...labels].join(" and ")} files aren't supported yet.`;
 }
 
 export function labelOf(format: Format): string {

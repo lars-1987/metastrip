@@ -2,26 +2,22 @@
 
 import { useRef, type ReactNode } from "react";
 import { useDropZone } from "@/hooks/useDropZone";
-import { ACCEPTED_TYPES } from "@/lib/constants";
+import { ACCEPT_ATTRIBUTE, SUPPORTED_FORMATS, categoryOf } from "@/lib/processing/formats";
+import type { FileCategory } from "@/lib/processing/types";
 import { Button } from "../ui/Button";
 
 interface Props {
-  /** Accepted files, plus any the same drop turned away. */
-  onFiles: (files: File[], rejected?: File[]) => void;
-  /** A drop where nothing was accepted, so the tool can message and track it. */
-  onRejected?: (files: File[]) => void;
+  /** Every dropped or picked file; the tool identifies them and reports any it can't take. */
+  onFiles: (files: File[]) => void;
   busy: boolean;
   error: string | null;
 }
 
 type Kind = "image" | "doc" | "video" | "audio";
 
-const FORMATS: { ext: string; kind: Kind }[] = [
-  { ext: "jpeg", kind: "image" }, { ext: "png", kind: "image" }, { ext: "webp", kind: "image" }, { ext: "gif", kind: "image" }, { ext: "heic", kind: "image" }, { ext: "avif", kind: "image" },
-  { ext: "pdf", kind: "doc" }, { ext: "docx", kind: "doc" }, { ext: "xlsx", kind: "doc" }, { ext: "pptx", kind: "doc" },
-  { ext: "mp4", kind: "video" }, { ext: "mov", kind: "video" },
-  { ext: "mp3", kind: "audio" }, { ext: "m4a", kind: "audio" }, { ext: "flac", kind: "audio" }, { ext: "wav", kind: "audio" },
-];
+const KIND: Record<FileCategory, Kind> = { image: "image", document: "doc", video: "video", audio: "audio" };
+
+const FORMATS = SUPPORTED_FORMATS.map((f) => ({ ext: f, kind: KIND[categoryOf(f)] }));
 
 const ICON = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none" } as const;
 const KIND_ICON: Record<Kind, ReactNode> = {
@@ -92,13 +88,9 @@ function FormatChip({ ext, kind }: { ext: string; kind: Kind }) {
   );
 }
 
-export function CardDropzone({ onFiles, onRejected, busy, error }: Props) {
+export function CardDropzone({ onFiles, busy, error }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isDragOver, dragHandlers } = useDropZone({
-    onFiles,
-    onRejected,
-    acceptedTypes: ACCEPTED_TYPES,
-  });
+  const { isDragOver, dragHandlers } = useDropZone({ onFiles });
 
   return (
     <div
@@ -114,7 +106,7 @@ export function CardDropzone({ onFiles, onRejected, busy, error }: Props) {
         ref={inputRef}
         type="file"
         multiple
-        accept={[...ACCEPTED_TYPES, ".heic", ".heif", ".avif"].join(",")}
+        accept={ACCEPT_ATTRIBUTE}
         className="hidden"
         onChange={(e) => {
           if (e.target.files) onFiles(Array.from(e.target.files));
