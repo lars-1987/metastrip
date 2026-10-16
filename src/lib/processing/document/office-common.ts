@@ -96,9 +96,12 @@ export function stripCoreXml(
 
   for (const [fullTag, category] of Object.entries(tagCategoryMap)) {
     if (categoriesToStrip.includes(category)) {
+      // Removed, not blanked: every core property is optional, but an empty
+      // one isn't always valid (an empty W3CDTF date isn't a date), and Office
+      // treats an invalid one as damage and offers to repair the file.
       const elements = doc.getElementsByTagName(fullTag);
       for (let i = elements.length - 1; i >= 0; i--) {
-        elements[i].textContent = "";
+        elements[i].parentNode?.removeChild(elements[i]);
       }
     }
   }
@@ -167,9 +170,11 @@ export function stripAppXml(
 
   for (const [tag, category] of Object.entries(tagCategoryMap)) {
     if (categoriesToStrip.includes(category)) {
+      // Removed, not blanked: TotalTime is a number and AppVersion has a fixed
+      // pattern, so empty ones aren't valid. Every app property is optional.
       const elements = doc.getElementsByTagName(tag);
       for (let i = elements.length - 1; i >= 0; i--) {
-        elements[i].textContent = "";
+        elements[i].parentNode?.removeChild(elements[i]);
       }
     }
   }
