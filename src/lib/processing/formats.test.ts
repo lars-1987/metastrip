@@ -9,8 +9,6 @@ import {
   type Format,
 } from "./formats";
 import { HEADER_CASES } from "./format-headers.fixture";
-import { detectFileType, getFileCategory } from "../file-utils";
-import { ACCEPTED_TYPES } from "../constants";
 
 const fileOf = (c: { name: string; mime: string; head: Uint8Array }) =>
   new File([c.head as BlobPart], c.name, { type: c.mime });
@@ -25,25 +23,23 @@ describe("identify", () => {
     expect(await formatOf(fileOf(c))).toBe(c.identify);
   });
 
-  it("changes today's answer only where we decided it should", async () => {
-    // Today the coordinator trusts the bytes and falls back to MIME, then
-    // extension (HEIC and AVIF only).
-    const changed = [];
-    for (const c of HEADER_CASES) {
-      const today = c.today.sniff ?? c.today.detect ?? "unknown";
-      if ((await formatOf(fileOf(c))) !== today) changed.push(c.label);
-    }
-    expect(changed).toEqual([
-      "M4A", // the M4A brand is audio, not an MP4 video
-      "DOCX with no MIME type", // every registered extension is a fallback
-    ]);
+  it.each([
+    ["image/heif-sequence", "heic"],
+    ["video/x-m4v", "mp4"],
+    ["audio/aac", "m4a"],
+    ["audio/x-wav", "wav"],
+    ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx"],
+    ["image/tiff", "tiff"],
+  ])("identifies %s by MIME type when the bytes say nothing", async (mime, format) => {
+    expect(await formatOf(new File([], "file", { type: mime }))).toBe(format);
   });
 
-  it("agrees with today's MIME table when the bytes say nothing", async () => {
-    for (const mime of [...ACCEPTED_TYPES, "image/tiff"]) {
-      const file = new File([], "file", { type: mime });
-      expect(await formatOf(file), mime).toBe(detectFileType(file));
-    }
+  it.each([
+    ["IMG_0001.HEIC", "heic"],
+    ["scan.TIF", "tiff"],
+    ["film.m4v", "mp4"],
+  ])("identifies %s by extension when the bytes and MIME type say nothing", async (name, format) => {
+    expect(await formatOf(new File([], name, { type: "" }))).toBe(format);
   });
 
   it("falls back to MIME type and extension when the bytes can't be read", async () => {
@@ -100,10 +96,16 @@ describe("labelOf", () => {
 });
 
 describe("categoryOf", () => {
-  it("agrees with today's categories", () => {
-    for (const format of [...SUPPORTED_FORMATS, "tiff"] as const) {
-      expect(categoryOf(format), format).toBe(getFileCategory(format));
-    }
+  it.each([
+    ["jpeg", "image"],
+    ["tiff", "image"],
+    ["pdf", "document"],
+    ["pptx", "document"],
+    ["mov", "video"],
+    ["m4a", "audio"],
+    ["wav", "audio"],
+  ] as const)("%s is %s", (format, category) => {
+    expect(categoryOf(format)).toBe(category);
   });
 });
 
@@ -121,8 +123,8 @@ describe("SUPPORTED_FORMATS", () => {
 describe("ACCEPT_ATTRIBUTE", () => {
   const accepted = ACCEPT_ATTRIBUTE.split(",");
 
-  it("covers everything the dropzone accepts today", () => {
-    for (const entry of [...ACCEPTED_TYPES, ".heic", ".heif", ".avif"]) {
+  it("lists every supported format by MIME type and extension", () => {
+    for (const entry of ["image/jpeg", ".jpg", "image/heic", ".heic", ".heif", ".avif", "audio/mp4", ".m4a", ".docx"]) {
       expect(accepted, entry).toContain(entry);
     }
   });

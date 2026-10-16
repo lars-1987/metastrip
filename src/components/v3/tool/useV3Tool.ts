@@ -3,8 +3,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { processFile, failureReason } from "@/lib/processing/coordinator";
 import { verifyCleaned, type VerifyResult } from "@/lib/processing/verify";
-import { formatBytes, extensionOf } from "@/lib/file-utils";
-import { identify, notSupportedYet, categoryOf, type Identity, type SupportedFormat } from "@/lib/processing/formats";
+import { formatBytes } from "@/lib/file-utils";
+import { identify, notSupportedYet, categoryOf, extensionOf, type Identity, type SupportedFormat } from "@/lib/processing/formats";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, trackFileVerified, categoriesOf } from "@/lib/analytics";
