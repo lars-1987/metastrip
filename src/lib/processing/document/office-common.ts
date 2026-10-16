@@ -1,39 +1,4 @@
-import type JSZip from "jszip";
 import type { MetadataField, MetadataCategory } from "../types";
-
-/**
- * Remove every zip entry matching any of the given patterns (e.g. numbered
- * comment/notes/author parts). JSZip's `file(regex)` returns all matches.
- * Returns the field records for the report. Note: dangling relationship
- * references to the removed parts are tolerated by Office (same approach the
- * DOCX comments removal already uses).
- */
-export function removeZipParts(
-  zip: JSZip,
-  patterns: RegExp[],
-  category: MetadataCategory,
-  label: string
-): { found: MetadataField[]; removed: MetadataField[] } {
-  const found: MetadataField[] = [];
-  const removed: MetadataField[] = [];
-  const seen = new Set<string>();
-  for (const pattern of patterns) {
-    for (const zObj of zip.file(pattern)) {
-      if (seen.has(zObj.name)) continue;
-      seen.add(zObj.name);
-      found.push({ category, key: zObj.name, label: `${label}: ${zObj.name}`, value: "(present)", removable: true });
-      removed.push({ category, key: zObj.name, label: `${label}: ${zObj.name}`, value: "(removed)", removable: true });
-      zip.remove(zObj.name);
-    }
-  }
-  return { found, removed };
-}
-
-export const SENSITIVE_FILES: Record<string, MetadataCategory> = {
-  "word/comments.xml": "comments",
-  "word/commentsExtended.xml": "comments",
-  "word/people.xml": "author",
-};
 
 interface ParsedCoreMetadata {
   fields: MetadataField[];

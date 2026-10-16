@@ -25,12 +25,8 @@
  * "ignore me" chunk type in RIFF) and zero the payload.
  */
 
-import type {
-  StripOptions,
-  ProcessingResult,
-  MetadataField,
-  MetadataReport,
-} from "../types";
+import type { StripOptions, MetadataField } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 
 const ASCII = new TextDecoder("ascii");
 
@@ -47,9 +43,10 @@ function readChunk(view: DataView, offset: number): ChunkInfo | null {
   const id = ASCII.decode(new Uint8Array(view.buffer, view.byteOffset + offset, 4));
   const size = view.getUint32(offset + 4, true);
   const contentStart = offset + 8;
-  const padded = size + (size & 1); // chunks are word-aligned
-  const end = contentStart + padded;
-  if (end > view.byteLength) return null;
+  // Chunks are word-aligned, but many writers leave out the pad byte after
+  // an odd-sized last chunk, so only the unpadded size has to fit.
+  if (contentStart + size > view.byteLength) return null;
+  const end = Math.min(contentStart + size + (size & 1), view.byteLength);
   return { offset, id, size, contentStart, end };
 }
 
@@ -85,13 +82,6 @@ function infoCategory(id: string): MetadataField["category"] {
   return "custom";
 }
 
-function categoryEnabled(
-  category: MetadataField["category"],
-  options: StripOptions
-): boolean {
-  return options[category] ?? true;
-}
-
 /** Walk a LIST/INFO chunk to enumerate which INFO subchunks it has, for the report. */
 function enumerateInfoChunks(view: DataView, start: number, end: number): MetadataField[] {
   const fields: MetadataField[] = [];
@@ -115,118 +105,70 @@ function enumerateInfoChunks(view: DataView, start: number, end: number): Metada
   return fields;
 }
 
-export async function processWav(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  try {
-    const buffer = await file.arrayBuffer();
-    const cleaned = new Uint8Array(buffer.byteLength);
-    cleaned.set(new Uint8Array(buffer));
-    const view = new DataView(cleaned.buffer);
+export function stripWav(bytes: Uint8Array, options: StripOptions): Stripped {
+  if (
+    bytes.length < 12 ||
+    ASCII.decode(bytes.subarray(0, 4)) !== "RIFF" ||
+    ASCII.decode(bytes.subarray(8, 12)) !== "WAVE"
+  ) {
+    throw new Unreadable();
+  }
+  const cleaned = bytes.slice();
+  const view = new DataView(cleaned.buffer);
 
-    if (view.byteLength < 12) {
-      return errorResult(file, "File too small to be a valid WAV");
+  const fieldsFound: MetadataField[] = [];
+  const fieldsRemoved: MetadataField[] = [];
+
+  // Walk top-level chunks starting at offset 12
+  let pos = 12;
+  while (pos + 8 <= view.byteLength) {
+    const chunk = readChunk(view, pos);
+    if (!chunk) {
+      // Cut short. Audio data running off the end is a partial download,
+      // and holds no metadata; any other chunk might, so the file is
+      // unreadable rather than passed through with it.
+      if (ASCII.decode(cleaned.subarray(pos, pos + 4)) === "data") break;
+      throw new Unreadable();
     }
 
-    const riff = ASCII.decode(new Uint8Array(view.buffer, 0, 4));
-    const wave = ASCII.decode(new Uint8Array(view.buffer, 8, 4));
-    if (riff !== "RIFF" || wave !== "WAVE") {
-      return errorResult(file, "Not a WAV file (missing RIFF/WAVE magic)");
-    }
+    if (STRIP_CHUNK_IDS.has(chunk.id)) {
+      let chunkFields: MetadataField[] = [];
 
-    const fieldsFound: MetadataField[] = [];
-    const fieldsRemoved: MetadataField[] = [];
-
-    // Walk top-level chunks starting at offset 12
-    let pos = 12;
-    while (pos < view.byteLength) {
-      const chunk = readChunk(view, pos);
-      if (!chunk) break;
-
-      if (STRIP_CHUNK_IDS.has(chunk.id)) {
-        let chunkFields: MetadataField[] = [];
-
-        if (chunk.id === "LIST") {
-          chunkFields = enumerateInfoChunks(view, chunk.contentStart, chunk.contentStart + chunk.size);
-        } else {
-          // bext, id3 , iXML, _PMX — we don't dig in, just report & strip
-          chunkFields = [
-            {
-              category:
-                chunk.id === "bext" ? "author" : chunk.id === "id3 " ? "custom" : "custom",
-              key: chunk.id.trim(),
-              label:
-                chunk.id === "bext"
-                  ? "Broadcast Wave extension"
-                  : chunk.id === "id3 "
-                  ? "Embedded ID3 tag"
-                  : chunk.id === "iXML"
-                  ? "iXML metadata"
-                  : "Pro Tools metadata",
-              value: `(${chunk.size} bytes)`,
-              removable: true,
-            },
-          ];
-        }
-
-        fieldsFound.push(...chunkFields);
-        const shouldStrip =
-          chunkFields.length === 0 ||
-          chunkFields.some((f) => categoryEnabled(f.category, options));
-
-        if (shouldStrip) {
-          // Rename chunk to "JUNK" — RIFF parsers ignore JUNK chunks.
-          // Keep size identical so file structure (and RIFF total size) stays valid.
-          writeAscii(cleaned, chunk.offset, "JUNK");
-          // Zero payload for paranoia
-          cleaned.fill(0, chunk.contentStart, chunk.contentStart + chunk.size);
-          fieldsRemoved.push(...chunkFields);
-        }
+      if (chunk.id === "LIST") {
+        chunkFields = enumerateInfoChunks(view, chunk.contentStart, chunk.contentStart + chunk.size);
+      } else {
+        // bext, id3 , iXML, _PMX: we don't dig in, just report & strip
+        chunkFields = [
+          {
+            category: chunk.id === "bext" ? "author" : "custom",
+            key: chunk.id.trim(),
+            label:
+              chunk.id === "bext"
+                ? "Broadcast Wave extension"
+                : chunk.id === "id3 "
+                ? "Embedded ID3 tag"
+                : chunk.id === "iXML"
+                ? "iXML metadata"
+                : "Pro Tools metadata",
+            value: `(${chunk.size} bytes)`,
+            removable: true,
+          },
+        ];
       }
 
-      pos = chunk.end;
+      fieldsFound.push(...chunkFields);
+      if (blockGoes(chunkFields, options)) {
+        // Rename chunk to "JUNK": RIFF parsers ignore JUNK chunks. Keep size
+        // identical so file structure (and RIFF total size) stays valid.
+        writeAscii(cleaned, chunk.offset, "JUNK");
+        // Zero payload for paranoia
+        cleaned.fill(0, chunk.contentStart, chunk.contentStart + chunk.size);
+        fieldsRemoved.push(...chunkFields);
+      }
     }
 
-    const cleanedBlob = new Blob([cleaned as BlobPart], { type: file.type });
-
-    const report: MetadataReport = {
-      fileName: file.name,
-      fileType: "wav",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept: fieldsFound.filter((f) => !fieldsRemoved.includes(f)),
-      processedAt: new Date(),
-    };
-
-    return {
-      originalFile: file,
-      cleanedBlob,
-      report,
-    };
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error processing WAV";
-    return errorResult(file, message);
+    pos = chunk.end;
   }
-}
 
-function errorResult(file: File, message: string): ProcessingResult {
-  return {
-    originalFile: file,
-    cleanedBlob: new Blob(),
-    report: {
-      fileName: file.name,
-      fileType: "wav",
-      fileSize: file.size,
-      cleanedFileSize: 0,
-      fieldsFound: [],
-      fieldsRemoved: [],
-      fieldsKept: [],
-      processedAt: new Date(),
-    },
-    error: `WAV processing failed: ${message}`,
-  };
+  return { cleaned, fieldsFound, fieldsRemoved };
 }

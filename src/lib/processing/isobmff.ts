@@ -1,9 +1,8 @@
 /* ──────────────────────────────────────────────────────────────────
    Shared ISOBMFF (ISO base media file format) box primitives.
 
-   HEIC/HEIF and MP4/MOV both use this box grammar. These generic
-   readers are used by the HEIC processor; the MP4 processor keeps its
-   own private copies for now (can adopt this module later).
+   HEIC/HEIF and MP4/MOV/M4A all use this box grammar, and both
+   processors read it through these helpers.
    ────────────────────────────────────────────────────────────────── */
 
 export interface BoxInfo {

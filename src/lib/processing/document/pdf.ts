@@ -1,17 +1,13 @@
 import { PDFDocument, PDFName, PDFDict, PDFRef, PDFRawStream } from "pdf-lib";
 import { parseXmp, type XmpProperty } from "./xmp";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 import type {
   StripOptions,
-  ProcessingResult,
   MetadataField,
   MetadataCategory,
 } from "../types";
 
-export async function processPdf(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  const arrayBuffer = await file.arrayBuffer();
+export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promise<Stripped> {
   let pdfDoc: PDFDocument;
 
   try {
@@ -20,29 +16,16 @@ export async function processPdf(
     // have read anything. That made us report pdf-lib as the user's PDF
     // Producer and "now" as their modification date, and it wrote both into
     // the output whenever the user chose to KEEP those categories.
-    pdfDoc = await PDFDocument.load(arrayBuffer, { updateMetadata: false });
+    pdfDoc = await PDFDocument.load(bytes, { updateMetadata: false });
   } catch {
-    const blob = new Blob([arrayBuffer], { type: "application/pdf" });
-    return {
-      originalFile: file,
-      cleanedBlob: blob,
-      report: {
-        fileName: file.name,
-        fileType: "pdf",
-        fileSize: file.size,
-        cleanedFileSize: blob.size,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-      error: "Could not parse PDF",
-    };
+    throw new Unreadable();
   }
+  // pdf-lib loads a file cut off after its header without complaint, but a
+  // PDF with no document catalog isn't a PDF, and reading it would throw.
+  if (!pdfDoc.context.trailerInfo.Root) throw new Unreadable();
 
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
-  const fieldsKept: MetadataField[] = [];
 
   // Dates are deleted outright. Setting them to the epoch left a 1 Jan 1970
   // date that any re-read, ours included, still reports as a date.
@@ -132,8 +115,6 @@ export async function processPdf(
       if (options[meta.category]) {
         meta.setter();
         fieldsRemoved.push(field);
-      } else {
-        fieldsKept.push(field);
       }
     }
   }
@@ -179,47 +160,45 @@ export async function processPdf(
 
     for (const field of xmpFields) fieldsFound.push(field);
 
-    // The packet can only be dropped whole, so it goes if ANY category it
-    // carries is being stripped. Everything in it is then reported as removed,
+    // The packet can only be dropped whole, so it goes if any category it
+    // carries is being stripped, and everything in it is reported removed,
     // including a category the user chose to keep: that is what actually
-    // happens to the file, and reporting otherwise would be the same class of
-    // untruth as the pdf-lib Producer bug. Per-property rewriting of the packet
-    // is the fix if that partial case ever matters.
+    // happens to the file. A packet we couldn't read might hold any of the
+    // categories XMP carries, so it goes if any of those is being stripped.
     const removeXmp = parsed.length
-      ? xmpFields.some((field) => options[field.category])
+      ? blockGoes(xmpFields, options)
       : options.author || options.dates || options.software || options.copyright || options.custom;
 
     if (removeXmp) {
       pdfDoc.catalog.delete(PDFName.of("Metadata"));
       if (xmpValue instanceof PDFRef) pdfDoc.context.delete(xmpValue);
       for (const field of xmpFields) fieldsRemoved.push(field);
-    } else {
-      for (const field of xmpFields) fieldsKept.push(field);
     }
   }
 
   // ── Custom Info-dictionary properties ──────────────────────────────────
   // Templates and Office exports inject non-standard keys (Company, Manager,
-  // classification codes, …) that the standard setters never clear.
-  if (options.custom) {
-    const infoRef = pdfDoc.context.trailerInfo.Info;
-    const info = infoRef ? pdfDoc.context.lookup(infoRef, PDFDict) : undefined;
-    if (info) {
-      const STANDARD = new Set([
-        "Title", "Author", "Subject", "Keywords", "Creator",
-        "Producer", "CreationDate", "ModDate", "Trapped",
-      ]);
-      for (const key of info.keys()) {
-        const name = key.asString().replace(/^\//, "");
-        if (!STANDARD.has(name)) {
-          const field: MetadataField = {
-            category: "custom",
-            key: name,
-            label: `Custom property: ${name}`,
-            value: "(present)",
-            removable: true,
-          };
-          fieldsFound.push(field);
+  // classification codes, and so on) that the standard setters never clear.
+  // Always looked for, so a kept one is reported kept.
+  const infoRef = pdfDoc.context.trailerInfo.Info;
+  const info = infoRef ? pdfDoc.context.lookup(infoRef, PDFDict) : undefined;
+  if (info) {
+    const STANDARD = new Set([
+      "Title", "Author", "Subject", "Keywords", "Creator",
+      "Producer", "CreationDate", "ModDate", "Trapped",
+    ]);
+    for (const key of info.keys()) {
+      const name = key.asString().replace(/^\//, "");
+      if (!STANDARD.has(name)) {
+        const field: MetadataField = {
+          category: "custom",
+          key: name,
+          label: `Custom property: ${name}`,
+          value: "(present)",
+          removable: true,
+        };
+        fieldsFound.push(field);
+        if (options.custom) {
           info.delete(key);
           fieldsRemoved.push(field);
         }
@@ -227,21 +206,5 @@ export async function processPdf(
     }
   }
 
-  const cleanedBytes = await pdfDoc.save();
-  const cleanedBlob = new Blob([cleanedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
-
-  return {
-    originalFile: file,
-    cleanedBlob,
-    report: {
-      fileName: file.name,
-      fileType: "pdf",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept,
-      processedAt: new Date(),
-    },
-  };
+  return { cleaned: await pdfDoc.save(), fieldsFound, fieldsRemoved };
 }

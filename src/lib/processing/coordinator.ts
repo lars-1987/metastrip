@@ -6,14 +6,12 @@ import { stripPng } from "./image/png";
 import { stripWebp } from "./image/webp";
 import { stripGif } from "./image/gif";
 import { stripHeic, stripAvif } from "./image/heic";
-import { processPdf } from "./document/pdf";
-import { processDocx } from "./document/docx";
-import { processXlsx } from "./document/xlsx";
-import { processPptx } from "./document/pptx";
-import { processMp4, processMov } from "./video/mp4";
-import { processMp3 } from "./audio/mp3";
-import { processFlac } from "./audio/flac";
-import { processWav } from "./audio/wav";
+import { stripPdf } from "./document/pdf";
+import { stripDocx, stripXlsx, stripPptx } from "./document/office";
+import { stripMp4 } from "./video/mp4";
+import { stripMp3 } from "./audio/mp3";
+import { stripFlac } from "./audio/flac";
+import { stripWav } from "./audio/wav";
 import type { StripOptions, ProcessingResult } from "./types";
 import { DEFAULT_STRIP_OPTIONS } from "./types";
 
@@ -29,11 +27,11 @@ import { DEFAULT_STRIP_OPTIONS } from "./types";
    - Kept fields are found minus removed; the cleaned file's type comes from
      the format, which the bytes decided. */
 
-type Entry =
-  | { strip: Processor; maxBytes?: number }
-  /** Not yet on the contract: returns a whole ProcessingResult. Goes when the
-   *  documents, audio and video processors move over. */
-  | { legacy: (file: File, options: StripOptions) => Promise<ProcessingResult> };
+type Entry = { strip: Processor; maxBytes?: number };
+
+/** Video is read whole into memory, so a file past this would crash the tab
+ *  rather than fail politely. */
+const VIDEO_MAX_BYTES = 1.5 * 1024 ** 3;
 
 // Every supported format in the registry needs an entry here, or the build fails.
 const processors = {
@@ -43,17 +41,17 @@ const processors = {
   gif: { strip: stripGif },
   heic: { strip: stripHeic },
   avif: { strip: stripAvif },
-  pdf: { legacy: processPdf },
-  docx: { legacy: processDocx },
-  xlsx: { legacy: processXlsx },
-  pptx: { legacy: processPptx },
-  mp4: { legacy: processMp4 },
-  mov: { legacy: processMov },
+  pdf: { strip: stripPdf },
+  docx: { strip: stripDocx },
+  xlsx: { strip: stripXlsx },
+  pptx: { strip: stripPptx },
+  mp4: { strip: stripMp4, maxBytes: VIDEO_MAX_BYTES },
+  mov: { strip: stripMp4, maxBytes: VIDEO_MAX_BYTES },
   // M4A files are MP4 containers (audio-only): same atom structure, same processor.
-  m4a: { legacy: processMp4 },
-  mp3: { legacy: processMp3 },
-  flac: { legacy: processFlac },
-  wav: { legacy: processWav },
+  m4a: { strip: stripMp4, maxBytes: VIDEO_MAX_BYTES },
+  mp3: { strip: stripMp3 },
+  flac: { strip: stripFlac },
+  wav: { strip: stripWav },
 } satisfies Record<SupportedFormat, Entry>;
 
 const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
@@ -99,7 +97,6 @@ export async function processFile(
 
   const format = identity.format;
   const entry: Entry = processors[format];
-  if ("legacy" in entry) return runLegacy(entry.legacy, file, format, options);
 
   // Checked before reading: a 70 GB video must never be loaded into memory.
   if (entry.maxBytes !== undefined && file.size > entry.maxBytes) {
@@ -154,22 +151,6 @@ function assemble(file: File, format: SupportedFormat, original: Uint8Array, s: 
   };
 }
 
-/** The old path, unchanged, for processors not yet on the contract. */
-async function runLegacy(
-  run: (file: File, options: StripOptions) => Promise<ProcessingResult>,
-  file: File,
-  format: SupportedFormat,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  try {
-    return await run(file, options);
-  } catch (err) {
-    const name = err instanceof Error ? err.name : "unknown";
-    const result = failed(file, format, crashMessage(name), `crash: ${name}`);
-    return { ...result, report: { ...result.report, cleanedFileSize: 0 }, crashed: name };
-  }
-}
-
 /**
  * What to tell someone when a read failed. NotFoundError and NotReadableError
  * come from the browser, not a parser: the file moved, was still being
@@ -188,6 +169,5 @@ function crashMessage(name: string): string {
 /** Telemetry reason for a result that failed. Never the message, which could
  *  quote content from the file. */
 export function failureReason(r: ProcessingResult): string {
-  if (r.reason) return r.reason;
-  return r.crashed ? `crash: ${r.crashed}` : r.error ?? "unknown";
+  return r.reason ?? "unknown";
 }

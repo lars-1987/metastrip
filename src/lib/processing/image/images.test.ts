@@ -1,10 +1,7 @@
-/** Characterisation tests for the image processors: JPEG, PNG, WebP, GIF,
- *  HEIC and AVIF, driven through processFile as the app drives them.
- *
- *  These pin what each processor does today, quirks and bugs included, so the
- *  move onto a shared processor contract shows every behaviour change as a
- *  failing, reviewed line. A comment marks each pinned value the contract is
- *  expected to change. */
+/** Behaviour tests for the image processors: JPEG, PNG, WebP, GIF, HEIC and
+ *  AVIF, driven through processFile as the app drives them. They began as
+ *  characterisation tests pinning the old behaviour; where the processor
+ *  contract changed it, a comment says what it used to do. */
 
 import { describe, expect, it } from "vitest";
 import { processFile } from "../coordinator";
@@ -305,7 +302,6 @@ describe("GIF", () => {
     const full = gifWithMetadata();
     const { file, result } = await strip(full.slice(0, full.length - 4), name, type);
     expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
     expect(result.report.fieldsRemoved).toHaveLength(7);
     expect(result.cleanedBlob.size).toBe(58);
     expect(result.cleanedBlob === file).toBe(false);

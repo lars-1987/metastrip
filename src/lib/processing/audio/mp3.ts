@@ -15,12 +15,8 @@
  * truncation, similar to MP4's atom-replacement approach.
  */
 
-import type {
-  StripOptions,
-  ProcessingResult,
-  MetadataField,
-  MetadataReport,
-} from "../types";
+import type { StripOptions, MetadataField } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 
 /* ──────────────────────────────────────────────────────────────────
    ID3v2 frame ID → category mapping
@@ -251,93 +247,36 @@ function parseId3v1(view: DataView): Id3v1Info | null {
    Public API
    ────────────────────────────────────────────────────────────────── */
 
-function categoryEnabled(
-  category: MetadataField["category"],
-  options: StripOptions
-): boolean {
-  return options[category] ?? true;
-}
+export function stripMp3(bytes: Uint8Array, options: StripOptions): Stripped {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const fieldsFound: MetadataField[] = [];
+  const fieldsRemoved: MetadataField[] = [];
 
-export async function processMp3(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  try {
-    const buffer = await file.arrayBuffer();
-    const view = new DataView(buffer);
-
-    const fieldsFound: MetadataField[] = [];
-    const fieldsRemoved: MetadataField[] = [];
-
-    // Front: ID3v2 tag
-    const id3v2 = parseId3v2(view);
-    let audioStart = 0;
-    if (id3v2) {
-      fieldsFound.push(...id3v2.frames);
-      // We strip the entire ID3v2 tag wholesale — it's all metadata and the audio
-      // frames begin immediately after. If ANY enabled category is present in the
-      // frames, we strip the tag. (Granular per-category strip would require
-      // rewriting the tag, which is more complex; user-facing behavior is "strip
-      // the metadata block" which matches expectation.)
-      const anyEnabled = id3v2.frames.some((f) => categoryEnabled(f.category, options));
-      if (anyEnabled || id3v2.frames.length === 0) {
-        audioStart = id3v2.skipBytes;
-        fieldsRemoved.push(...id3v2.frames);
-      }
+  // Front: ID3v2 tag. It goes whole: it's all metadata, the audio frames begin
+  // right after it, and rewriting it per frame isn't worth the risk.
+  const id3v2 = parseId3v2(view);
+  let audioStart = 0;
+  if (id3v2) {
+    // A tag that claims to run past the end was cut short; cutting it off used
+    // to take the whole file with it and hand back 0 bytes.
+    if (id3v2.skipBytes > bytes.length) throw new Unreadable();
+    fieldsFound.push(...id3v2.frames);
+    if (blockGoes(id3v2.frames, options)) {
+      audioStart = id3v2.skipBytes;
+      fieldsRemoved.push(...id3v2.frames);
     }
-
-    // Tail: ID3v1 tag
-    const id3v1 = parseId3v1(view);
-    let audioEnd = buffer.byteLength;
-    if (id3v1) {
-      fieldsFound.push(...id3v1.fields);
-      const anyEnabled = id3v1.fields.some((f) => categoryEnabled(f.category, options));
-      if (anyEnabled) {
-        audioEnd = buffer.byteLength - id3v1.trimBytes;
-        fieldsRemoved.push(...id3v1.fields);
-      }
-    }
-
-    // Slice out the audio data. If neither tag was found, this is a no-op
-    // (audioStart=0, audioEnd=byteLength) and the file copies through.
-    const cleanedBlob =
-      audioStart === 0 && audioEnd === buffer.byteLength
-        ? new Blob([buffer], { type: file.type })
-        : new Blob([buffer.slice(audioStart, audioEnd)], { type: file.type });
-
-    const report: MetadataReport = {
-      fileName: file.name,
-      fileType: "mp3",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept: fieldsFound.filter((f) => !fieldsRemoved.includes(f)),
-      processedAt: new Date(),
-    };
-
-    return {
-      originalFile: file,
-      cleanedBlob,
-      report,
-    };
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error processing MP3";
-    return {
-      originalFile: file,
-      cleanedBlob: new Blob(),
-      report: {
-        fileName: file.name,
-        fileType: "mp3",
-        fileSize: file.size,
-        cleanedFileSize: 0,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-      error: `MP3 processing failed: ${message}`,
-    };
   }
+
+  // Tail: ID3v1 tag, also whole.
+  const id3v1 = parseId3v1(view);
+  let audioEnd = bytes.length;
+  if (id3v1) {
+    fieldsFound.push(...id3v1.fields);
+    if (blockGoes(id3v1.fields, options)) {
+      audioEnd = bytes.length - id3v1.trimBytes;
+      fieldsRemoved.push(...id3v1.fields);
+    }
+  }
+
+  return { cleaned: bytes.subarray(audioStart, audioEnd), fieldsFound, fieldsRemoved };
 }
