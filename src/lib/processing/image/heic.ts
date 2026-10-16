@@ -1,11 +1,10 @@
 import piexif from "piexifjs";
 import type {
   StripOptions,
-  ProcessingResult,
   MetadataField,
   MetadataCategory,
-  MetadataReport,
 } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { catalogExifFields } from "./exif-catalog";
 import { describeC2pa } from "../c2pa-manifest";
 import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
@@ -51,174 +50,120 @@ interface HeifItem {
 const ASCII = new TextDecoder("ascii");
 const UTF8 = new TextDecoder("utf-8");
 
-type HeifFormat = "heic" | "avif";
+/** HEIC and AVIF share everything but their image codec, which we never
+ *  touch, so they share one processor. */
+export const stripHeic = stripHeif;
+export const stripAvif = stripHeif;
 
-const MIME: Record<HeifFormat, string> = { heic: "image/heic", avif: "image/avif" };
-
-export function processHeic(file: File, options: StripOptions): Promise<ProcessingResult> {
-  return processHeif(file, options, "heic");
-}
-
-export function processAvif(file: File, options: StripOptions): Promise<ProcessingResult> {
-  return processHeif(file, options, "avif");
-}
-
-async function processHeif(
-  file: File,
-  options: StripOptions,
-  format: HeifFormat
-): Promise<ProcessingResult> {
-  const mime = MIME[format];
-  const original = new Uint8Array(await file.arrayBuffer());
-
-  const passthrough = (blob: Blob, found: MetadataField[] = [], removed: MetadataField[] = [], kept: MetadataField[] = []): ProcessingResult => ({
-    originalFile: file,
-    cleanedBlob: blob,
-    report: buildReport(file, format, blob.size, found, removed, kept),
-  });
+function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
+  const view = new DataView(original.buffer, original.byteOffset, original.byteLength);
 
   // Every HEIF image has a meta box with iinf and iloc; a file without them is
-  // damaged or not HEIF. These returns used to hand the file back with no
-  // error, so a truncated HEIC read as "no metadata found, already clean".
-  // Still untouched, but now reported as unreadable.
-  const unreadable = (): ProcessingResult => ({
-    ...passthrough(new Blob([original], { type: file.type || mime })),
-    error: "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.",
-  });
+  // damaged or not HEIF. These used to hand the file back with no error, so a
+  // truncated HEIC read as "no metadata found, already clean".
+  if (!isHeifFile(view)) throw new Unreadable();
+  const meta = findTopLevelBox(view, "meta");
+  if (!meta) throw new Unreadable();
+  const { childrenStart: metaChildren } = readFullBoxHeader(view, meta);
 
-  try {
-    const view = new DataView(original.buffer, original.byteOffset, original.byteLength);
+  const iinf = findBox(view, metaChildren, meta.end, "iinf");
+  const iloc = findBox(view, metaChildren, meta.end, "iloc");
+  const idat = findBox(view, metaChildren, meta.end, "idat");
+  if (!iinf || !iloc) throw new Unreadable();
 
-    if (!isHeifFile(view)) return unreadable();
+  const types = parseIinf(view, iinf); // id -> { type, contentType }
+  const locations = parseIloc(view, iloc, idat); // id -> extents[]
 
-    const meta = findTopLevelBox(view, "meta");
-    if (!meta) return unreadable();
-    const { childrenStart: metaChildren } = readFullBoxHeader(view, meta);
-
-    const iinf = findBox(view, metaChildren, meta.end, "iinf");
-    const iloc = findBox(view, metaChildren, meta.end, "iloc");
-    const idat = findBox(view, metaChildren, meta.end, "idat");
-    if (!iinf || !iloc) return unreadable();
-
-    const types = parseIinf(view, iinf); // id -> { type, contentType }
-    const locations = parseIloc(view, iloc, idat); // id -> extents[]
-
-    const items: HeifItem[] = [];
-    for (const [id, info] of types) {
-      const extents = locations.get(id);
-      if (!extents || !extents.length) continue;
-      items.push({ id, type: info.type, contentType: info.contentType, extents });
-    }
-
-    const exifItems = items.filter((it) => it.type === "Exif");
-    const xmpItems = items.filter(
-      (it) => it.type === "mime" && /rdf\+xml/i.test(it.contentType ?? "")
-    );
-    // C2PA content credentials live in a top-level `uuid` box (the ISOBMFF
-    // binding), not a `meta` item, so scan the box tree for it separately.
-    const c2paBoxes = findC2paBoxes(view);
-
-    if (exifItems.length === 0 && xmpItems.length === 0 && c2paBoxes.length === 0) {
-      // Nothing to strip.
-      return passthrough(new Blob([original], { type: file.type || mime }));
-    }
-
-    // ── Catalogue found fields ──────────────────────────────────
-    const fieldsFound: MetadataField[] = [];
-    const exifCatalogs = exifItems.map((it) => {
-      const data = readExtents(original, it.extents);
-      const tiff = extractTiff(data);
-      const fields = tiff ? catalogHeicExif(tiff) : [];
-      fieldsFound.push(...fields);
-      return { item: it, tiff, fields };
-    });
-    const xmpCatalogs = xmpItems.map((it) => {
-      const text = UTF8.decode(readExtents(original, it.extents));
-      const fields = catalogXmp(text);
-      fieldsFound.push(...fields);
-      return { item: it, fields };
-    });
-    // The manifest follows the box's 16-byte UUID (then version, purpose and
-    // an offset, which describeC2pa skips by finding the JUMBF itself).
-    const c2paFields: MetadataField[] = c2paBoxes.flatMap((box) =>
-      describeC2pa(original.subarray(box.contentStart + 16, box.end), box.end - box.contentStart)
-    );
-    fieldsFound.push(...c2paFields);
-
-    // ── Decide what to strip ────────────────────────────────────
-    const enabled = new Set(
-      (Object.entries(options) as [MetadataCategory, boolean][])
-        .filter(([, on]) => on)
-        .map(([cat]) => cat)
-    );
-    const allCats = Object.keys(options) as MetadataCategory[];
-    const strippingAll = allCats.every((c) => enabled.has(c));
-
-    const cleaned = original.slice(); // copy to mutate
-    const fieldsRemoved: MetadataField[] = [];
-    const fieldsKept: MetadataField[] = [];
-
-    // EXIF items
-    for (const { item, tiff, fields } of exifCatalogs) {
-      const removeThese = fields.filter((f) => enabled.has(f.category));
-      const keepThese = fields.filter((f) => !enabled.has(f.category));
-      if (strippingAll || keepThese.length === 0 || !tiff || item.extents.length !== 1) {
-        // Full strip: zero the whole item payload. (Also the multi-extent /
-        // unparseable fallback — errs toward removing more.)
-        for (const ext of item.extents) zeroBytes(cleaned, ext.offset, ext.length);
-        fieldsRemoved.push(...fields);
-      } else {
-        // Selective: rebuild the TIFF with the enabled categories removed,
-        // write it back into the (single) extent, zero-pad the remainder.
-        rebuildExifInPlace(cleaned, item.extents[0], tiff, enabled);
-        fieldsRemoved.push(...removeThese);
-        fieldsKept.push(...keepThese);
-      }
-    }
-
-    // XMP items — drop the whole block when any of its categories is stripped.
-    for (const { item, fields } of xmpCatalogs) {
-      const anyStripped = fields.some((f) => enabled.has(f.category));
-      if (strippingAll || anyStripped || fields.length === 0) {
-        for (const ext of item.extents) zeroBytes(cleaned, ext.offset, ext.length);
-        fieldsRemoved.push(...fields);
-      } else {
-        fieldsKept.push(...fields);
-      }
-    }
-
-    // C2PA uuid box(es): neutralize in place when the AI / content-credential
-    // category is stripped. Renaming to a `free` box and zeroing the payload
-    // keeps the file the same size, so the absolute iloc offsets stay valid.
-    if (strippingAll || enabled.has("ai")) {
-      for (let i = 0; i < c2paBoxes.length; i++) {
-        stripC2paBox(cleaned, c2paBoxes[i]);
-        fieldsRemoved.push(c2paFields[i]);
-      }
-    } else {
-      fieldsKept.push(...c2paFields);
-    }
-
-    const blob = new Blob([cleaned], { type: mime });
-    return {
-      originalFile: file,
-      cleanedBlob: blob,
-      report: buildReport(file, format, blob.size, fieldsFound, fieldsRemoved, fieldsKept),
-    };
-  } catch (err) {
-    // Any parse failure: never corrupt the user's file, return it as-is. But
-    // say so. With no error set, an empty report read as "no metadata found",
-    // and the untouched file went into the download as cleaned_<name>: the
-    // failure the coordinator's crash guard exists to prevent, caught here
-    // first and so never seen by it.
-    return {
-      originalFile: file,
-      cleanedBlob: new Blob([original], { type: file.type || mime }),
-      report: buildReport(file, format, original.byteLength, [], [], []),
-      error: "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.",
-      crashed: err instanceof Error ? err.name : "unknown",
-    };
+  const items: HeifItem[] = [];
+  for (const [id, info] of types) {
+    const extents = locations.get(id);
+    if (!extents || !extents.length) continue;
+    items.push({ id, type: info.type, contentType: info.contentType, extents });
   }
+
+  const exifItems = items.filter((it) => it.type === "Exif");
+  const xmpItems = items.filter(
+    (it) => it.type === "mime" && /rdf\+xml/i.test(it.contentType ?? "")
+  );
+  // A metadata item whose bytes run past the end of the file was cut short:
+  // unreadable, rather than passing it through unread and unremoved.
+  for (const it of [...exifItems, ...xmpItems]) {
+    if (it.extents.some((e) => e.offset + e.length > original.length)) throw new Unreadable();
+  }
+  // C2PA content credentials live in a top-level `uuid` box (the ISOBMFF
+  // binding), not a `meta` item, so scan the box tree for it separately.
+  const c2paBoxes = findC2paBoxes(view);
+
+  // ── Catalogue found fields ──────────────────────────────────
+  const fieldsFound: MetadataField[] = [];
+  const exifCatalogs = exifItems.map((it) => {
+    const data = readExtents(original, it.extents);
+    const tiff = extractTiff(data);
+    const fields = tiff ? catalogHeicExif(tiff) : [];
+    fieldsFound.push(...fields);
+    return { item: it, tiff, fields };
+  });
+  const xmpCatalogs = xmpItems.map((it) => {
+    const text = UTF8.decode(readExtents(original, it.extents));
+    const fields = catalogXmp(text);
+    fieldsFound.push(...fields);
+    return { item: it, fields };
+  });
+  // The manifest follows the box's 16-byte UUID (then version, purpose and
+  // an offset, which describeC2pa skips by finding the JUMBF itself).
+  const c2paFields: MetadataField[] = c2paBoxes.flatMap((box) =>
+    describeC2pa(original.subarray(box.contentStart + 16, box.end), box.end - box.contentStart)
+  );
+  fieldsFound.push(...c2paFields);
+
+  // ── Decide what to strip ────────────────────────────────────
+  const enabled = new Set(
+    (Object.entries(options) as [MetadataCategory, boolean][])
+      .filter(([, on]) => on)
+      .map(([cat]) => cat)
+  );
+  const allCats = Object.keys(options) as MetadataCategory[];
+  const strippingAll = allCats.every((c) => enabled.has(c));
+
+  const cleaned = original.slice(); // copy to mutate
+  const fieldsRemoved: MetadataField[] = [];
+
+  // EXIF items
+  for (const { item, tiff, fields } of exifCatalogs) {
+    const removeThese = fields.filter((f) => enabled.has(f.category));
+    const keepThese = fields.filter((f) => !enabled.has(f.category));
+    if (strippingAll || keepThese.length === 0 || !tiff || item.extents.length !== 1) {
+      // Full strip: zero the whole item payload. (Also the multi-extent /
+      // unparseable fallback, which errs toward removing more.)
+      for (const ext of item.extents) zeroBytes(cleaned, ext.offset, ext.length);
+      fieldsRemoved.push(...fields);
+    } else {
+      // Selective: rebuild the TIFF with the enabled categories removed,
+      // write it back into the (single) extent, zero-pad the remainder.
+      rebuildExifInPlace(cleaned, item.extents[0], tiff, enabled);
+      fieldsRemoved.push(...removeThese);
+    }
+  }
+
+  // XMP items go whole.
+  for (const { item, fields } of xmpCatalogs) {
+    if (blockGoes(fields, options)) {
+      for (const ext of item.extents) zeroBytes(cleaned, ext.offset, ext.length);
+      fieldsRemoved.push(...fields);
+    }
+  }
+
+  // C2PA uuid box(es): neutralize in place when the AI / content-credential
+  // category is stripped. Renaming to a `free` box and zeroing the payload
+  // keeps the file the same size, so the absolute iloc offsets stay valid.
+  // Every field read from a box goes with it; reporting one per box left the
+  // rest neither removed nor kept.
+  if (enabled.has("ai")) {
+    for (const box of c2paBoxes) stripC2paBox(cleaned, box);
+    fieldsRemoved.push(...c2paFields);
+  }
+
+  return { cleaned, fieldsFound, fieldsRemoved };
 }
 
 /* ──────────────────────────────────────────────────────────────────
@@ -587,24 +532,4 @@ function binaryStringToBytes(s: string): Uint8Array {
   const out = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i) & 0xff;
   return out;
-}
-
-function buildReport(
-  file: File,
-  fileType: HeifFormat,
-  cleanedSize: number,
-  fieldsFound: MetadataField[],
-  fieldsRemoved: MetadataField[],
-  fieldsKept: MetadataField[]
-): MetadataReport {
-  return {
-    fileName: file.name,
-    fileType,
-    fileSize: file.size,
-    cleanedFileSize: cleanedSize,
-    fieldsFound,
-    fieldsRemoved,
-    fieldsKept,
-    processedAt: new Date(),
-  };
 }

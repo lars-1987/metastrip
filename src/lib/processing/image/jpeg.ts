@@ -1,10 +1,10 @@
 import piexif from "piexifjs";
 import type {
   StripOptions,
-  ProcessingResult,
   MetadataField,
   MetadataCategory,
 } from "../types";
+import { Unreadable, type Stripped } from "../contract";
 import { IFD_MAP, catalogExifFields, exifCategory, formatExifValue } from "./exif-catalog";
 import { describeC2pa, jumbfFromApp11 } from "../c2pa-manifest";
 import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
@@ -69,7 +69,9 @@ function parseMetadataSegments(b: Uint8Array): Segment[] {
     }
     const len = (b[off + 2] << 8) | b[off + 3];
     const end = off + 2 + len;
-    if (end > b.length) break; // truncated
+    // Cut short inside the metadata: unreadable, rather than passing the file
+    // through as clean with whatever the cut segment held.
+    if (end > b.length) throw new Unreadable();
     const payloadStart = off + 4;
 
     let kind: SegKind | null = null;
@@ -172,23 +174,18 @@ function removeSegments(b: Uint8Array<ArrayBuffer>, kinds: Set<SegKind>): Uint8A
 
 const ALL_METADATA_KINDS: Set<SegKind> = new Set(["exif", "xmp", "jumbf", "iptc", "com"]);
 
-export async function processJpeg(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  const arrayBuffer = await file.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
+export function stripJpeg(bytes: Uint8Array<ArrayBuffer>, options: StripOptions): Stripped {
   const dataUrl = bytesToDataUrl(bytes);
   const fieldsFound: MetadataField[] = [];
-  const fieldsRemoved: MetadataField[] = [];
-  const fieldsKept: MetadataField[] = [];
 
-  // EXIF cataloging via piexif (best-effort — absence is fine, e.g. a C2PA-only
-  // AI export). No longer an early return: other metadata may still be present.
+  // EXIF cataloging via piexif (best-effort: absence is fine, e.g. a C2PA-only
+  // AI export). Other metadata may still be present.
   let exifObj: Record<string, Record<string, unknown>> | null = null;
+  let exifFields: MetadataField[] = [];
   try {
     exifObj = piexif.load(dataUrl);
-    fieldsFound.push(...catalogExifFields(exifObj));
+    exifFields = catalogExifFields(exifObj);
+    fieldsFound.push(...exifFields);
   } catch {
     exifObj = null;
   }
@@ -197,51 +194,26 @@ export async function processJpeg(
   const segs = parseMetadataSegments(bytes);
   fieldsFound.push(...catalogSegmentFields(bytes, segs));
 
-  // Determine which categories to strip
-  const categoriesToStrip = (
-    Object.entries(options) as [MetadataCategory, boolean][]
-  )
+  const categoriesToStrip = (Object.entries(options) as [MetadataCategory, boolean][])
     .filter(([, enabled]) => enabled)
     .map(([cat]) => cat);
-
-  const allCategories = Object.keys(options) as MetadataCategory[];
-  const strippingAll = allCategories.every((cat) =>
-    categoriesToStrip.includes(cat)
-  );
+  const strippingAll = (Object.keys(options) as MetadataCategory[]).every((cat) => categoriesToStrip.includes(cat));
 
   // ── Fast path: remove everything ─────────────────────────────────────────
   // Strip every metadata segment by byte range. Covers EXIF, XMP, C2PA, IPTC
   // and comments, and correctly handles files with no EXIF at all.
-  if (strippingAll || fieldsFound.length === 0) {
-    const outBytes = removeSegments(bytes, ALL_METADATA_KINDS);
-    const cleanedBlob = new Blob([outBytes], { type: "image/jpeg" });
-    return {
-      originalFile: file,
-      cleanedBlob,
-      report: {
-        fileName: file.name,
-        fileType: "jpeg",
-        fileSize: file.size,
-        cleanedFileSize: cleanedBlob.size,
-        fieldsFound,
-        fieldsRemoved: [...fieldsFound],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-    };
+  if (strippingAll) {
+    return { cleaned: removeSegments(bytes, ALL_METADATA_KINDS), fieldsFound, fieldsRemoved: [...fieldsFound] };
   }
 
   // ── Selective removal ────────────────────────────────────────────────────
-  for (const field of fieldsFound) {
-    if (categoriesToStrip.includes(field.category)) {
-      fieldsRemoved.push(field);
-    } else {
-      fieldsKept.push(field);
-    }
-  }
+  // Every non-EXIF segment is a single field whose category decides it, so
+  // those are removed exactly when their category is. EXIF is per tag, unless
+  // piexif can't rewrite it, below.
+  let fieldsRemoved = fieldsFound.filter((f) => categoriesToStrip.includes(f.category));
 
   // EXIF: fine-grained per-tag removal with piexif (only if EXIF is present).
-  let outBytes = bytes;
+  let outBytes: Uint8Array<ArrayBuffer> = bytes;
   if (exifObj) {
     if (options.gps) exifObj["GPS"] = {};
     for (const ifd of ["0th", "Exif", "1st"]) {
@@ -272,11 +244,11 @@ export async function processJpeg(
       const newExifBytes = piexif.dump(exifObj);
       outBytes = dataUrlToUint8(piexif.insert(newExifBytes, dataUrl));
     } catch {
-      try {
-        outBytes = dataUrlToUint8(piexif.remove(dataUrl));
-      } catch {
-        outBytes = bytes;
-      }
+      // piexif couldn't write the edited EXIF back, so all of it goes, and the
+      // report says so rather than claiming the per-tag split. If even that
+      // fails, the throw makes this file a failure rather than a false report.
+      outBytes = dataUrlToUint8(piexif.remove(dataUrl));
+      fieldsRemoved = [...new Set([...fieldsRemoved, ...exifFields])];
     }
   }
 
@@ -290,22 +262,7 @@ export async function processJpeg(
   if (categoriesToStrip.includes("comments")) kinds.add("com");
   if (kinds.size > 0) outBytes = removeSegments(outBytes, kinds);
 
-  const cleanedBlob = new Blob([outBytes], { type: "image/jpeg" });
-
-  return {
-    originalFile: file,
-    cleanedBlob,
-    report: {
-      fileName: file.name,
-      fileType: "jpeg",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept,
-      processedAt: new Date(),
-    },
-  };
+  return { cleaned: outBytes, fieldsFound, fieldsRemoved };
 }
 
 /** Build a base64 JPEG data URL from raw bytes — what piexif expects. Reads

@@ -59,10 +59,13 @@ export interface ProcessingResult {
   originalFile: File;
   cleanedBlob: Blob;
   report: MetadataReport;
+  /** What to tell the person, when the file could not be cleaned. */
   error?: string;
-  /** Set when a parser threw instead of returning an error. Holds the error's
-   *  class name only (e.g. "RangeError"), never its message, so telemetry can
-   *  tell crashes apart without carrying anything read from the file. */
+  /** Why it failed, as a short stable code for telemetry ("unreadable: png",
+   *  "too_large", "crash: RangeError"). Never carries text read from the file. */
+  reason?: string;
+  /** Set by processors not yet on the contract when a parser threw. Holds the
+   *  error's class name only. Goes when the last of them moves over. */
   crashed?: string;
 }
 

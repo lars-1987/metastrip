@@ -1,9 +1,9 @@
 import type {
   StripOptions,
-  ProcessingResult,
   MetadataField,
   MetadataCategory,
 } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { aiCategoryFor, aiTextLabel, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 import { describeC2pa } from "../c2pa-manifest";
 
@@ -93,27 +93,32 @@ function computeChunkCRC(type: string, data: Uint8Array): number {
   return crc32(combined);
 }
 
-function parseChunks(buffer: Uint8Array): PngChunk[] {
+/** The chunks up to and including IEND, and where IEND ends. A chunk that
+ *  runs past the end of the file before IEND means it was cut short:
+ *  unreadable, rather than quietly dropping the rest, which used to lose the
+ *  image data and any metadata after it. */
+function parseChunks(buffer: Uint8Array): { chunks: PngChunk[]; end: number } {
   const chunks: PngChunk[] = [];
   let offset = 8; // Skip PNG signature
 
   while (offset < buffer.length) {
-    if (offset + 8 > buffer.length) break;
+    if (offset + 12 > buffer.length) throw new Unreadable();
 
     const length = readUint32BE(buffer, offset);
     const typeBytes = buffer.slice(offset + 4, offset + 8);
     const type = new TextDecoder().decode(typeBytes);
 
-    if (offset + 12 + length > buffer.length) break;
+    if (offset + 12 + length > buffer.length) throw new Unreadable();
 
     const data = buffer.slice(offset + 8, offset + 8 + length);
     const storedCrc = readUint32BE(buffer, offset + 8 + length);
 
     chunks.push({ type, data, crc: storedCrc });
     offset += 12 + length;
+    if (type === "IEND") break;
   }
 
-  return chunks;
+  return { chunks, end: offset };
 }
 
 function parseTextChunk(data: Uint8Array): { keyword: string; value: string } | null {
@@ -257,90 +262,46 @@ function rebuildPng(chunks: PngChunk[]): Uint8Array {
   return result;
 }
 
-export async function processPng(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = new Uint8Array(arrayBuffer);
-
-  // Verify PNG signature
+export function stripPng(buffer: Uint8Array, options: StripOptions): Stripped {
   for (let i = 0; i < 8; i++) {
-    if (buffer[i] !== PNG_SIGNATURE[i]) {
-      const blob = new Blob([arrayBuffer], { type: file.type });
-      return {
-        originalFile: file,
-        cleanedBlob: blob,
-        report: {
-          fileName: file.name,
-          fileType: "png",
-          fileSize: file.size,
-          cleanedFileSize: blob.size,
-          fieldsFound: [],
-          fieldsRemoved: [],
-          fieldsKept: [],
-          processedAt: new Date(),
-        },
-        error: "Invalid PNG file",
-      };
-    }
+    if (buffer[i] !== PNG_SIGNATURE[i]) throw new Unreadable();
   }
 
-  const chunks = parseChunks(buffer);
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
-  const fieldsKept: MetadataField[] = [];
-
-  // Determine categories to strip
-  const categoriesToStrip = (
-    Object.entries(options) as [MetadataCategory, boolean][]
-  )
-    .filter(([, enabled]) => enabled)
-    .map(([cat]) => cat);
-
-  // Catalogue metadata from metadata chunks
-  for (const chunk of chunks) {
-    if (METADATA_CHUNKS.has(chunk.type)) {
-      const fields = catalogueChunkFields(chunk);
-      fieldsFound.push(...fields);
-    }
-  }
-
-  // Classify fields as removed or kept
-  for (const field of fieldsFound) {
-    if (categoriesToStrip.includes(field.category)) {
-      fieldsRemoved.push(field);
-    } else {
-      fieldsKept.push(field);
-    }
-  }
-
-  // Filter out metadata chunks whose fields are all being removed
+  const { chunks, end } = parseChunks(buffer);
+  // Each metadata chunk goes whole or stays whole.
   const keptChunks = chunks.filter((chunk) => {
     if (!METADATA_CHUNKS.has(chunk.type)) return true;
-
-    // Check if any fields from this chunk type are being kept
-    const chunkFields = catalogueChunkFields(chunk);
-    return chunkFields.some(
-      (f) => !categoriesToStrip.includes(f.category)
-    );
+    const fields = catalogueChunkFields(chunk);
+    fieldsFound.push(...fields);
+    if (!blockGoes(fields, options)) return true;
+    fieldsRemoved.push(...fields);
+    return false;
   });
 
-  const cleanedBuffer = rebuildPng(keptChunks);
-  const cleanedBlob = new Blob([cleanedBuffer.buffer as ArrayBuffer], { type: "image/png" });
+  // Bytes after IEND aren't part of the image, and can be the uncropped
+  // original of a screenshot (aCropalypse, 2023), so they're reported and
+  // removed with Custom like any other field.
+  let trailer = buffer.subarray(end);
+  if (trailer.length > 0) {
+    const field: MetadataField = {
+      category: "custom",
+      key: "PNG:trailing-data",
+      label: "Data after the end of the image",
+      value: `(${trailer.length} bytes)`,
+      removable: true,
+    };
+    fieldsFound.push(field);
+    if (blockGoes([field], options)) {
+      fieldsRemoved.push(field);
+      trailer = trailer.subarray(trailer.length);
+    }
+  }
 
-  return {
-    originalFile: file,
-    cleanedBlob,
-    report: {
-      fileName: file.name,
-      fileType: "png",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept,
-      processedAt: new Date(),
-    },
-  };
+  const rebuilt = rebuildPng(keptChunks);
+  const cleaned = new Uint8Array(rebuilt.length + trailer.length);
+  cleaned.set(rebuilt);
+  cleaned.set(trailer, rebuilt.length);
+  return { cleaned, fieldsFound, fieldsRemoved };
 }

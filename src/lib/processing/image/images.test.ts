@@ -19,8 +19,10 @@ import {
   pngWithMetadata,
   webpWithBadChunkSize,
   webpWithMetadata,
+  concat,
   type Bytes,
 } from "./image-files.fixture";
+import { expectFoundIgnoresOptions } from "../contract-checks.fixture";
 
 const ALL_ON: StripOptions = {
   gps: true,
@@ -55,6 +57,16 @@ const bytesOf = async (blob: Blob) => new Uint8Array(await blob.arrayBuffer());
 const containsAscii = (b: Uint8Array, text: string) => new TextDecoder("latin1").decode(b).includes(text);
 
 const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
+
+/** The contract's one failure shape: the original file handed back untouched,
+ *  a plain message for the person, and a stable reason for telemetry. */
+function expectFailed(file: File, result: ProcessingResult, reason: string) {
+  expect(result.error).toBe(DAMAGED);
+  expect(result.reason).toBe(reason);
+  expect(result.cleanedBlob).toBe(file);
+  expect(result.report.cleanedFileSize).toBe(file.size);
+  expect(result.report.fieldsFound).toEqual([]);
+}
 
 describe("JPEG", () => {
   const name = "photo.jpg";
@@ -122,20 +134,14 @@ describe("JPEG", () => {
     expect(await reread(result, name, type)).toEqual(["author:Artist"]);
   });
 
-  it("passes a file truncated inside its EXIF segment through as clean", async () => {
+  it("refuses a file truncated inside its EXIF segment", async () => {
     // Cut just after the camera model, so the EXIF segment's declared length
-    // runs past the end of the file.
+    // runs past the end of the file. This used to pass as clean, with the
+    // camera model still in the "cleaned" file.
     const full = jpegWithMetadata();
     const cut = new TextDecoder("latin1").decode(full).indexOf("Canon EOS R5") + "Canon EOS R5".length;
     const { file, result } = await strip(full.slice(0, cut), name, type);
-    // Quirk the contract should change: no error, nothing found, and the
-    // "cleaned" output is the same bytes with the camera model still in them.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(result.report.fieldsFound).toEqual([]);
-    expect(result.cleanedBlob.size).toBe(cut);
-    expect(result.cleanedBlob === file).toBe(false);
-    expect(containsAscii(await bytesOf(result.cleanedBlob), "Canon EOS R5")).toBe(true);
+    expectFailed(file, result, "unreadable: jpeg");
   });
 });
 
@@ -189,16 +195,11 @@ describe("PNG", () => {
     expect(await reread(result, name, type)).toEqual(["author:Author"]);
   });
 
-  it("drops everything after a chunk whose length runs past the end", async () => {
+  it("refuses a file with a chunk whose length runs past the end", async () => {
+    // This used to drop everything after the bad chunk without a word, image
+    // data included, so the "cleaned" PNG had no picture.
     const { file, result } = await strip(pngWithBadChunkLength(), name, type);
-    // Quirk the contract should change: no error, and the output is only the
-    // signature and IHDR (8 + 25 bytes). The image data (IDAT) and IEND after
-    // the bad chunk are silently gone, so the "cleaned" PNG has no picture.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(result.report.fieldsFound).toEqual([]);
-    expect(result.cleanedBlob.size).toBe(33);
-    expect(result.cleanedBlob === file).toBe(false);
+    expectFailed(file, result, "unreadable: png");
   });
 });
 
@@ -232,48 +233,22 @@ describe("WebP", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("keeps software when that toggle is off", async () => {
+  it("removes a chunk whole when software is off but its other fields go", async () => {
     const { result } = await strip(webpWithMetadata(), name, type, { ...ALL_ON, software: false });
     expect(result.error).toBeUndefined();
-    // Bug the contract should fix: a chunk stays whole when any one of its
-    // fields is kept. Software is in both the EXIF and the XMP chunk, so both
-    // survive, yet their device, dates and custom fields are reported removed.
-    // The re-read below finds every one of them still in the file.
-    expect(summary(result.report.fieldsRemoved)).toEqual([
-      "ai:C2PA",
-      "ai:C2PA:actions",
-      "ai:C2PA:generator",
-      "ai:C2PA:model",
-      "ai:C2PA:source",
-      "custom:XMP",
-      "dates:xmp-xmp:CreateDate",
-      "device:EXIF",
-      "device:exif-make",
-    ]);
-    expect(summary(result.report.fieldsKept)).toEqual([
-      "software:exif-software",
-      "software:xmp-xmp:CreatorTool",
-    ]);
-    expect(await reread(result, name, type)).toEqual([
-      "custom:XMP",
-      "dates:xmp-xmp:CreateDate",
-      "device:EXIF",
-      "device:exif-make",
-      "software:exif-software",
-      "software:xmp-xmp:CreatorTool",
-    ]);
+    // Software shares the EXIF and XMP chunks with fields being removed, so
+    // both chunks go and software is reported removed with them. This used to
+    // keep both chunks while reporting their other fields removed, and the
+    // re-read found every one of them still there.
+    expect(summary(result.report.fieldsRemoved)).toEqual(summary(result.report.fieldsFound));
+    expect(result.report.fieldsKept).toEqual([]);
+    expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("drops everything after a chunk whose size runs past the end", async () => {
+  it("refuses a file with a chunk whose size runs past the end", async () => {
+    // This used to drop the image chunk and everything after it without a word.
     const { file, result } = await strip(webpWithBadChunkSize(), name, type);
-    // Quirk the contract should change: no error, and the output is only the
-    // RIFF header and VP8X (12 + 18 bytes). The image chunk and everything
-    // after it are silently gone.
-    expect(result.error).toBeUndefined();
-    expect(result.crashed).toBeUndefined();
-    expect(result.report.fieldsFound).toEqual([]);
-    expect(result.cleanedBlob.size).toBe(30);
-    expect(result.cleanedBlob === file).toBe(false);
+    expectFailed(file, result, "unreadable: webp");
   });
 });
 
@@ -319,12 +294,9 @@ describe("GIF", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("returns the original file with an error when a block is unrecognisable", async () => {
+  it("refuses a file with a block it can't recognise", async () => {
     const { file, result } = await strip(gifWithUnknownBlock(), name, type);
-    expect(result.error).toBe("Could not read this GIF's block structure");
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob.size).toBe(file.size);
-    expect(result.cleanedBlob === file).toBe(true);
+    expectFailed(file, result, "unreadable: gif");
   });
 
   it("strips a file truncated inside its image data without complaint", async () => {
@@ -373,31 +345,9 @@ describe("HEIC", () => {
       "gps:GPSVersionID",
       "software:Software",
     ]);
-    // Bug the contract should fix: only the first field of each C2PA box is
-    // reported removed (fieldsRemoved.push(c2paFields[i]) indexes by box, not
-    // by field). Its generator, model, source and actions fields are found but
-    // end up neither removed nor kept, although the whole box is wiped.
-    expect(summary(result.report.fieldsRemoved)).toEqual([
-      "ai:C2PA",
-      "author:Artist",
-      "author:xmp:creator",
-      "copyright:Copyright",
-      "copyright:xmp:rights",
-      "custom:ImageDescription",
-      "dates:DateTime",
-      "dates:DateTimeOriginal",
-      "dates:xmp:dates",
-      "device:LensModel",
-      "device:Make",
-      "device:Model",
-      "device:xmp:device",
-      "gps:GPSLatitude",
-      "gps:GPSLatitudeRef",
-      "gps:GPSLongitude",
-      "gps:GPSLongitudeRef",
-      "gps:GPSVersionID",
-      "software:Software",
-    ]);
+    // Every field goes, the C2PA box's included. Only its first field used to
+    // be reported removed, leaving the rest neither removed nor kept.
+    expect(summary(result.report.fieldsRemoved)).toEqual(summary(result.report.fieldsFound));
     expect(summary(result.report.fieldsKept)).toEqual([]);
     // Items are zeroed in place so the iloc offsets stay valid: same size.
     expect(result.cleanedBlob.size).toBe(input.length);
@@ -407,11 +357,15 @@ describe("HEIC", () => {
   it("keeps the EXIF author when that toggle is off, but not the XMP one", async () => {
     const { result } = await strip(heicWithMetadata(), name, type, { ...ALL_ON, author: false });
     expect(result.error).toBeUndefined();
-    // Quirk the contract should change: the XMP item is zeroed whole when any
-    // of its categories is stripped, so its creator goes too, and is reported
-    // removed. The C2PA box shows the same first-field-only reporting as above.
+    // The XMP item can only go whole, and its other categories are being
+    // removed, so its creator goes too and is reported removed. EXIF is
+    // rewritten per tag, so its Artist stays.
     expect(summary(result.report.fieldsRemoved)).toEqual([
       "ai:C2PA",
+      "ai:C2PA:actions",
+      "ai:C2PA:generator",
+      "ai:C2PA:model",
+      "ai:C2PA:source",
       "author:xmp:creator",
       "copyright:Copyright",
       "copyright:xmp:rights",
@@ -434,30 +388,22 @@ describe("HEIC", () => {
     expect(await reread(result, name, type)).toEqual(["author:Artist"]);
   });
 
-  it("returns a copy of the file with an error when the meta box is cut off", async () => {
+  it("refuses a file whose meta box is cut off", async () => {
     // 100 bytes ends inside the meta box, so its declared size runs past EOF.
     const { file, result } = await strip(heicWithMetadata().slice(0, 100), name, type);
-    expect(result.error).toBe(DAMAGED);
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob.size).toBe(100);
-    // A new Blob of the same bytes, where GIF and the coordinator hand back
-    // the File itself.
-    expect(result.cleanedBlob === file).toBe(false);
+    expectFailed(file, result, "unreadable: heic");
   });
 
-  it("reports a crash of its own when iloc claims more items than it holds", async () => {
+  it("reports a crash when iloc claims more items than it holds", async () => {
     // item_count sits after the iloc header (8), version and flags (4) and the
     // two size bytes; 0xFFFF sends the reader past the end of the file.
     const input = heicWithMetadata();
     const iloc = new TextDecoder("latin1").decode(input).indexOf("iloc");
     input.set([0xff, 0xff], iloc + 4 + 4 + 2);
     const { file, result } = await strip(input, name, type);
-    // The processor catches its own RangeError and sets `crashed`, which the
-    // coordinator's guard otherwise does for parsers that throw.
-    expect(result.error).toBe(DAMAGED);
-    expect(result.crashed).toBe("RangeError");
-    expect(result.cleanedBlob.size).toBe(input.length);
-    expect(result.cleanedBlob === file).toBe(false);
+    // A parser bug rather than a check: the coordinator's guard catches the
+    // RangeError, where the processor used to catch its own.
+    expectFailed(file, result, "crash: RangeError");
   });
 });
 
@@ -519,11 +465,43 @@ describe("AVIF", () => {
     expect(await reread(result, name, type)).toEqual(["author:Artist"]);
   });
 
-  it("returns a copy of the file with an error when the meta box is cut off", async () => {
+  it("refuses a file whose meta box is cut off", async () => {
     const { file, result } = await strip(avifWithMetadata().slice(0, 100), name, type);
-    expect(result.error).toBe(DAMAGED);
-    expect(result.crashed).toBeUndefined();
-    expect(result.cleanedBlob.size).toBe(100);
-    expect(result.cleanedBlob === file).toBe(false);
+    expectFailed(file, result, "unreadable: avif");
+  });
+});
+
+describe("PNG data after the end of the image", () => {
+  const name = "shot.png";
+  const type = "image/png";
+  // Stands in for the uncropped original a buggy screenshot tool left after
+  // IEND (aCropalypse, 2023).
+  const withTrailer = () => concat(pngWithMetadata(), [0xde, 0xad, 0xbe, 0xef, 0x00, 0x01]);
+
+  it("is reported and removed with Custom", async () => {
+    const { result } = await strip(withTrailer(), name, type);
+    expect(summary(result.report.fieldsRemoved)).toContain("custom:PNG:trailing-data");
+    expect(result.cleanedBlob.size).toBe((await strip(pngWithMetadata(), name, type)).result.cleanedBlob.size);
+  });
+
+  it("stays when Custom is kept", async () => {
+    const input = withTrailer();
+    const { result } = await strip(input, name, type, { ...ALL_ON, custom: false });
+    expect(summary(result.report.fieldsKept)).toContain("custom:PNG:trailing-data");
+    const out = await bytesOf(result.cleanedBlob);
+    expect([...out.subarray(out.length - 6)]).toEqual([0xde, 0xad, 0xbe, 0xef, 0x00, 0x01]);
+  });
+});
+
+describe("every image format", () => {
+  it.each([
+    ["JPEG", () => new File([jpegWithMetadata()], "photo.jpg", { type: "image/jpeg" })],
+    ["PNG", () => new File([pngWithMetadata()], "shot.png", { type: "image/png" })],
+    ["WebP", () => new File([webpWithMetadata()], "pic.webp", { type: "image/webp" })],
+    ["GIF", () => new File([gifWithMetadata()], "anim.gif", { type: "image/gif" })],
+    ["HEIC", () => new File([heicWithMetadata()], "IMG_0001.HEIC", { type: "image/heic" })],
+    ["AVIF", () => new File([avifWithMetadata()], "pic.avif", { type: "image/avif" })],
+  ])("%s finds the same fields whatever the options", async (_, make) => {
+    await expectFoundIgnoresOptions(make);
   });
 });

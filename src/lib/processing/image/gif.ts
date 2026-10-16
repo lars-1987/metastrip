@@ -1,4 +1,5 @@
-import type { StripOptions, ProcessingResult, MetadataField, MetadataCategory } from "../types";
+import type { StripOptions, MetadataField, MetadataCategory } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { parseXmp } from "../document/xmp";
 
 /**
@@ -71,31 +72,10 @@ interface Removable {
   start: number;
   end: number;
   fields: MetadataField[];
-  /** Categories this block carries; it goes if any of them is being stripped. */
-  categories: MetadataCategory[];
 }
 
-export async function processGif(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  const arrayBuffer = await file.arrayBuffer();
-  const b = new Uint8Array(arrayBuffer);
-
-  const emptyReport = (error: string): ProcessingResult => ({
-    originalFile: file,
-    cleanedBlob: file,
-    report: {
-      fileName: file.name, fileType: "gif", fileSize: file.size,
-      cleanedFileSize: file.size, fieldsFound: [], fieldsRemoved: [],
-      fieldsKept: [], processedAt: new Date(),
-    },
-    error,
-  });
-
-  if (b.length < 13 || !HEADERS.includes(ascii(b, 0, 6))) {
-    return emptyReport("Invalid GIF file");
-  }
+export function stripGif(b: Uint8Array, options: StripOptions): Stripped {
+  if (b.length < 13 || !HEADERS.includes(ascii(b, 0, 6))) throw new Unreadable();
 
   let p = 6;
   p += 7 + colourTableBytes(b[p + 4]); // logical screen descriptor + global colour table
@@ -136,7 +116,7 @@ export async function processGif(
       p = skipSubBlocks(b, p + 2);
       const text = new TextDecoder().decode(data).replace(/\s+/g, " ").trim();
       removable.push({
-        start, end: p, categories: ["comments"],
+        start, end: p,
         fields: [{
           category: "comments", key: "GIF:Comment", label: "GIF comment",
           value: text.length > 200 ? `${text.slice(0, 200)}…` : text || "(present)",
@@ -169,16 +149,13 @@ export async function processGif(
               label: prop.label, value: prop.value, removable: true,
             }))
           : [{ category: "custom" as MetadataCategory, key: "XMP", label: "XMP metadata packet", value: "(present)", removable: true }];
-        removable.push({
-          start, end: p, fields,
-          categories: [...new Set(fields.map((f) => f.category))],
-        });
+        removable.push({ start, end: p, fields });
         continue;
       }
 
       const label_ = appId.startsWith("ICCRGBG") ? "ICC colour profile" : `Application data: ${appId.trim()}`;
       removable.push({
-        start, end: p, categories: ["custom"],
+        start, end: p,
         fields: [{ category: "custom", key: `GIF:${appId.trim()}`, label: label_, value: "(present)", removable: true }],
       });
       continue;
@@ -188,20 +165,16 @@ export async function processGif(
     break;
   }
 
-  if (truncated) return emptyReport("Could not read this GIF's block structure");
+  if (truncated) throw new Unreadable();
 
-  const fieldsFound: MetadataField[] = [];
+  const fieldsFound = removable.flatMap((block) => block.fields);
   const fieldsRemoved: MetadataField[] = [];
-  const fieldsKept: MetadataField[] = [];
   const drop: Array<{ start: number; end: number }> = [];
 
   for (const block of removable) {
-    fieldsFound.push(...block.fields);
-    if (block.categories.some((c) => options[c])) {
+    if (blockGoes(block.fields, options)) {
       drop.push({ start: block.start, end: block.end });
       fieldsRemoved.push(...block.fields);
-    } else {
-      fieldsKept.push(...block.fields);
     }
   }
 
@@ -220,14 +193,5 @@ export async function processGif(
     cleaned.set(b.subarray(read), write);
   }
 
-  const cleanedBlob = new Blob([cleaned.buffer as ArrayBuffer], { type: "image/gif" });
-  return {
-    originalFile: file,
-    cleanedBlob,
-    report: {
-      fileName: file.name, fileType: "gif", fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size, fieldsFound, fieldsRemoved, fieldsKept,
-      processedAt: new Date(),
-    },
-  };
+  return { cleaned, fieldsFound, fieldsRemoved };
 }

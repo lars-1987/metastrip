@@ -1,9 +1,11 @@
-import { identify, notSupportedYet, type Format, type SupportedFormat } from "./formats";
-import { processJpeg } from "./image/jpeg";
-import { processPng } from "./image/png";
-import { processWebp } from "./image/webp";
-import { processGif } from "./image/gif";
-import { processHeic, processAvif } from "./image/heic";
+import { identify, mimeOf, notSupportedYet, type Format, type SupportedFormat } from "./formats";
+import { Unreadable, type Processor, type Stripped } from "./contract";
+import { formatBytes } from "../file-utils";
+import { stripJpeg } from "./image/jpeg";
+import { stripPng } from "./image/png";
+import { stripWebp } from "./image/webp";
+import { stripGif } from "./image/gif";
+import { stripHeic, stripAvif } from "./image/heic";
 import { processPdf } from "./document/pdf";
 import { processDocx } from "./document/docx";
 import { processXlsx } from "./document/xlsx";
@@ -15,51 +17,64 @@ import { processWav } from "./audio/wav";
 import type { StripOptions, ProcessingResult } from "./types";
 import { DEFAULT_STRIP_OPTIONS } from "./types";
 
-type Processor = (
-  file: File,
-  options: StripOptions
-) => Promise<ProcessingResult>;
+/* The contract module. processFile identifies the file, runs its format's
+   processor and builds the whole result, so the rules every format shares
+   live here once:
+
+   - A failure hands back the original file, never an empty one, with a plain
+     message for the person and a stable reason code for telemetry.
+   - If nothing was removed, the original bytes come back untouched.
+   - A non-empty file that comes out empty is a failure, whatever the
+     processor said.
+   - Kept fields are found minus removed; the cleaned file's type comes from
+     the format, which the bytes decided. */
+
+type Entry =
+  | { strip: Processor; maxBytes?: number }
+  /** Not yet on the contract: returns a whole ProcessingResult. Goes when the
+   *  documents, audio and video processors move over. */
+  | { legacy: (file: File, options: StripOptions) => Promise<ProcessingResult> };
 
 // Every supported format in the registry needs an entry here, or the build fails.
 const processors = {
-  jpeg: processJpeg,
-  png: processPng,
-  webp: processWebp,
-  gif: processGif,
-  heic: processHeic,
-  avif: processAvif,
-  pdf: processPdf,
-  docx: processDocx,
-  xlsx: processXlsx,
-  pptx: processPptx,
-  mp4: processMp4,
-  mov: processMov,
-  // M4A files are MP4 containers (audio-only) — same atom structure, same processor.
-  m4a: processMp4,
-  mp3: processMp3,
-  flac: processFlac,
-  wav: processWav,
-} satisfies Record<SupportedFormat, Processor>;
+  jpeg: { strip: stripJpeg },
+  png: { strip: stripPng },
+  webp: { strip: stripWebp },
+  gif: { strip: stripGif },
+  heic: { strip: stripHeic },
+  avif: { strip: stripAvif },
+  pdf: { legacy: processPdf },
+  docx: { legacy: processDocx },
+  xlsx: { legacy: processXlsx },
+  pptx: { legacy: processPptx },
+  mp4: { legacy: processMp4 },
+  mov: { legacy: processMov },
+  // M4A files are MP4 containers (audio-only): same atom structure, same processor.
+  m4a: { legacy: processMp4 },
+  mp3: { legacy: processMp3 },
+  flac: { legacy: processFlac },
+  wav: { legacy: processWav },
+} satisfies Record<SupportedFormat, Entry>;
 
-/** An empty result carrying an error, so the three failure paths below read as
- *  one line each instead of three near-identical object literals. */
-function failed(file: File, fileType: Format | "unknown", error: string): ProcessingResult {
+const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
+
+/** A failed result: the original file, untouched, with a message and a reason. */
+function failed(file: File, fileType: Format | "unknown", error: string, reason: string): ProcessingResult {
   return {
     originalFile: file,
-    // The original bytes, untouched. An empty Blob here would hand the user a
-    // 0-byte "cleaned" file if anything downloaded it.
     cleanedBlob: file,
     report: {
       fileName: file.name,
       fileType,
       fileSize: file.size,
-      cleanedFileSize: 0,
+      cleanedFileSize: file.size,
       fieldsFound: [],
       fieldsRemoved: [],
       fieldsKept: [],
       processedAt: new Date(),
     },
     error,
+    reason,
   };
 }
 
@@ -74,26 +89,84 @@ export async function processFile(
   const identity = await identify(file);
 
   if (identity.status === "unknown") {
-    return failed(file, "unknown", `Unsupported file type: ${file.type}`);
+    return failed(file, "unknown", notSupportedYet([identity]), "unsupported_type");
   }
   // A format we can name but not yet handle. Saying so beats a parser error for
   // whatever the extension claimed, and it puts real demand in the telemetry.
   if (identity.status === "recognised") {
-    return failed(file, identity.format, notSupportedYet([identity]));
+    return failed(file, identity.format, notSupportedYet([identity]), `recognised: ${identity.format}`);
   }
 
-  // Parsers are meant to return an error rather than throw, but not all of them
-  // wrap their reads (PNG, WebP and GIF have no try at all). A single throw used
-  // to reject the whole scan, leaving the tool on "reading files" for good with
-  // nothing logged, so the guard lives here once instead of in every parser.
+  const format = identity.format;
+  const entry: Entry = processors[format];
+  if ("legacy" in entry) return runLegacy(entry.legacy, file, format, options);
+
+  // Checked before reading: a 70 GB video must never be loaded into memory.
+  if (entry.maxBytes !== undefined && file.size > entry.maxBytes) {
+    return failed(
+      file, format,
+      `Too large (${formatBytes(file.size)}). The maximum is ${formatBytes(entry.maxBytes)}; trim or compress it first.`,
+      "too_large"
+    );
+  }
+
+  // Parsers are meant to throw Unreadable for a file that isn't valid, but any
+  // other throw (a bug, or the browser failing the read) used to reject the
+  // whole scan, leaving the tool on "reading files" for good. So the guard
+  // lives here once instead of in every parser.
   try {
-    return await processors[identity.format](file, options);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const stripped = await entry.strip(bytes, options);
+    return assemble(file, format, bytes, stripped);
+  } catch (err) {
+    if (err instanceof Unreadable) return failed(file, format, DAMAGED, `unreadable: ${format}`);
+    const name = err instanceof Error ? err.name : "unknown";
+    return failed(file, format, crashMessage(name), `crash: ${name}`);
+  }
+}
+
+function assemble(file: File, format: SupportedFormat, original: Uint8Array, s: Stripped): ProcessingResult {
+  if (s.fieldsRemoved.some((f) => !s.fieldsFound.includes(f))) {
+    throw new Error("A processor reported removing a field it never found");
+  }
+  // A non-empty file that comes out empty lost its content, not its metadata.
+  if (original.length > 0 && s.cleaned.length === 0) {
+    return failed(file, format, DAMAGED, `empty_output: ${format}`);
+  }
+  const type = mimeOf(format);
+  // Nothing to remove: hand back the original bytes rather than a rewrite.
+  const cleanedBlob = s.fieldsRemoved.length === 0
+    ? file.slice(0, file.size, type)
+    : new Blob([s.cleaned as BlobPart], { type });
+  return {
+    originalFile: file,
+    cleanedBlob,
+    report: {
+      fileName: file.name,
+      fileType: format,
+      fileSize: file.size,
+      cleanedFileSize: cleanedBlob.size,
+      fieldsFound: s.fieldsFound,
+      fieldsRemoved: s.fieldsRemoved,
+      fieldsKept: s.fieldsFound.filter((f) => !s.fieldsRemoved.includes(f)),
+      processedAt: new Date(),
+    },
+  };
+}
+
+/** The old path, unchanged, for processors not yet on the contract. */
+async function runLegacy(
+  run: (file: File, options: StripOptions) => Promise<ProcessingResult>,
+  file: File,
+  format: SupportedFormat,
+  options: StripOptions
+): Promise<ProcessingResult> {
+  try {
+    return await run(file, options);
   } catch (err) {
     const name = err instanceof Error ? err.name : "unknown";
-    return {
-      ...failed(file, identity.format, crashMessage(name)),
-      crashed: name,
-    };
+    const result = failed(file, format, crashMessage(name), `crash: ${name}`);
+    return { ...result, report: { ...result.report, cleanedFileSize: 0 }, crashed: name };
   }
 }
 
@@ -109,12 +182,12 @@ function crashMessage(name: string): string {
   if (name === "NotFoundError" || name === "NotReadableError") {
     return "Your browser couldn't open it. If you just downloaded it, make sure the download has finished, or save it to a folder on this device (not a cloud-only one) and try again.";
   }
-  return "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
+  return DAMAGED;
 }
 
-/** Telemetry reason for a result that failed. A crash is logged by its error
- *  class alone ("crash: RangeError"), never the message, which could quote
- *  content from the file. */
+/** Telemetry reason for a result that failed. Never the message, which could
+ *  quote content from the file. */
 export function failureReason(r: ProcessingResult): string {
+  if (r.reason) return r.reason;
   return r.crashed ? `crash: ${r.crashed}` : r.error ?? "unknown";
 }

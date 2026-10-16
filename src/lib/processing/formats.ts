@@ -105,6 +105,11 @@ export function labelOf(format: Format): string {
   return FORMATS[format].label;
 }
 
+/** The format's main MIME type, used for the cleaned file. */
+export function mimeOf(format: Format): string {
+  return FORMATS[format].mimes[0];
+}
+
 export function categoryOf(format: Format): FileCategory {
   return FORMATS[format].category;
 }

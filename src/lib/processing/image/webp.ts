@@ -1,9 +1,9 @@
 import type {
   StripOptions,
-  ProcessingResult,
   MetadataField,
   MetadataCategory,
 } from "../types";
+import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { describeC2pa } from "../c2pa-manifest";
 import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 
@@ -48,7 +48,9 @@ function parseRiffChunks(buffer: Uint8Array): RiffChunk[] {
     const fourcc = new TextDecoder().decode(buffer.slice(offset, offset + 4));
     const size = readUint32LE(buffer, offset + 4);
 
-    if (offset + 8 + size > buffer.length) break;
+    // Cut short: unreadable, rather than quietly dropping every chunk after
+    // this one, which used to lose the image data.
+    if (offset + 8 + size > buffer.length) throw new Unreadable();
 
     const data = buffer.slice(offset + 8, offset + 8 + size);
     chunks.push({ fourcc, data });
@@ -222,102 +224,33 @@ function rebuildWebp(chunks: RiffChunk[]): Uint8Array {
   return result;
 }
 
-export async function processWebp(
-  file: File,
-  options: StripOptions
-): Promise<ProcessingResult> {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = new Uint8Array(arrayBuffer);
-
-  // Verify RIFF + WEBP signature
+export function stripWebp(buffer: Uint8Array, options: StripOptions): Stripped {
   if (
     buffer.length < 12 ||
     new TextDecoder().decode(buffer.slice(0, 4)) !== "RIFF" ||
     new TextDecoder().decode(buffer.slice(8, 12)) !== "WEBP"
   ) {
-    const blob = new Blob([arrayBuffer], { type: file.type });
-    return {
-      originalFile: file,
-      cleanedBlob: blob,
-      report: {
-        fileName: file.name,
-        fileType: "webp",
-        fileSize: file.size,
-        cleanedFileSize: blob.size,
-        fieldsFound: [],
-        fieldsRemoved: [],
-        fieldsKept: [],
-        processedAt: new Date(),
-      },
-      error: "Invalid WebP file",
-    };
+    throw new Unreadable();
   }
 
-  const chunks = parseRiffChunks(buffer);
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
-  const fieldsKept: MetadataField[] = [];
-
-  const categoriesToStrip = (
-    Object.entries(options) as [MetadataCategory, boolean][]
-  )
-    .filter(([, enabled]) => enabled)
-    .map(([cat]) => cat);
-
-  // Catalogue metadata from metadata chunks
-  for (const chunk of chunks) {
-    if (METADATA_CHUNKS.has(chunk.fourcc)) {
-      const fields = catalogueChunkFields(chunk);
-      fieldsFound.push(...fields);
-    }
-  }
-
-  // Classify fields as removed or kept
-  for (const field of fieldsFound) {
-    if (categoriesToStrip.includes(field.category)) {
-      fieldsRemoved.push(field);
-    } else {
-      fieldsKept.push(field);
-    }
-  }
-
-  // Track which metadata chunk types are fully removed
   const removedFourccs = new Set<string>();
 
-  // Filter out metadata chunks whose fields are all being removed
-  const keptChunks = chunks.filter((chunk) => {
+  // Each metadata chunk goes whole or stays whole, and only the fields of a
+  // chunk that really went are reported removed.
+  const keptChunks = parseRiffChunks(buffer).filter((chunk) => {
     if (!METADATA_CHUNKS.has(chunk.fourcc)) return true;
-
-    const chunkFields = catalogueChunkFields(chunk);
-    const keepChunk = chunkFields.some(
-      (f) => !categoriesToStrip.includes(f.category)
-    );
-
-    if (!keepChunk) {
-      removedFourccs.add(chunk.fourcc);
-    }
-
-    return keepChunk;
+    const fields = catalogueChunkFields(chunk);
+    fieldsFound.push(...fields);
+    if (!blockGoes(fields, options)) return true;
+    fieldsRemoved.push(...fields);
+    removedFourccs.add(chunk.fourcc);
+    return false;
   });
 
   // Update VP8X feature flags to reflect removed chunks
   updateVP8XFlags(keptChunks, removedFourccs);
 
-  const cleanedBuffer = rebuildWebp(keptChunks);
-  const cleanedBlob = new Blob([cleanedBuffer.buffer as ArrayBuffer], { type: "image/webp" });
-
-  return {
-    originalFile: file,
-    cleanedBlob,
-    report: {
-      fileName: file.name,
-      fileType: "webp",
-      fileSize: file.size,
-      cleanedFileSize: cleanedBlob.size,
-      fieldsFound,
-      fieldsRemoved,
-      fieldsKept,
-      processedAt: new Date(),
-    },
-  };
+  return { cleaned: rebuildWebp(keptChunks), fieldsFound, fieldsRemoved };
 }
