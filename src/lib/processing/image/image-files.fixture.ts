@@ -6,7 +6,7 @@
  *  processors decode pixels, so the image data is only shaped right, not a
  *  picture anyone could open. */
 
-import piexif from "piexifjs";
+import { ASCII, BYTE, RATIONAL, tiff } from "../../tiff-builder";
 
 export type Bytes = Uint8Array<ArrayBuffer>;
 type Part = Uint8Array | number[] | string;
@@ -35,38 +35,34 @@ const zeros = (n: number) => new Array<number>(n).fill(0);
 
 /** One EXIF block reused by every format that can carry one, spread across
  *  device, software, dates, author, copyright, custom and GPS tags so each
- *  category toggle has something to act on. Software names GIMP and Make
- *  names Canon because the WebP reader only spots those by string search. */
-function exifBinaryString(): string {
-  return piexif.dump({
-    "0th": {
-      [piexif.ImageIFD.Make]: "Canon",
-      [piexif.ImageIFD.Model]: "Canon EOS R5",
-      [piexif.ImageIFD.Software]: "GIMP 2.10",
-      [piexif.ImageIFD.DateTime]: "2026:07:01 12:00:00",
-      [piexif.ImageIFD.Artist]: "Jane Doe",
-      [piexif.ImageIFD.Copyright]: "(c) Jane Doe",
-      [piexif.ImageIFD.ImageDescription]: "Holiday",
-    },
-    Exif: {
-      [piexif.ExifIFD.DateTimeOriginal]: "2026:07:01 12:00:00",
-      [piexif.ExifIFD.LensModel]: "RF 24-70mm",
-    },
-    GPS: {
-      [piexif.GPSIFD.GPSVersionID]: [2, 3, 0, 0],
-      [piexif.GPSIFD.GPSLatitudeRef]: "N",
-      [piexif.GPSIFD.GPSLatitude]: [[59, 1], [19, 1], [0, 1]],
-      [piexif.GPSIFD.GPSLongitudeRef]: "E",
-      [piexif.GPSIFD.GPSLongitude]: [[18, 1], [4, 1], [0, 1]],
-    },
+ *  category toggle has something to act on. Big-endian, so both byte orders
+ *  are covered (the phone EXIF in exif.fixture.ts is little-endian). */
+export const exifTiff = (): Bytes =>
+  tiff({
+    ifd0: [
+      { tag: 0x010e, type: ASCII, value: "Holiday" }, // ImageDescription
+      { tag: 0x010f, type: ASCII, value: "Canon" }, // Make
+      { tag: 0x0110, type: ASCII, value: "Canon EOS R5" }, // Model
+      { tag: 0x0131, type: ASCII, value: "GIMP 2.10" }, // Software
+      { tag: 0x0132, type: ASCII, value: "2026:07:01 12:00:00" }, // DateTime
+      { tag: 0x013b, type: ASCII, value: "Jane Doe" }, // Artist
+      { tag: 0x8298, type: ASCII, value: "(c) Jane Doe" }, // Copyright
+    ],
+    exif: [
+      { tag: 0x9003, type: ASCII, value: "2026:07:01 12:00:00" }, // DateTimeOriginal
+      { tag: 0xa434, type: ASCII, value: "RF 24-70mm" }, // LensModel
+    ],
+    gps: [
+      { tag: 0x0000, type: BYTE, value: [2, 3, 0, 0] }, // GPSVersionID
+      { tag: 0x0001, type: ASCII, value: "N" }, // GPSLatitudeRef
+      { tag: 0x0002, type: RATIONAL, value: [59, 1, 19, 1, 0, 1] }, // GPSLatitude
+      { tag: 0x0003, type: ASCII, value: "E" }, // GPSLongitudeRef
+      { tag: 0x0004, type: RATIONAL, value: [18, 1, 4, 1, 0, 1] }, // GPSLongitude
+    ],
   });
-}
 
 /** "Exif\0\0" plus the TIFF block: the payload of a JPEG APP1 segment. */
-export const exifApp1Payload = (): Bytes => concat(exifBinaryString());
-
-/** The bare TIFF block, as PNG eXIf, WebP EXIF and HEIF Exif items store it. */
-export const exifTiff = (): Bytes => exifApp1Payload().slice(6);
+export const exifApp1Payload = (): Bytes => concat("Exif\0\0", exifTiff());
 
 /** An XMP packet in the shape Photoshop and exiftool write: dc:creator in an
  *  rdf:Seq and dc:rights in an rdf:Alt, the rest as plain elements. */
@@ -146,7 +142,7 @@ const segment = (marker: number, ...payload: Part[]): Bytes => {
 
 const JFIF = () => segment(0xe0, "JFIF", [0, 1, 1, 0, 0, 1, 0, 1, 0, 0]);
 // A 1x1 greyscale frame header and a scan header, then a few entropy-coded
-// bytes and EOI. Enough structure for piexif and the segment walker.
+// bytes and EOI. Enough structure for the segment walker.
 const FRAME_AND_SCAN = () =>
   concat(
     segment(0xc0, [8], u16be(1), u16be(1), [1, 1, 0x11, 0]),

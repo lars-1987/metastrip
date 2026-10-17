@@ -161,7 +161,12 @@ const TAG_INTEROP_IFD = 0xa005;
 const TAG_ORIENTATION = 0x0112;
 const TAG_THUMBNAIL_OFFSET = 0x0201;
 const TAG_THUMBNAIL_LENGTH = 0x0202;
+const TAG_USER_COMMENT = 0x9286;
+// A vendor's own binary format: shown by size, since its bytes read as noise.
+const TAG_MAKER_NOTE = 0x927c;
 const XP_TAGS = new Set([0x9c9b, 0x9c9c, 0x9c9d, 0x9c9e, 0x9c9f]);
+
+const sizeOf = (bytes: number) => (bytes < 1024 ? `${bytes} bytes` : `${(bytes / 1024).toFixed(1)} KB`);
 
 /** IFD order for the report: the order the fields were always listed in. */
 const IFD_ORDER: IfdName[] = ["0th", "Exif", "GPS", "1st", "Interop"];
@@ -279,7 +284,8 @@ function valueOf(r: Reader, ifd: IfdName, e: Entry): { raw: string; shown: strin
   }
   if (e.type === 7) {
     const s = LATIN1.decode(bytes);
-    return { raw: s, shown: e.tag === 0x9286 && ifd === "Exif" ? decodeUserComment(s) : s };
+    if (ifd === "Exif" && e.tag === TAG_MAKER_NOTE) return { raw: s, shown: `${sizeOf(e.size)} of vendor data` };
+    return { raw: s, shown: ifd === "Exif" && e.tag === TAG_USER_COMMENT ? decodeUserComment(s) : s };
   }
   if (ifd === "0th" && XP_TAGS.has(e.tag) && e.type === 1) {
     // Windows' XP tags are UTF-16LE in a BYTE array.

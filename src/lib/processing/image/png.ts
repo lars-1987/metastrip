@@ -6,6 +6,7 @@ import type {
 import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { aiCategoryFor, aiTextLabel, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 import { describeC2pa } from "../c2pa-manifest";
+import { stripExif } from "./exif";
 
 // PNG signature: 8 bytes
 const PNG_SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -215,14 +216,6 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
       value: parseTimeChunk(chunk.data),
       removable: true,
     });
-  } else if (chunk.type === "eXIf") {
-    fields.push({
-      category: "device",
-      key: "eXIf",
-      label: "Embedded EXIF Data",
-      value: `(${chunk.data.length} bytes)`,
-      removable: true,
-    });
   } else if (chunk.type === "caBX") {
     // What made the image and whose certificate signed it, not just a size.
     fields.push(...describeC2pa(chunk.data));
@@ -270,8 +263,17 @@ export function stripPng(buffer: Uint8Array, options: StripOptions): Stripped {
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
   const { chunks, end } = parseChunks(buffer);
-  // Each metadata chunk goes whole or stays whole.
+  // eXIf goes through the EXIF reader, tag by tag. Every other metadata
+  // chunk goes whole or stays whole.
   const keptChunks = chunks.filter((chunk) => {
+    if (chunk.type === "eXIf") {
+      const exif = stripExif(chunk.data, options);
+      fieldsFound.push(...exif.fieldsFound);
+      fieldsRemoved.push(...exif.fieldsRemoved);
+      if (exif.cleaned === null) return false;
+      chunk.data = exif.cleaned;
+      return true;
+    }
     if (!METADATA_CHUNKS.has(chunk.type)) return true;
     const fields = catalogueChunkFields(chunk);
     fieldsFound.push(...fields);

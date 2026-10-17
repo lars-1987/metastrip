@@ -149,8 +149,8 @@ describe("PNG", () => {
   it("strips every metadata chunk with everything on", async () => {
     const { result } = await strip(pngWithMetadata(), name, type);
     expect(result.error).toBeUndefined();
-    // The eXIf chunk is one "device" field, whatever it holds: its GPS, dates
-    // and author tags are never listed on their own.
+    // The eXIf chunk goes through the EXIF reader, so its tags are listed one
+    // by one. It used to be one "device" field.
     const all = [
       "ai:C2PA",
       "ai:C2PA:actions",
@@ -158,12 +158,25 @@ describe("PNG", () => {
       "ai:C2PA:model",
       "ai:C2PA:source",
       "ai:parameters",
+      "author:Artist",
       "author:Author",
       "comments:Comment",
       "copyright:Copyright",
+      "copyright:Copyright",
+      "custom:ImageDescription",
       "custom:Title",
+      "dates:DateTime",
+      "dates:DateTimeOriginal",
       "dates:tIME",
-      "device:eXIf",
+      "device:LensModel",
+      "device:Make",
+      "device:Model",
+      "gps:GPSLatitude",
+      "gps:GPSLatitudeRef",
+      "gps:GPSLongitude",
+      "gps:GPSLongitudeRef",
+      "gps:GPSVersionID",
+      "software:Software",
       "software:Software",
     ];
     expect(summary(result.report.fieldsFound)).toEqual(all);
@@ -174,22 +187,10 @@ describe("PNG", () => {
   it("keeps the author when that toggle is off", async () => {
     const { result } = await strip(pngWithMetadata(), name, type, { ...ALL_ON, author: false });
     expect(result.error).toBeUndefined();
-    expect(summary(result.report.fieldsRemoved)).toEqual([
-      "ai:C2PA",
-      "ai:C2PA:actions",
-      "ai:C2PA:generator",
-      "ai:C2PA:model",
-      "ai:C2PA:source",
-      "ai:parameters",
-      "comments:Comment",
-      "copyright:Copyright",
-      "custom:Title",
-      "dates:tIME",
-      "device:eXIf",
-      "software:Software",
-    ]);
-    expect(summary(result.report.fieldsKept)).toEqual(["author:Author"]);
-    expect(await reread(result, name, type)).toEqual(["author:Author"]);
+    // The tEXt Author chunk and the EXIF Artist tag both stay.
+    expect(summary(result.report.fieldsKept)).toEqual(["author:Artist", "author:Author"]);
+    expect(summary(result.report.fieldsRemoved)).toHaveLength(24);
+    expect(await reread(result, name, type)).toEqual(["author:Artist", "author:Author"]);
   });
 
   it("refuses a file with a chunk whose length runs past the end", async () => {
@@ -207,20 +208,32 @@ describe("WebP", () => {
   it("strips every metadata chunk with everything on", async () => {
     const { result } = await strip(webpWithMetadata(), name, type);
     expect(result.error).toBeUndefined();
-    // EXIF is read by string search, so only the make and software show, never
-    // its GPS or dates. The XMP's dc:creator (in an rdf:Seq) and dc:rights (in
-    // an rdf:Alt) are missed too: the reader only matches a bare text value.
+    // EXIF goes through the EXIF reader, tag by tag; it used to be a string
+    // search that found only the make and software. The XMP's dc:creator (in
+    // an rdf:Seq) and dc:rights (in an rdf:Alt) are missed: the reader only
+    // matches a bare text value.
     const all = [
       "ai:C2PA",
       "ai:C2PA:actions",
       "ai:C2PA:generator",
       "ai:C2PA:model",
       "ai:C2PA:source",
+      "author:Artist",
+      "copyright:Copyright",
+      "custom:ImageDescription",
       "custom:XMP",
+      "dates:DateTime",
+      "dates:DateTimeOriginal",
       "dates:xmp-xmp:CreateDate",
-      "device:EXIF",
-      "device:exif-make",
-      "software:exif-software",
+      "device:LensModel",
+      "device:Make",
+      "device:Model",
+      "gps:GPSLatitude",
+      "gps:GPSLatitudeRef",
+      "gps:GPSLongitude",
+      "gps:GPSLongitudeRef",
+      "gps:GPSVersionID",
+      "software:Software",
       "software:xmp-xmp:CreatorTool",
     ];
     expect(summary(result.report.fieldsFound)).toEqual(all);
@@ -230,16 +243,15 @@ describe("WebP", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("removes a chunk whole when software is off but its other fields go", async () => {
+  it("keeps EXIF's software when that toggle is off, but not the XMP's", async () => {
     const { result } = await strip(webpWithMetadata(), name, type, { ...ALL_ON, software: false });
     expect(result.error).toBeUndefined();
-    // Software shares the EXIF and XMP chunks with fields being removed, so
-    // both chunks go and software is reported removed with them. This used to
-    // keep both chunks while reporting their other fields removed, and the
-    // re-read found every one of them still there.
-    expect(summary(result.report.fieldsRemoved)).toEqual(summary(result.report.fieldsFound));
-    expect(result.report.fieldsKept).toEqual([]);
-    expect(await reread(result, name, type)).toEqual([]);
+    // EXIF is rewritten tag by tag, so its Software stays. The XMP chunk can
+    // only go whole, and its other fields are being removed, so its creator
+    // tool goes too and is reported removed.
+    expect(summary(result.report.fieldsKept)).toEqual(["software:Software"]);
+    expect(summary(result.report.fieldsRemoved)).toContain("software:xmp-xmp:CreatorTool");
+    expect(await reread(result, name, type)).toEqual(["software:Software"]);
   });
 
   it("refuses a file with a chunk whose size runs past the end", async () => {

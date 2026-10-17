@@ -9,7 +9,7 @@ import TableOfContents from "@/components/blog/TableOfContents";
 import InlineCTA from "@/components/blog/InlineCTA";
 import dynamic from "next/dynamic";
 
-// The tool pulls in every format processor (pdf-lib, piexifjs and the rest), so
+// The tool pulls in every format processor (pdf-lib, JSZip and the rest), so
 // it loads as its own chunk and only on the posts that ask for it. It is still
 // pre-rendered: with ssr:false a 460px placeholder stood in until the chunk
 // arrived, the real tool was taller (668px at 1440x900), and the article below

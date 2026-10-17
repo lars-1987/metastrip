@@ -138,9 +138,9 @@ function PrivacyPolicyContent() {
           running in your web browser. Specifically:
         </p>
         <p className="mb-2">
-          Image files (JPEG, PNG, WebP) are processed using piexifjs and custom
-          parsing code that runs entirely in your browser&apos;s JavaScript
-          engine.
+          Image files (JPEG, PNG, WebP, GIF, HEIC, AVIF) are processed using
+          MetaStrip&apos;s own parsing code, which runs entirely in your
+          browser&apos;s JavaScript engine.
         </p>
         <p className="mb-2">
           PDF files are processed using pdf-lib, a pure JavaScript PDF library
@@ -575,7 +575,7 @@ export function PrivacyPage() {
           >
             <span>Effective: March 1, 2026</span>
             <span style={{ opacity: 0.4 }}>·</span>
-            <span>Last updated: September 15, 2026</span>
+            <span>Last updated: October 17, 2026</span>
           </div>
 
           {/* Content — dark card */}

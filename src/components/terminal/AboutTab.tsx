@@ -136,7 +136,7 @@ export function AboutTab() {
             <div className="text-sm font-[family-name:var(--font-mono)] leading-[2]">
               <div><span className="text-green-400">1.</span> <span className="text-white/60">Your browser reads file as ArrayBuffer (local memory only)</span></div>
               <div><span className="text-purple-400">2.</span> <span className="text-white/60">Processing engine runs client-side JS library</span></div>
-              <div className="text-white/45 pl-4">├─ piexifjs → JPEG EXIF removal</div>
+              <div className="text-white/45 pl-4">├─ parsers  → image, video, audio metadata</div>
               <div className="text-white/45 pl-4">├─ pdf-lib  → PDF metadata clearing</div>
               <div className="text-white/45 pl-4">└─ JSZip   → Office XML metadata</div>
               <div><span className="text-cyan-400">3.</span> <span className="text-white/60">Clean file generated in memory → browser download</span></div>
@@ -154,7 +154,6 @@ export function AboutTab() {
           </div>
           <div className="text-xs font-[family-name:var(--font-mono)] leading-[2]">
             {[
-              { name: "piexifjs", desc: "JPEG EXIF read/remove without re-encoding", color: "text-cyan-400", url: "https://github.com/hMatoba/piexifjs" },
               { name: "pdf-lib", desc: "Pure JS PDF manipulation", color: "text-pink-400", url: "https://github.com/Hopding/pdf-lib" },
               { name: "JSZip", desc: "ZIP read/write for Office doc metadata", color: "text-purple-400", url: "https://github.com/Stuk/jszip" },
             ].map((lib) => (

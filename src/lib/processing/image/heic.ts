@@ -1,11 +1,10 @@
-import piexif from "piexifjs";
 import type {
   StripOptions,
   MetadataField,
   MetadataCategory,
 } from "../types";
 import { Unreadable, blockGoes, type Stripped } from "../contract";
-import { catalogExifFields } from "./exif-catalog";
+import { stripExif } from "./exif";
 import { describeC2pa } from "../c2pa-manifest";
 import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 import {
@@ -96,12 +95,18 @@ function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
 
   // ── Catalogue found fields ──────────────────────────────────
   const fieldsFound: MetadataField[] = [];
-  const exifCatalogs = exifItems.map((it) => {
+  const exifResults = exifItems.flatMap((it) => {
     const data = readExtents(original, it.extents);
-    const tiff = extractTiff(data);
-    const fields = tiff ? catalogHeicExif(tiff) : [];
-    fieldsFound.push(...fields);
-    return { item: it, tiff, fields };
+    // A strip zeroes the item rather than removing it, so the iloc offsets
+    // stay valid. Zeroes carry nothing: re-reading a cleaned file must not
+    // report them as EXIF it couldn't read.
+    if (data.every((b) => b === 0)) return [];
+    // An item with no TIFF header to be found is handed over whole, and the
+    // reader reports it as EXIF it couldn't read.
+    const tiff = extractTiff(data) ?? data;
+    const exif = stripExif(tiff, options);
+    fieldsFound.push(...exif.fieldsFound);
+    return [{ item: it, data, tiff, exif }];
   });
   const xmpCatalogs = xmpItems.map((it) => {
     const text = UTF8.decode(readExtents(original, it.extents));
@@ -122,26 +127,25 @@ function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
       .filter(([, on]) => on)
       .map(([cat]) => cat)
   );
-  const allCats = Object.keys(options) as MetadataCategory[];
-  const strippingAll = allCats.every((c) => enabled.has(c));
 
   const cleaned = original.slice(); // copy to mutate
   const fieldsRemoved: MetadataField[] = [];
 
-  // EXIF items
-  for (const { item, tiff, fields } of exifCatalogs) {
-    const removeThese = fields.filter((f) => enabled.has(f.category));
-    const keepThese = fields.filter((f) => !enabled.has(f.category));
-    if (strippingAll || keepThese.length === 0 || !tiff || item.extents.length !== 1) {
-      // Full strip: zero the whole item payload. (Also the multi-extent /
-      // unparseable fallback, which errs toward removing more.)
+  // EXIF items: the reader edits the TIFF in place and never makes it
+  // longer, so it goes back where it was, zero-padded, and the iloc offsets
+  // stay valid.
+  for (const { item, data, tiff, exif } of exifResults) {
+    if (exif.cleaned === tiff) continue;
+    if (exif.cleaned === null || item.extents.length !== 1) {
+      // The block goes, or it's split across extents we'd have to write back
+      // piece by piece: zero the whole item, and report every field removed.
       for (const ext of item.extents) zeroBytes(cleaned, ext.offset, ext.length);
-      fieldsRemoved.push(...fields);
+      fieldsRemoved.push(...(exif.cleaned === null ? exif.fieldsRemoved : exif.fieldsFound));
     } else {
-      // Selective: rebuild the TIFF with the enabled categories removed,
-      // write it back into the (single) extent, zero-pad the remainder.
-      rebuildExifInPlace(cleaned, item.extents[0], tiff, enabled);
-      fieldsRemoved.push(...removeThese);
+      const at = item.extents[0].offset + (data.length - tiff.length); // the TIFF is the item's tail
+      cleaned.set(exif.cleaned, at);
+      cleaned.fill(0, at + exif.cleaned.length, at + tiff.length);
+      fieldsRemoved.push(...exif.fieldsRemoved);
     }
   }
 
@@ -402,61 +406,6 @@ function indexOfTiffHeader(data: Uint8Array): number {
   return -1;
 }
 
-/** Catalog an EXIF TIFF block by wrapping it in a minimal JPEG for piexif. */
-function catalogHeicExif(tiff: Uint8Array): MetadataField[] {
-  try {
-    if (tiff.length + 8 > 0xffff) throw new Error("exif too large to wrap");
-    const dataUrl = tiffToJpegDataUrl(tiff);
-    const exifObj = piexif.load(dataUrl) as Record<string, Record<string, unknown>>;
-    return catalogExifFields(exifObj);
-  } catch {
-    // Oversized or unparseable EXIF: report a coarse presence field so the
-    // user still sees (and removes) it. Stripping is unaffected.
-    return [{ category: "custom", key: "EXIF", label: "EXIF metadata", value: `${tiff.length} bytes`, removable: true }];
-  }
-}
-
-function rebuildExifInPlace(
-  buf: Uint8Array,
-  extent: { offset: number; length: number },
-  tiff: Uint8Array,
-  enabled: Set<MetadataCategory>
-) {
-  try {
-    const dataUrl = tiffToJpegDataUrl(tiff);
-    const exifObj = piexif.load(dataUrl) as Record<string, Record<string, unknown>>;
-
-    if (enabled.has("gps")) exifObj["GPS"] = {};
-    for (const ifd of ["0th", "Exif", "1st"]) {
-      if (!exifObj[ifd]) continue;
-      for (const tagId of Object.keys(exifObj[ifd])) {
-        const one = catalogExifFields({ [ifd]: { [tagId]: exifObj[ifd][tagId] } });
-        if (one[0] && enabled.has(one[0].category)) delete exifObj[ifd][tagId];
-      }
-    }
-    // piexif.dump re-embeds the thumbnail whatever happened to IFD1's tags, so
-    // every partial strip kept it. It is reported under Custom and goes with it.
-    if (enabled.has("custom")) {
-      (exifObj as Record<string, unknown>)["thumbnail"] = null;
-      exifObj["1st"] = {};
-    }
-
-    const dumped = piexif.dump(exifObj); // binary string: "Exif\0\0" + TIFF
-    const newTiff = binaryStringToBytes(dumped).subarray(6); // drop "Exif\0\0"
-
-    // Original item data = [4-byte tiff_header_offset][... up to tiff][TIFF].
-    // Find where the TIFF sat within the extent and overwrite it, zero-padding.
-    const data = buf.subarray(extent.offset, extent.offset + extent.length);
-    const tiffPos = data.length - tiff.length; // TIFF is at the tail
-    if (tiffPos < 0 || tiffPos + newTiff.length > data.length) throw new Error("no room");
-    data.set(newTiff, tiffPos);
-    data.fill(0, tiffPos + newTiff.length, data.length);
-  } catch {
-    // If rebuild fails, fall back to zeroing the whole item.
-    zeroBytes(buf, extent.offset, extent.length);
-  }
-}
-
 /** Lightweight XMP category sniffing (XMP is XML/text). */
 function catalogXmp(xml: string): MetadataField[] {
   // A strip zeroes the item rather than removing it (so the iloc offsets stay
@@ -502,34 +451,4 @@ function skipCString(view: DataView, start: number, end: number): number {
   let p = start;
   while (p < end && view.getUint8(p) !== 0) p++;
   return p + 1; // step past the null terminator
-}
-
-function tiffToJpegDataUrl(tiff: Uint8Array): string {
-  const app1Len = 2 + 6 + tiff.length; // length field + "Exif\0\0" + TIFF
-  const out = new Uint8Array(2 + 4 + 6 + tiff.length + 2);
-  let p = 0;
-  out[p++] = 0xff; out[p++] = 0xd8; // SOI
-  out[p++] = 0xff; out[p++] = 0xe1; // APP1
-  out[p++] = (app1Len >> 8) & 0xff; out[p++] = app1Len & 0xff;
-  out[p++] = 0x45; out[p++] = 0x78; out[p++] = 0x69; out[p++] = 0x66; out[p++] = 0x00; out[p++] = 0x00; // "Exif\0\0"
-  out.set(tiff, p); p += tiff.length;
-  // Terminate with an SOS marker (not EOI): piexif's segment splitter scans
-  // for \xff\xda and stops there. Ending on EOI makes it read a bogus length.
-  out[p++] = 0xff; out[p++] = 0xda; // SOS
-  return "data:image/jpeg;base64," + bytesToBase64(out);
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-
-function binaryStringToBytes(s: string): Uint8Array {
-  const out = new Uint8Array(s.length);
-  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i) & 0xff;
-  return out;
 }
