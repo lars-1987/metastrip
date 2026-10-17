@@ -55,7 +55,7 @@ TIFF and additional document formats (RTF, ODT, Pages) are on the roadmap.
 
 ## What gets stripped
 
-- **Photos**: GPS coordinates, EXIF (camera make, model, serial, settings), IPTC, XMP, C2PA content credentials, AI generation tags (including IPTC's digital source type and online manifest links in XMP), embedded thumbnails, timestamps
+- **Photos**: GPS coordinates, EXIF (camera make, model, serial, settings, maker notes), IPTC, XMP, C2PA content credentials, AI generation tags (including IPTC's digital source type and online manifest links in XMP), embedded thumbnails, timestamps. The orientation tag is deliberately kept: phones often store portrait photos sideways and rely on it, so removing it would turn them on their side.
 - **PDFs**: author, creator app, producer, title, subject, keywords, custom properties, timestamps
 - **GIFs**: comment extensions, the XMP packet, ICC profiles and other application blocks. The `NETSCAPE2.0` block is deliberately kept, because it carries the loop count and removing it stops animated GIFs looping.
 - **Office docs**: author, last-modified-by, company, tracked changes, comments, revision history, template metadata
@@ -67,14 +67,14 @@ Steganographic watermarks (e.g. Google's SynthID) are pixel-level and not addres
 ## Tech
 
 - [Next.js](https://nextjs.org) (App Router, static export)
-- [piexifjs](https://github.com/hMatoba/piexifjs) for JPEG EXIF
 - [pdf-lib](https://github.com/Hopding/pdf-lib) for PDF metadata
 - [JSZip](https://github.com/Stuk/jszip) for DOCX / XLSX / PPTX (they're ZIP archives: unpack, modify XML, repack)
 - Custom in-browser MP4 atom walker for video (MP4, MOV, M4V) replaces metadata atoms with `free` atoms of identical size so file structure stays valid
-- Custom in-browser HEIC/HEIF and AVIF parser. Both are ISOBMFF containers (same box grammar as MP4), so they reuse the same box walker; it locates the EXIF/XMP items via `iloc`/`iinf` and zeroes their byte ranges in place, leaving the image items untouched (no decode, no re-encode, output stays `.heic` or `.avif`). AVIF is HEIF with AV1 image items instead of HEVC ones, so only the MIME type differs
+- Custom EXIF reader and writer, shared by JPEG, PNG, WebP, HEIC and AVIF. It reads the TIFF structure itself, in either byte order, and edits it in place: a removed tag leaves its IFD and its value bytes are zeroed, so everything kept (maker notes included) stays at its offset and the block never grows
+- Custom in-browser HEIC/HEIF and AVIF parser. Both are ISOBMFF containers (same box grammar as MP4), so they reuse the same box walker; it locates the EXIF/XMP items via `iloc`/`iinf` and rewrites or zeroes their byte ranges in place, leaving the image items untouched (no decode, no re-encode, output stays `.heic` or `.avif`). AVIF is HEIF with AV1 image items instead of HEVC ones, so only the MIME type differs
 - Custom parsers for ID3v1/v2 (MP3), Vorbis comments (FLAC), and RIFF LIST/INFO + bext (WAV); FLAC PICTURE / VORBIS_COMMENT blocks are replaced with `PADDING` of equal size, RIFF chunks with `JUNK`, with no length recomputation, no risk of breaking playback
 - Custom GIF block walker: metadata lives in extension blocks and nothing in a GIF points at an absolute offset, so removal is a matter of dropping whole blocks and rejoining the rest
-- Shared XMP reader used by PDF, GIF and images, so an embedded packet is listed field by field (author, creator tool, document IDs) rather than as an opaque "present"
+- XMP reader used by PDF and GIF, so an embedded packet is listed field by field (author, creator tool, document IDs) rather than as an opaque "present"
 - Files are identified by their leading bytes rather than their extension, so a JPEG saved as `.png` is still stripped correctly instead of rejected
 - [PostHog](https://posthog.com) for cookieless, DNT-respecting analytics
 - Hosted on GitHub Pages (deployed via Actions)
