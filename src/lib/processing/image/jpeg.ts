@@ -2,7 +2,7 @@ import type { StripOptions, MetadataField } from "../types";
 import { Unreadable, type Stripped } from "../contract";
 import { stripExif } from "./exif";
 import { describeC2pa, jumbfFromApp11 } from "../c2pa-manifest";
-import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
+import { stripXmp } from "../xmp";
 
 // ── JPEG marker-segment walker ────────────────────────────────────────────
 // A JPEG can carry EXIF and XMP (APP1), a C2PA content credential (APP11 /
@@ -17,7 +17,7 @@ const MARKER_COM = 0xfe; // JPEG comment
 const MARKER_SOS = 0xda; // start of scan — image data follows, stop here
 const MARKER_EOI = 0xd9;
 
-type SegKind = "exif" | "xmp" | "jumbf" | "iptc" | "com";
+type SegKind = "exif" | "xmp" | "xmpext" | "jumbf" | "iptc" | "com";
 
 interface Segment {
   marker: number;
@@ -70,7 +70,7 @@ function parseMetadataSegments(b: Uint8Array): Segment[] {
     if (marker === MARKER_APP1) {
       if (asciiAt(b, payloadStart, 6) === "Exif\0\0") kind = "exif";
       else if (asciiAt(b, payloadStart, 28).startsWith("http://ns.adobe.com/xap/1.0/")) kind = "xmp";
-      else if (asciiAt(b, payloadStart, 34).startsWith("http://ns.adobe.com/xmp/extension/")) kind = "xmp";
+      else if (asciiAt(b, payloadStart, 34).startsWith("http://ns.adobe.com/xmp/extension/")) kind = "xmpext";
     } else if (marker === MARKER_APP11) {
       kind = "jumbf";
     } else if (marker === MARKER_APP13) {
@@ -85,18 +85,11 @@ function parseMetadataSegments(b: Uint8Array): Segment[] {
   return segs;
 }
 
-const LATIN1 = new TextDecoder("latin1");
-const XMP_KEY = "XML:com.adobe.xmp"; // the name ai-signatures knows an XMP packet by
+const UTF8 = new TextDecoder();
+const XMP_HEADER_LENGTH = 29; // "http://ns.adobe.com/xap/1.0/\0"
 
-/** Whether the file's XMP carries an AI marker or a C2PA manifest link. The
- *  review then shows it under AI and it is removed with the AI toggle, so the
- *  two cannot disagree. */
-function xmpIsAi(b: Uint8Array, segs: Segment[]): boolean {
-  return segs.some((s) => s.kind === "xmp" && aiCategoryFor(XMP_KEY, LATIN1.decode(b.subarray(s.start + 4, s.end))) === "ai");
-}
-
-/** Report fields for the non-EXIF metadata segments (EXIF goes through the
- *  EXIF reader). C2PA maps to the `ai` category — the UI's content-credentials
+/** Report fields for the C2PA, IPTC and comment segments (EXIF and XMP go
+ *  through their readers). C2PA maps to the `ai` category — the UI's content-credentials
  *  toggle. */
 function catalogSegmentFields(b: Uint8Array, segs: Segment[]): MetadataField[] {
   const fields: MetadataField[] = [];
@@ -108,20 +101,10 @@ function catalogSegmentFields(b: Uint8Array, segs: Segment[]): MetadataField[] {
     const boxes = jumbfFromApp11(jumbfSegs.map((s) => b.subarray(s.start + 4, s.end)));
     fields.push(...(boxes.length ? boxes.flatMap((box) => describeC2pa(box, total)) : describeC2pa(new Uint8Array(0), total)));
   }
-  const aiXmp = xmpIsAi(b, segs);
   for (const s of segs) {
     const bytes = s.end - s.start;
     if (s.kind === "jumbf") {
       continue; // reported above, once, from the rejoined segments
-    } else if (s.kind === "xmp") {
-      const text = LATIN1.decode(b.subarray(s.start + 4, s.end));
-      fields.push({
-        category: aiXmp ? "ai" : "custom",
-        key: "XMP",
-        label: aiValueLabel(XMP_KEY, text) ?? "XMP Metadata",
-        value: aiDisplayValue(XMP_KEY, text) ?? `(${bytes} bytes)`,
-        removable: true,
-      });
     } else if (s.kind === "iptc") {
       fields.push({
         category: "custom",
@@ -159,17 +142,35 @@ export function stripJpeg(bytes: Uint8Array<ArrayBuffer>, options: StripOptions)
   const exifFound = [...exif.values()].flatMap((e) => e.fieldsFound);
   const exifRemoved = [...exif.values()].flatMap((e) => e.fieldsRemoved);
 
-  // C2PA, XMP, IPTC and comments are one field per segment (C2PA one set for
-  // all its segments), each removed exactly when its category is.
+  // XMP goes through the XMP reader. A packet over 64 KB continues in
+  // Extended XMP segments, mostly binary payloads such as Google Camera's
+  // depth maps, so those are one field. All XMP segments go together.
+  const xmp = segs.filter((s) => s.kind === "xmp").map((s) => stripXmp(UTF8.decode(bytes.subarray(s.start + 4 + XMP_HEADER_LENGTH, s.end)), options));
+  const extended = segs.filter((s) => s.kind === "xmpext").reduce((n, s) => n + (s.end - s.start), 0);
+  const xmpFound = xmp.flatMap((x) => x.fieldsFound);
+  if (extended) {
+    xmpFound.push({
+      category: "custom",
+      key: "XMP:extended",
+      label: "Extended XMP",
+      value: extended < 1024 ? `(${extended} bytes)` : `(${(extended / 1024).toFixed(1)} KB)`,
+      removable: true,
+    });
+  }
+  const xmpGoes = xmp.some((x) => x.goes) || (extended > 0 && options.custom);
+
+  // C2PA, IPTC and comments are one field per segment (C2PA one set for all
+  // its segments), each removed exactly when its category is.
   const segmentFields = catalogSegmentFields(bytes, segs);
-  const fieldsFound = [...exifFound, ...segmentFields];
-  const fieldsRemoved = [...exifRemoved, ...segmentFields.filter((f) => options[f.category])];
+  const fieldsFound = [...exifFound, ...xmpFound, ...segmentFields];
+  const fieldsRemoved = [...exifRemoved, ...(xmpGoes ? xmpFound : []), ...segmentFields.filter((f) => options[f.category])];
 
   const drop = new Set<SegKind>();
   if (options.ai) drop.add("jumbf");
-  // XMP goes with the category the review showed it under: AI when it carries
-  // an AI marker or a C2PA manifest link (a Firefly download), Custom otherwise.
-  if (options[xmpIsAi(bytes, segs) ? "ai" : "custom"]) drop.add("xmp");
+  if (xmpGoes) {
+    drop.add("xmp");
+    drop.add("xmpext");
+  }
   if (options.custom) drop.add("iptc");
   if (options.comments) drop.add("com");
 

@@ -1,12 +1,11 @@
 import type {
   StripOptions,
   MetadataField,
-  MetadataCategory,
 } from "../types";
 import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { describeC2pa } from "../c2pa-manifest";
-import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 import { stripExif } from "./exif";
+import { stripXmp } from "../xmp";
 
 // RIFF header: "RIFF" + 4-byte LE size + "WEBP"
 const RIFF_HEADER = new TextEncoder().encode("RIFF");
@@ -64,54 +63,8 @@ function parseRiffChunks(buffer: Uint8Array): RiffChunk[] {
   return chunks;
 }
 
-function catalogueXmpFields(data: Uint8Array): MetadataField[] {
-  const fields: MetadataField[] = [];
-  const text = new TextDecoder().decode(data);
-
-  // An AI marker or a C2PA manifest link (a Firefly download) puts the packet
-  // under AI, with the link as its value rather than a byte count.
-  const xmpKey = "XML:com.adobe.xmp";
-  fields.push({
-    category: aiCategoryFor(xmpKey, text) === "ai" ? "ai" : "custom",
-    key: "XMP",
-    label: aiValueLabel(xmpKey, text) ?? "XMP Metadata",
-    value: aiDisplayValue(xmpKey, text) ?? `(${data.length} bytes)`,
-    removable: true,
-  });
-
-  // Extract some common XMP values
-  const xmpPatterns: { tag: string; label: string; category: MetadataCategory }[] = [
-    { tag: "dc:creator", label: "Creator", category: "author" },
-    { tag: "xmp:CreatorTool", label: "Creator Tool", category: "software" },
-    { tag: "xmp:CreateDate", label: "Create Date", category: "dates" },
-    { tag: "xmp:ModifyDate", label: "Modify Date", category: "dates" },
-    { tag: "dc:rights", label: "Rights", category: "copyright" },
-    { tag: "dc:description", label: "Description", category: "custom" },
-    { tag: "dc:title", label: "Title", category: "custom" },
-    { tag: "photoshop:Credit", label: "Credit", category: "author" },
-  ];
-
-  for (const p of xmpPatterns) {
-    const tagPattern = new RegExp(`<${p.tag}[^>]*>([^<]+)</${p.tag}>`, "i");
-    const match = text.match(tagPattern);
-    if (match) {
-      fields.push({
-        category: p.category,
-        key: `xmp-${p.tag}`,
-        label: p.label,
-        value: match[1].trim().slice(0, 200),
-        removable: true,
-      });
-    }
-  }
-
-  return fields;
-}
-
 function catalogueChunkFields(chunk: RiffChunk): MetadataField[] {
-  if (chunk.fourcc === "XMP ") {
-    return catalogueXmpFields(chunk.data);
-  } else if (chunk.fourcc === "C2PA") {
+  if (chunk.fourcc === "C2PA") {
     // What made the image and whose certificate signed it, not just a size.
     return describeC2pa(chunk.data);
   }
@@ -189,8 +142,8 @@ export function stripWebp(buffer: Uint8Array, options: StripOptions): Stripped {
   const fieldsRemoved: MetadataField[] = [];
   const removedFourccs = new Set<string>();
 
-  // EXIF goes through the EXIF reader, tag by tag. Every other metadata
-  // chunk goes whole or stays whole, and only the fields of a chunk that
+  // EXIF goes through the EXIF reader, tag by tag, and XMP through the XMP
+  // reader. Every other metadata chunk goes whole or stays whole, and only the fields of a chunk that
   // really went are reported removed.
   const keptChunks = parseRiffChunks(buffer).filter((chunk) => {
     if (chunk.fourcc === "EXIF") {
@@ -203,6 +156,13 @@ export function stripWebp(buffer: Uint8Array, options: StripOptions): Stripped {
       }
       chunk.data = exif.cleaned;
       return true;
+    }
+    if (chunk.fourcc === "XMP ") {
+      const xmp = stripXmp(new TextDecoder().decode(chunk.data), options);
+      fieldsFound.push(...xmp.fieldsFound);
+      fieldsRemoved.push(...xmp.fieldsRemoved);
+      if (xmp.goes) removedFourccs.add("XMP ");
+      return !xmp.goes;
     }
     if (!METADATA_CHUNKS.has(chunk.fourcc)) return true;
     const fields = catalogueChunkFields(chunk);

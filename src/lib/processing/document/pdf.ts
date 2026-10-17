@@ -1,6 +1,6 @@
 import { PDFDocument, PDFName, PDFDict, PDFRef, PDFRawStream } from "pdf-lib";
-import { parseXmp, type XmpProperty } from "./xmp";
-import { Unreadable, blockGoes, type Stripped } from "../contract";
+import { stripXmp } from "../xmp";
+import { Unreadable, type Stripped } from "../contract";
 import type {
   StripOptions,
   MetadataField,
@@ -128,51 +128,17 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promis
   // written back as an orphan.
   const xmpValue = pdfDoc.catalog.get(PDFName.of("Metadata"));
   if (xmpValue) {
-    // Read the packet so the report can name what is inside it rather than
-    // just admitting something is. XMP streams are required to be plain, so a
-    // decode is normally enough; anything unreadable falls back to the old
-    // single "(present)" row.
-    let parsed: XmpProperty[] = [];
-    try {
-      const stream = pdfDoc.context.lookup(xmpValue);
-      if (stream instanceof PDFRawStream) {
-        parsed = parseXmp(new TextDecoder().decode(stream.getContents()));
-      }
-    } catch {
-      parsed = [];
-    }
-
-    const xmpFields: MetadataField[] = parsed.length
-      ? parsed.map((prop) => ({
-          category: prop.category,
-          key: `XMP:${prop.key}`,
-          label: prop.label,
-          value: prop.value,
-          removable: true,
-        }))
-      : [{
-          category: "custom" as MetadataCategory,
-          key: "XMP",
-          label: "XMP metadata stream",
-          value: "(present)",
-          removable: true,
-        }];
-
-    for (const field of xmpFields) fieldsFound.push(field);
-
-    // The packet can only be dropped whole, so it goes if any category it
-    // carries is being stripped, and everything in it is reported removed,
-    // including a category the user chose to keep: that is what actually
-    // happens to the file. A packet we couldn't read might hold any of the
-    // categories XMP carries, so it goes if any of those is being stripped.
-    const removeXmp = parsed.length
-      ? blockGoes(xmpFields, options)
-      : options.author || options.dates || options.software || options.copyright || options.custom;
-
-    if (removeXmp) {
+    // XMP streams are required to be plain, so decoding the raw contents is
+    // normally enough. Anything else reads as a packet with nothing readable,
+    // which goes whenever any category XMP can hold is being removed.
+    const stream = pdfDoc.context.lookup(xmpValue);
+    const packet = stream instanceof PDFRawStream ? new TextDecoder().decode(stream.getContents()) : "(not a plain stream)";
+    const xmp = stripXmp(packet, options);
+    fieldsFound.push(...xmp.fieldsFound);
+    if (xmp.goes) {
       pdfDoc.catalog.delete(PDFName.of("Metadata"));
       if (xmpValue instanceof PDFRef) pdfDoc.context.delete(xmpValue);
-      for (const field of xmpFields) fieldsRemoved.push(field);
+      fieldsRemoved.push(...xmp.fieldsRemoved);
     }
   }
 

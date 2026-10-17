@@ -11,6 +11,10 @@ import type { MetadataField } from "./processing/types";
  * Apple's com.apple.quicktime.location.ISO6709 key, Android's ©xyz atom, and
  * 3GPP loci once the MP4 processor converts it. The processor emits those under
  * the key "ISO6709", so a video's location reaches the same map.
+ *
+ * XMP writes a coordinate as degrees and decimal minutes with the hemisphere
+ * last ("37,48.816S"), or degrees, minutes and seconds ("37,48,49S"), under
+ * the keys "XMP:exif:GPSLatitude" and "XMP:exif:GPSLongitude".
  */
 
 export interface LatLng {
@@ -54,13 +58,31 @@ export function parseIso6709(value: string): LatLng | null {
   return { lat, lng };
 }
 
+/** "37,48.816S" -> -37.8136; "144,57,47.16E" -> 144.9631. */
+export function parseXmpCoordinate(value: string): number | null {
+  const m = /^\s*(\d+(?:\.\d+)?),(\d+(?:\.\d+)?)(?:,(\d+(?:\.\d+)?))?\s*([NSEW])\s*$/i.exec(value);
+  if (!m) return null;
+  const deg = Number(m[1]) + Number(m[2]) / 60 + Number(m[3] ?? 0) / 3600;
+  return /[SW]/i.test(m[4]) ? -deg : deg;
+}
+
+function fromXmp(fields: MetadataField[]): LatLng | null {
+  const latRaw = fieldValue(fields, "XMP:exif:GPSLatitude");
+  const lngRaw = fieldValue(fields, "XMP:exif:GPSLongitude");
+  if (!latRaw || !lngRaw) return null;
+  const lat = parseXmpCoordinate(latRaw);
+  const lng = parseXmpCoordinate(lngRaw);
+  if (lat == null || lng == null || lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
+}
+
 /** Returns decimal coordinates if the fields carry a parseable GPS fix: EXIF
- *  for photos, ISO 6709 for video. */
+ *  first, then XMP, for photos; ISO 6709 for video. */
 export function extractGpsCoordinates(fields: MetadataField[]): LatLng | null {
   const iso = fieldValue(fields, "ISO6709");
   const latRaw = fieldValue(fields, "GPSLatitude");
   const lngRaw = fieldValue(fields, "GPSLongitude");
-  if (!latRaw || !lngRaw) return iso ? parseIso6709(iso) : null;
+  if (!latRaw || !lngRaw) return fromXmp(fields) ?? (iso ? parseIso6709(iso) : null);
 
   let lat = dmsToDecimal(latRaw);
   let lng = dmsToDecimal(lngRaw);

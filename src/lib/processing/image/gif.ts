@@ -1,6 +1,6 @@
-import type { StripOptions, MetadataField, MetadataCategory } from "../types";
+import type { StripOptions, MetadataField } from "../types";
 import { Unreadable, blockGoes, type Stripped } from "../contract";
-import { parseXmp } from "../document/xmp";
+import { stripXmp } from "../xmp";
 
 /**
  * GIF metadata removal.
@@ -72,6 +72,8 @@ interface Removable {
   start: number;
   end: number;
   fields: MetadataField[];
+  /** Whether it goes, when that isn't the whole-block rule (XMP decides). */
+  goes?: boolean;
 }
 
 export function stripGif(b: Uint8Array, options: StripOptions): Stripped {
@@ -138,22 +140,19 @@ export function stripGif(b: Uint8Array, options: StripOptions): Stripped {
 
       if (appId.startsWith("XMP")) {
         // XMP is written raw, not as real sub-blocks, so reading it through the
-        // sub-block walker returns a shredded payload. Take the whole block and
-        // let the parser find the tags; the magic trailer is binary noise the
-        // regexes ignore.
+        // sub-block walker returns a shredded payload. Take the whole block; the
+        // reader only reads the packet, so the magic trailer after it is ignored.
         const raw = b.subarray(dataStart, Math.max(dataStart, p - 1));
-        const props = parseXmp(new TextDecoder().decode(raw));
-        const fields: MetadataField[] = props.length
-          ? props.map((prop) => ({
-              category: prop.category, key: `XMP:${prop.key}`,
-              label: prop.label, value: prop.value, removable: true,
-            }))
-          : [{ category: "custom" as MetadataCategory, key: "XMP", label: "XMP metadata packet", value: "(present)", removable: true }];
-        removable.push({ start, end: p, fields });
+        const xmp = stripXmp(new TextDecoder().decode(raw), options);
+        removable.push({ start, end: p, fields: xmp.fieldsFound, goes: xmp.goes });
         continue;
       }
 
-      const label_ = appId.startsWith("ICCRGBG") ? "ICC colour profile" : `Application data: ${appId.trim()}`;
+      // A colour profile is display information, as JPEG, PNG and WebP keep
+      // theirs: removing it can shift the colours. It used to go with Custom.
+      if (appId.startsWith("ICCRGBG")) continue;
+
+      const label_ = `Application data: ${appId.trim()}`;
       removable.push({
         start, end: p,
         fields: [{ category: "custom", key: `GIF:${appId.trim()}`, label: label_, value: "(present)", removable: true }],
@@ -172,7 +171,7 @@ export function stripGif(b: Uint8Array, options: StripOptions): Stripped {
   const drop: Array<{ start: number; end: number }> = [];
 
   for (const block of removable) {
-    if (blockGoes(block.fields, options)) {
+    if (block.goes ?? blockGoes(block.fields, options)) {
       drop.push({ start: block.start, end: block.end });
       fieldsRemoved.push(...block.fields);
     }

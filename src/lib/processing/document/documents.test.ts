@@ -81,11 +81,12 @@ const PDF_INFO_FIELDS = [
   "software:Producer",
 ];
 
-// The XMP packet in the fixture, as parseXmp names it.
+// The XMP packet in the fixture, as the XMP reader names it. dc:title is
+// Custom, as EXIF's ImageDescription is; it used to be Author.
 const PDF_XMP_FIELDS = [
   "author:XMP:dc:creator",
-  "author:XMP:dc:title",
   "copyright:XMP:dc:rights",
+  "custom:XMP:dc:title",
   "custom:XMP:pdfx:Department",
   "custom:XMP:xmpMM:DocumentID",
   "dates:XMP:xmp:CreateDate",
