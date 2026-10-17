@@ -4,9 +4,13 @@ import type {
   MetadataCategory,
 } from "../types";
 import { Unreadable, blockGoes, type Stripped } from "../contract";
-import { aiCategoryFor, aiTextLabel, aiValueLabel, aiDisplayValue } from "../ai-signatures";
+import { aiCategoryFor, aiTextLabel, aiValueLabel } from "../ai-signatures";
 import { describeC2pa } from "../c2pa-manifest";
 import { stripExif } from "./exif";
+import { stripXmp } from "../xmp";
+
+/** The iTXt keyword Adobe stores an XMP packet under. */
+const XMP_KEYWORD = "XML:com.adobe.xmp";
 
 // PNG signature: 8 bytes
 const PNG_SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -177,7 +181,7 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
         category,
         key: parsed.keyword,
         label: aiTextLabel(parsed.keyword) ?? aiValueLabel(parsed.keyword, parsed.value) ?? parsed.keyword,
-        value: aiDisplayValue(parsed.keyword, parsed.value) ?? (parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value),
+        value: parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value,
         removable: true,
       });
     }
@@ -189,7 +193,7 @@ function catalogueChunkFields(chunk: PngChunk): MetadataField[] {
         category,
         key: parsed.keyword,
         label: aiTextLabel(parsed.keyword) ?? aiValueLabel(parsed.keyword, parsed.value) ?? `${parsed.keyword} (iTXt)`,
-        value: aiDisplayValue(parsed.keyword, parsed.value) ?? (parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value),
+        value: parsed.value.length > 200 ? parsed.value.slice(0, 200) + "..." : parsed.value,
         removable: true,
       });
     }
@@ -263,9 +267,17 @@ export function stripPng(buffer: Uint8Array, options: StripOptions): Stripped {
   const fieldsFound: MetadataField[] = [];
   const fieldsRemoved: MetadataField[] = [];
   const { chunks, end } = parseChunks(buffer);
-  // eXIf goes through the EXIF reader, tag by tag. Every other metadata
-  // chunk goes whole or stays whole.
+  // eXIf goes through the EXIF reader, tag by tag, and an XMP packet (an
+  // iTXt chunk under Adobe's keyword) through the XMP reader. Every other
+  // metadata chunk goes whole or stays whole.
   const keptChunks = chunks.filter((chunk) => {
+    const itxt = chunk.type === "iTXt" ? parseITxtChunk(chunk.data) : null;
+    if (itxt?.keyword === XMP_KEYWORD) {
+      const xmp = stripXmp(itxt.value, options);
+      fieldsFound.push(...xmp.fieldsFound);
+      fieldsRemoved.push(...xmp.fieldsRemoved);
+      return !xmp.goes;
+    }
     if (chunk.type === "eXIf") {
       const exif = stripExif(chunk.data, options);
       fieldsFound.push(...exif.fieldsFound);

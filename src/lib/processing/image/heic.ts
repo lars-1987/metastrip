@@ -3,10 +3,10 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
-import { Unreadable, blockGoes, type Stripped } from "../contract";
+import { Unreadable, type Stripped } from "../contract";
 import { stripExif } from "./exif";
+import { stripXmp } from "../xmp";
 import { describeC2pa } from "../c2pa-manifest";
-import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 import {
   readBox,
   iterBoxes,
@@ -108,11 +108,10 @@ function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
     fieldsFound.push(...exif.fieldsFound);
     return [{ item: it, data, tiff, exif }];
   });
-  const xmpCatalogs = xmpItems.map((it) => {
-    const text = UTF8.decode(readExtents(original, it.extents));
-    const fields = catalogXmp(text);
-    fieldsFound.push(...fields);
-    return { item: it, fields };
+  const xmpResults = xmpItems.map((it) => {
+    const xmp = stripXmp(UTF8.decode(readExtents(original, it.extents)), options);
+    fieldsFound.push(...xmp.fieldsFound);
+    return { item: it, xmp };
   });
   // The manifest follows the box's 16-byte UUID (then version, purpose and
   // an offset, which describeC2pa skips by finding the JUMBF itself).
@@ -149,11 +148,12 @@ function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
     }
   }
 
-  // XMP items go whole.
-  for (const { item, fields } of xmpCatalogs) {
-    if (blockGoes(fields, options)) {
+  // XMP items go whole. (A zeroed item reads as nothing, so re-reading a
+  // cleaned file finds no XMP.)
+  for (const { item, xmp } of xmpResults) {
+    if (xmp.goes) {
       for (const ext of item.extents) zeroBytes(cleaned, ext.offset, ext.length);
-      fieldsRemoved.push(...fields);
+      fieldsRemoved.push(...xmp.fieldsRemoved);
     }
   }
 
@@ -404,37 +404,6 @@ function indexOfTiffHeader(data: Uint8Array): number {
     }
   }
   return -1;
-}
-
-/** Lightweight XMP category sniffing (XMP is XML/text). */
-function catalogXmp(xml: string): MetadataField[] {
-  // A strip zeroes the item rather than removing it (so the iloc offsets stay
-  // valid), and zeroes decode to NULs. That carries nothing, so re-reading a
-  // cleaned file must not report it as "XMP metadata".
-  if (!xml.replace(/[\0\s]/g, "")) return [];
-  const fields: MetadataField[] = [];
-  const add = (category: MetadataCategory, key: string, label: string) =>
-    fields.push({ category, key, label, value: "present", removable: true });
-  // AI generators writing AVIF (Google, Midjourney, Adobe) mark the file with
-  // IPTC's digital source type or an online manifest link in XMP. Class it as
-  // AI so the AI toggle covers it, as the WebP and PNG readers already do.
-  const xmpKey = "XML:com.adobe.xmp";
-  if (aiCategoryFor(xmpKey, xml) === "ai") {
-    fields.push({
-      category: "ai",
-      key: "xmp:ai",
-      label: aiValueLabel(xmpKey, xml) ?? "AI marker in XMP",
-      value: aiDisplayValue(xmpKey, xml) ?? "present",
-      removable: true,
-    });
-  }
-  if (/<dc:creator|<xmp:CreatorTool|<photoshop:Credit/i.test(xml)) add("author", "xmp:creator", "XMP Creator");
-  if (/xmp:CreateDate|xmp:ModifyDate|photoshop:DateCreated/i.test(xml)) add("dates", "xmp:dates", "XMP Dates");
-  if (/<dc:rights|xmpRights:/i.test(xml)) add("copyright", "xmp:rights", "XMP Rights");
-  if (/GPSLatitude|exif:GPS/i.test(xml)) add("gps", "xmp:gps", "XMP GPS");
-  if (/tiff:Make|tiff:Model|aux:/i.test(xml)) add("device", "xmp:device", "XMP Device");
-  if (fields.length === 0) add("custom", "xmp", "XMP metadata");
-  return fields;
 }
 
 /* ──────────────────────────────────────────────────────────────────

@@ -181,9 +181,19 @@ export const jpegWithExif = (tiff: Uint8Array, { xmp = false } = {}): Bytes =>
 /** XMP as UTF-8 bytes; concat writes strings one byte per character. */
 const utf8 = (text: string) => new TextEncoder().encode(text);
 
-/** A JPEG whose only metadata is one XMP packet. */
-export const jpegWithXmp = (xmp: string): Bytes =>
-  concat([0xff, 0xd8], JFIF(), segment(0xe1, "http://ns.adobe.com/xap/1.0/\0", utf8(xmp)), FRAME_AND_SCAN());
+/** A JPEG whose only metadata is one XMP packet, optionally continued in an
+ *  Extended XMP segment (a 32-character GUID, the full length and this
+ *  piece's offset, then the bytes). */
+export const jpegWithXmp = (xmp: string, { extended }: { extended?: Uint8Array } = {}): Bytes =>
+  concat(
+    [0xff, 0xd8],
+    JFIF(),
+    segment(0xe1, "http://ns.adobe.com/xap/1.0/\0", utf8(xmp)),
+    extended
+      ? segment(0xe1, "http://ns.adobe.com/xmp/extension/\0", "0".repeat(32), u32be(extended.length), u32be(0), extended)
+      : [],
+    FRAME_AND_SCAN()
+  );
 
 /* ── PNG ───────────────────────────────────────────────────────────── */
 

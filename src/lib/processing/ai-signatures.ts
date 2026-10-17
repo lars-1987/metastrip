@@ -29,8 +29,6 @@ const FREE_TEXT_KEYS = new Set([
   "Comment", "Description", "Title", "UserComment", "ImageDescription", "XPComment", "XPTitle", "XPSubject",
 ]);
 
-const XMP_KEYS = new Set(["XML:com.adobe.xmp"]);
-
 const GENERATOR_NAMES = /\b(NovelAI|Midjourney|Stable Diffusion|ComfyUI|InvokeAI|Fooocus|DALL[·-]?E|Adobe Firefly)\b/i;
 
 /** Midjourney packs the prompt and the job into one Description field. */
@@ -66,9 +64,18 @@ export function aiCategoryFor(key: string, value: string): MetadataCategory | nu
   if (hasOwn(AI_TEXT_KEYS, key)) return "ai";
   if (SOFTWARE_KEYS.has(key)) return GENERATOR_NAMES.test(value) ? "ai" : null;
   if (FREE_TEXT_KEYS.has(key)) return looksLikeAiGeneration(value) ? "ai" : null;
-  // IPTC's official AI marker (Midjourney, Google and Adobe set it) or a
-  // generator named as the creator tool.
-  if (XMP_KEYS.has(key)) return /trainedAlgorithmicMedia/i.test(value) || GENERATOR_NAMES.test(value) || xmpProvenance(value) ? "ai" : null;
+  return null;
+}
+
+/** Whether a value names an image generator (Midjourney, Stable Diffusion,
+ *  Adobe Firefly and the rest). */
+export function namesGenerator(value: string): boolean {
+  return GENERATOR_NAMES.test(value);
+}
+
+/** What an IPTC digital source type says about AI, else null. */
+export function iptcSourceTypeLabel(value: string): string | null {
+  for (const [re, text] of IPTC_SOURCE_TYPES) if (re.test(value)) return text;
   return null;
 }
 
@@ -82,8 +89,6 @@ export function aiTextLabel(key: string): string | null {
  *  bare "Description". */
 export function aiValueLabel(key: string, value: string): string | null {
   if (FREE_TEXT_KEYS.has(key) && MIDJOURNEY_JOB.test(value.replace(/\0/g, ""))) return "Midjourney prompt and job ID";
-  if (XMP_KEYS.has(key) && xmpProvenance(value)) return "C2PA manifest stored online";
-  if (XMP_KEYS.has(key) && aiCategoryFor(key, value) === "ai") return "AI marker in XMP";
   return null;
 }
 
@@ -91,26 +96,3 @@ const IPTC_SOURCE_TYPES: [RegExp, string][] = [
   [/compositeWithTrainedAlgorithmicMedia/i, "Edited with AI (IPTC digital source type)"],
   [/trainedAlgorithmicMedia/i, "AI-generated (IPTC digital source type)"],
 ];
-
-/**
- * The online manifest an XMP packet points to, else null. Adobe Firefly's PNG
- * downloads carry no embedded manifest at all, only this link
- * (dcterms:provenance="https://cai-manifests.adobe.com/manifests/…"), which
- * showed as a Custom field whose 200-character preview cut the link off.
- */
-export function xmpProvenance(xmp: string): string | null {
-  const m = /dcterms:provenance\s*=\s*"([^"]+)"/.exec(xmp) ?? /<dcterms:provenance>\s*([^<\s]+)\s*</.exec(xmp);
-  return m ? m[1] : null;
-}
-
-/** A better value to show than the raw text, else null. For an XMP packet the
- *  opening "<?xpacket begin=…" said nothing: show the manifest link, the IPTC
- *  source type, or the generator it names instead. */
-export function aiDisplayValue(key: string, value: string): string | null {
-  if (!XMP_KEYS.has(key)) return null;
-  const link = xmpProvenance(value);
-  if (link) return link;
-  for (const [re, text] of IPTC_SOURCE_TYPES) if (re.test(value)) return text;
-  const tool = GENERATOR_NAMES.exec(value);
-  return tool ? `names ${tool[1]}` : null;
-}

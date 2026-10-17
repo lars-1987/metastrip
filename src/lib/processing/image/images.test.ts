@@ -80,22 +80,26 @@ describe("JPEG", () => {
       "ai:C2PA:model",
       "ai:C2PA:source",
       "author:Artist",
+      "author:XMP:dc:creator",
       "comments:COM",
       "copyright:Copyright",
+      "copyright:XMP:dc:rights",
       "custom:IPTC",
       "custom:ImageDescription",
-      "custom:XMP",
       "dates:DateTime",
       "dates:DateTimeOriginal",
+      "dates:XMP:xmp:CreateDate",
       "device:LensModel",
       "device:Make",
       "device:Model",
+      "device:XMP:tiff:Make",
       "gps:GPSLatitude",
       "gps:GPSLatitudeRef",
       "gps:GPSLongitude",
       "gps:GPSLongitudeRef",
       "gps:GPSVersionID",
       "software:Software",
+      "software:XMP:xmp:CreatorTool",
     ];
     expect(summary(result.report.fieldsFound)).toEqual(all);
     expect(summary(result.report.fieldsRemoved)).toEqual(all);
@@ -111,22 +115,26 @@ describe("JPEG", () => {
       "ai:C2PA:generator",
       "ai:C2PA:model",
       "ai:C2PA:source",
+      "author:XMP:dc:creator",
       "comments:COM",
       "copyright:Copyright",
+      "copyright:XMP:dc:rights",
       "custom:IPTC",
       "custom:ImageDescription",
-      "custom:XMP",
       "dates:DateTime",
       "dates:DateTimeOriginal",
+      "dates:XMP:xmp:CreateDate",
       "device:LensModel",
       "device:Make",
       "device:Model",
+      "device:XMP:tiff:Make",
       "gps:GPSLatitude",
       "gps:GPSLatitudeRef",
       "gps:GPSLongitude",
       "gps:GPSLongitudeRef",
       "gps:GPSVersionID",
       "software:Software",
+      "software:XMP:xmp:CreatorTool",
     ]);
     expect(summary(result.report.fieldsKept)).toEqual(["author:Artist"]);
     expect(await reread(result, name, type)).toEqual(["author:Artist"]);
@@ -209,10 +217,9 @@ describe("WebP", () => {
   it("strips every metadata chunk with everything on", async () => {
     const { result } = await strip(webpWithMetadata(), name, type);
     expect(result.error).toBeUndefined();
-    // EXIF goes through the EXIF reader, tag by tag; it used to be a string
-    // search that found only the make and software. The XMP's dc:creator (in
-    // an rdf:Seq) and dc:rights (in an rdf:Alt) are missed: the reader only
-    // matches a bare text value.
+    // EXIF and XMP go through their readers, property by property. EXIF used
+    // to be a string search that found only the make and software, and XMP
+    // missed dc:creator (in an rdf:Seq) and dc:rights (in an rdf:Alt).
     const all = [
       "ai:C2PA",
       "ai:C2PA:actions",
@@ -220,22 +227,24 @@ describe("WebP", () => {
       "ai:C2PA:model",
       "ai:C2PA:source",
       "author:Artist",
+      "author:XMP:dc:creator",
       "copyright:Copyright",
+      "copyright:XMP:dc:rights",
       "custom:ImageDescription",
-      "custom:XMP",
       "dates:DateTime",
       "dates:DateTimeOriginal",
-      "dates:xmp-xmp:CreateDate",
+      "dates:XMP:xmp:CreateDate",
       "device:LensModel",
       "device:Make",
       "device:Model",
+      "device:XMP:tiff:Make",
       "gps:GPSLatitude",
       "gps:GPSLatitudeRef",
       "gps:GPSLongitude",
       "gps:GPSLongitudeRef",
       "gps:GPSVersionID",
       "software:Software",
-      "software:xmp-xmp:CreatorTool",
+      "software:XMP:xmp:CreatorTool",
     ];
     expect(summary(result.report.fieldsFound)).toEqual(all);
     expect(summary(result.report.fieldsRemoved)).toEqual(all);
@@ -251,7 +260,7 @@ describe("WebP", () => {
     // only go whole, and its other fields are being removed, so its creator
     // tool goes too and is reported removed.
     expect(summary(result.report.fieldsKept)).toEqual(["software:Software"]);
-    expect(summary(result.report.fieldsRemoved)).toContain("software:xmp-xmp:CreatorTool");
+    expect(summary(result.report.fieldsRemoved)).toContain("software:XMP:xmp:CreatorTool");
     expect(await reread(result, name, type)).toEqual(["software:Software"]);
   });
 
@@ -288,9 +297,9 @@ describe("GIF", () => {
   it("removes the author anyway when that toggle is off", async () => {
     const { result } = await strip(gifWithMetadata(), name, type, { ...ALL_ON, author: false });
     expect(result.error).toBeUndefined();
-    // Quirk the contract should change: the XMP block goes whole when any of
-    // its categories is stripped, so the creator the user asked to keep is
-    // removed, and reported as removed rather than kept.
+    // The whole-block rule: the XMP block goes whole when any of its
+    // categories is stripped, so the creator the user asked to keep goes too,
+    // and is reported removed rather than kept.
     expect(summary(result.report.fieldsRemoved)).toEqual([
       "author:XMP:dc:creator",
       "comments:GIF:Comment",
@@ -304,13 +313,12 @@ describe("GIF", () => {
     expect(await reread(result, name, type)).toEqual([]);
   });
 
-  it("removes the ICC colour profile with Custom", async () => {
-    // To change: a colour profile is display information, as JPEG, PNG and
-    // WebP already treat theirs, so it will be kept and not listed.
+  it("keeps the ICC colour profile, and doesn't list it", async () => {
+    // A colour profile is display information, as JPEG, PNG and WebP treat
+    // theirs. It used to be removed with Custom.
     const { result } = await strip(gifWithIcc(), name, type);
-    expect(result.report.fieldsRemoved.map((f) => [f.category, f.key, f.label])).toEqual([
-      ["custom", "GIF:ICCRGBG1012", "ICC colour profile"],
-    ]);
+    expect(result.report.fieldsFound).toEqual([]);
+    expect(containsAscii(await bytesOf(result.cleanedBlob), "ICCRGBG1012")).toBe(true);
   });
 
   it("refuses a file with a block it can't recognise", async () => {
@@ -345,23 +353,24 @@ describe("HEIC", () => {
       "ai:C2PA:model",
       "ai:C2PA:source",
       "author:Artist",
-      "author:xmp:creator",
+      "author:XMP:dc:creator",
       "copyright:Copyright",
-      "copyright:xmp:rights",
+      "copyright:XMP:dc:rights",
       "custom:ImageDescription",
       "dates:DateTime",
       "dates:DateTimeOriginal",
-      "dates:xmp:dates",
+      "dates:XMP:xmp:CreateDate",
       "device:LensModel",
       "device:Make",
       "device:Model",
-      "device:xmp:device",
+      "device:XMP:tiff:Make",
       "gps:GPSLatitude",
       "gps:GPSLatitudeRef",
       "gps:GPSLongitude",
       "gps:GPSLongitudeRef",
       "gps:GPSVersionID",
       "software:Software",
+      "software:XMP:xmp:CreatorTool",
     ]);
     // Every field goes, the C2PA box's included. Only its first field used to
     // be reported removed, leaving the rest neither removed nor kept.
@@ -384,23 +393,24 @@ describe("HEIC", () => {
       "ai:C2PA:generator",
       "ai:C2PA:model",
       "ai:C2PA:source",
-      "author:xmp:creator",
+      "author:XMP:dc:creator",
       "copyright:Copyright",
-      "copyright:xmp:rights",
+      "copyright:XMP:dc:rights",
       "custom:ImageDescription",
       "dates:DateTime",
       "dates:DateTimeOriginal",
-      "dates:xmp:dates",
+      "dates:XMP:xmp:CreateDate",
       "device:LensModel",
       "device:Make",
       "device:Model",
-      "device:xmp:device",
+      "device:XMP:tiff:Make",
       "gps:GPSLatitude",
       "gps:GPSLatitudeRef",
       "gps:GPSLongitude",
       "gps:GPSLongitudeRef",
       "gps:GPSVersionID",
       "software:Software",
+      "software:XMP:xmp:CreatorTool",
     ]);
     expect(summary(result.report.fieldsKept)).toEqual(["author:Artist"]);
     expect(await reread(result, name, type)).toEqual(["author:Artist"]);
@@ -434,9 +444,9 @@ describe("AVIF", () => {
     const { result } = await strip(input, name, type);
     expect(result.error).toBeUndefined();
     const all = [
-      "ai:xmp:ai",
+      "ai:XMP:Iptc4xmpExt:DigitalSourceType",
       "author:Artist",
-      "author:xmp:creator",
+      "author:XMP:dc:creator",
       "copyright:Copyright",
       "custom:ImageDescription",
       "dates:DateTime",
@@ -460,11 +470,11 @@ describe("AVIF", () => {
   it("keeps the EXIF author when that toggle is off, but not the XMP one", async () => {
     const { result } = await strip(avifWithMetadata(), name, type, { ...ALL_ON, author: false });
     expect(result.error).toBeUndefined();
-    // Same whole-item XMP quirk as HEIC: xmp:creator is removed and reported
-    // removed with author off.
+    // The same whole-block rule as HEIC: the XMP creator is removed, and
+    // reported removed, with author off.
     expect(summary(result.report.fieldsRemoved)).toEqual([
-      "ai:xmp:ai",
-      "author:xmp:creator",
+      "ai:XMP:Iptc4xmpExt:DigitalSourceType",
+      "author:XMP:dc:creator",
       "copyright:Copyright",
       "custom:ImageDescription",
       "dates:DateTime",

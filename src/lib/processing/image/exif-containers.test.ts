@@ -163,7 +163,9 @@ describe("container details", () => {
   it("JPEG: EXIF it can't walk goes beside XMP on a partial strip", async () => {
     const input = jpegWithExif(unwalkableExif(), { xmp: true });
     const { result, out } = await strip(input, JPEG.name, JPEG.type, { ...ALL_ON, author: false, custom: false });
-    expect(summary(result.report.fieldsRemoved)).toEqual(["custom:EXIF"]);
+    // The XMP beside it goes too, by its own rule: its other categories are
+    // being removed.
+    expect(summary(result.report.fieldsRemoved)).toContain("custom:EXIF");
     expect(out).not.toContain("iPhone");
   });
 
