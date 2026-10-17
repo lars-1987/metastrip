@@ -9,6 +9,7 @@ import type { MetadataField, ProcessingResult, StripOptions } from "../types";
 import {
   avifWithMetadata,
   gifWithMetadata,
+  gifWithIcc,
   gifWithUnknownBlock,
   heicWithMetadata,
   jpegWithMetadata,
@@ -301,6 +302,15 @@ describe("GIF", () => {
     ]);
     expect(summary(result.report.fieldsKept)).toEqual([]);
     expect(await reread(result, name, type)).toEqual([]);
+  });
+
+  it("removes the ICC colour profile with Custom", async () => {
+    // To change: a colour profile is display information, as JPEG, PNG and
+    // WebP already treat theirs, so it will be kept and not listed.
+    const { result } = await strip(gifWithIcc(), name, type);
+    expect(result.report.fieldsRemoved.map((f) => [f.category, f.key, f.label])).toEqual([
+      ["custom", "GIF:ICCRGBG1012", "ICC colour profile"],
+    ]);
   });
 
   it("refuses a file with a block it can't recognise", async () => {

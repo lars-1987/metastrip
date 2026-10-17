@@ -65,6 +65,16 @@ export async function buildPdf(): Promise<Uint8Array> {
   return doc.save();
 }
 
+/** A one-page PDF whose only metadata is an XMP stream: no Info fields, and
+ *  pdf-lib told not to add its own producer and dates. */
+export async function pdfWithXmp(xmp: string): Promise<Uint8Array> {
+  const doc = await PDFDocument.create({ updateMetadata: false });
+  doc.addPage([200, 200]);
+  const stream = doc.context.stream(new TextEncoder().encode(xmp), { Type: "Metadata", Subtype: "XML" });
+  doc.catalog.set(PDFName.of("Metadata"), doc.context.register(stream));
+  return doc.save({ updateFieldAppearances: false });
+}
+
 const CORE_XML = `${XML_HEAD}<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Quarterly Report</dc:title><dc:subject>Q3 numbers</dc:subject><dc:creator>Jane Doe</dc:creator><cp:keywords>finance, internal</cp:keywords><dc:description>Draft for the board</dc:description><cp:lastModifiedBy>John Smith</cp:lastModifiedBy><cp:revision>7</cp:revision><dcterms:created xsi:type="dcterms:W3CDTF">2026-01-02T03:04:05Z</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">2026-02-03T04:05:06Z</dcterms:modified></cp:coreProperties>`;
 
 /** app.xml with every element office-common.ts maps, under the application
