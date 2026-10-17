@@ -5,9 +5,11 @@
 
 import { concat, type Bytes } from "./image-files.fixture";
 
-/** TIFF field types used here: BYTE, ASCII, SHORT, LONG, RATIONAL, UNDEFINED. */
-export const BYTE = 1, ASCII = 2, SHORT = 3, LONG = 4, RATIONAL = 5, UNDEFINED = 7;
-const TYPE_SIZE: Record<number, number> = { [BYTE]: 1, [ASCII]: 1, [SHORT]: 2, [LONG]: 4, [RATIONAL]: 8, [UNDEFINED]: 1 };
+/** TIFF field types used here: BYTE, ASCII, SHORT, LONG, RATIONAL, UNDEFINED, SRATIONAL. */
+export const BYTE = 1, ASCII = 2, SHORT = 3, LONG = 4, RATIONAL = 5, UNDEFINED = 7, SRATIONAL = 10;
+const TYPE_SIZE: Record<number, number> = {
+  [BYTE]: 1, [ASCII]: 1, [SHORT]: 2, [LONG]: 4, [RATIONAL]: 8, [UNDEFINED]: 1, [SRATIONAL]: 8,
+};
 
 /** One IFD entry. RATIONAL values are flat numerator, denominator pairs;
  *  ASCII gets its NUL added; BYTE and UNDEFINED take bytes or a Latin-1 string. */
@@ -51,7 +53,8 @@ export function tiff(spec: TiffSpec): Bytes {
     }
     const values = Array.from(e.value as number[]);
     const write = e.type === SHORT ? u16 : u32;
-    return { bytes: values.flatMap(write), count: e.type === RATIONAL ? values.length / 2 : values.length };
+    const pairs = e.type === RATIONAL || e.type === SRATIONAL;
+    return { bytes: values.flatMap(write), count: pairs ? values.length / 2 : values.length };
   };
 
   /** An IFD at `start`: count, 12-byte entries, next-IFD offset, then the
@@ -113,7 +116,7 @@ export function tiff(spec: TiffSpec): Bytes {
 }
 
 function expectSize(e: TiffEntry, bytes: number[]) {
-  if (bytes.length % TYPE_SIZE[e.type]) throw new Error(`tag ${e.tag}: ${bytes.length} bytes for type ${e.type}`);
+  if (!TYPE_SIZE[e.type] || bytes.length % TYPE_SIZE[e.type]) throw new Error(`tag ${e.tag}: ${bytes.length} bytes for type ${e.type}`);
 }
 
 /** UTF-16LE with a terminating NUL, as Windows writes the XP* tags. */

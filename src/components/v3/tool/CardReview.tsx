@@ -21,7 +21,7 @@ const CATEGORY_INFO: Record<MetadataCategory, string> = {
   ai: "Provenance markers (like C2PA) that flag the file as AI-generated and name the tool that produced it.",
   copyright: "Copyright notices and rights information stored inside the file.",
   comments: "Comments, tracked changes, and revision notes left behind in the document.",
-  custom: "Other embedded fields: resolution, orientation, app-specific tags, and assorted technical leftovers.",
+  custom: "Other embedded fields: resolution, camera settings, thumbnails, app-specific tags, and assorted technical leftovers.",
 };
 
 interface Props {

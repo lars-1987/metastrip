@@ -1,21 +1,13 @@
-import piexif from "piexifjs";
-import type {
-  StripOptions,
-  MetadataField,
-  MetadataCategory,
-} from "../types";
+import type { StripOptions, MetadataField } from "../types";
 import { Unreadable, type Stripped } from "../contract";
-import { IFD_MAP, catalogExifFields, exifCategory, formatExifValue } from "./exif-catalog";
+import { stripExif } from "./exif";
 import { describeC2pa, jumbfFromApp11 } from "../c2pa-manifest";
 import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
 
 // ── JPEG marker-segment walker ────────────────────────────────────────────
-// piexif only understands EXIF (APP1). A JPEG can also carry a C2PA content
-// credential (APP11 / JUMBF), an XMP packet (APP1), and IPTC/Photoshop data
-// (APP13) — none of which piexif sees or removes. Worse, when a file has a
-// C2PA manifest but no EXIF, piexif.load throws and the old code returned the
-// file untouched with "no metadata found". This walker parses the segment
-// structure directly so those layers are both reported and stripped, while the
+// A JPEG can carry EXIF and XMP (APP1), a C2PA content credential (APP11 /
+// JUMBF), IPTC/Photoshop data (APP13) and comments (COM). This walker parses
+// the segment structure so each layer is reported and stripped, while the
 // image scan, ICC profile (APP2), JFIF (APP0) and Adobe (APP14) are preserved.
 
 const MARKER_APP1 = 0xe1; // EXIF or XMP
@@ -103,8 +95,8 @@ function xmpIsAi(b: Uint8Array, segs: Segment[]): boolean {
   return segs.some((s) => s.kind === "xmp" && aiCategoryFor(XMP_KEY, LATIN1.decode(b.subarray(s.start + 4, s.end))) === "ai");
 }
 
-/** Report fields for the non-EXIF metadata segments (EXIF is cataloged via
- *  piexif). C2PA maps to the `ai` category — the UI's content-credentials
+/** Report fields for the non-EXIF metadata segments (EXIF goes through the
+ *  EXIF reader). C2PA maps to the `ai` category — the UI's content-credentials
  *  toggle. */
 function catalogSegmentFields(b: Uint8Array, segs: Segment[]): MetadataField[] {
   const fields: MetadataField[] = [];
@@ -151,139 +143,68 @@ function catalogSegmentFields(b: Uint8Array, segs: Segment[]): MetadataField[] {
   return fields;
 }
 
-/** Return a copy of the JPEG with the given metadata segment kinds removed by
- *  byte range. Everything else (image scan included) is preserved verbatim. */
-function removeSegments(b: Uint8Array<ArrayBuffer>, kinds: Set<SegKind>): Uint8Array<ArrayBuffer> {
-  const toRemove = parseMetadataSegments(b)
-    .filter((s) => kinds.has(s.kind))
-    .sort((a, z) => a.start - z.start);
-  if (toRemove.length === 0) return b;
+export function stripJpeg(bytes: Uint8Array<ArrayBuffer>, options: StripOptions): Stripped {
+  const segs = parseMetadataSegments(bytes);
 
-  const removedBytes = toRemove.reduce((n, s) => n + (s.end - s.start), 0);
-  const out = new Uint8Array(b.length - removedBytes);
-  let w = 0;
+  // EXIF goes through the EXIF reader, tag by tag; the payload after
+  // "Exif\0\0" is the TIFF block it takes.
+  const exif = new Map(
+    segs
+      .filter((s) => s.kind === "exif")
+      .map((s) => {
+        const tiff = bytes.subarray(s.start + 10, s.end);
+        return [s, { tiff, ...stripExif(tiff, options) }];
+      })
+  );
+  const exifFound = [...exif.values()].flatMap((e) => e.fieldsFound);
+  const exifRemoved = [...exif.values()].flatMap((e) => e.fieldsRemoved);
+
+  // C2PA, XMP, IPTC and comments are one field per segment (C2PA one set for
+  // all its segments), each removed exactly when its category is.
+  const segmentFields = catalogSegmentFields(bytes, segs);
+  const fieldsFound = [...exifFound, ...segmentFields];
+  const fieldsRemoved = [...exifRemoved, ...segmentFields.filter((f) => options[f.category])];
+
+  const drop = new Set<SegKind>();
+  if (options.ai) drop.add("jumbf");
+  // XMP goes with the category the review showed it under: AI when it carries
+  // an AI marker or a C2PA manifest link (a Firefly download), Custom otherwise.
+  if (options[xmpIsAi(bytes, segs) ? "ai" : "custom"]) drop.add("xmp");
+  if (options.custom) drop.add("iptc");
+  if (options.comments) drop.add("com");
+
+  // Rebuild from the original: dropped segments are left out, a rewritten
+  // EXIF block goes back in a segment of its own length, the rest is copied.
+  const parts: Uint8Array[] = [];
   let r = 0;
-  for (const s of toRemove) {
-    out.set(b.subarray(r, s.start), w);
-    w += s.start - r;
+  for (const s of segs) {
+    const stripped = exif.get(s);
+    if (stripped ? stripped.cleaned === stripped.tiff : !drop.has(s.kind)) continue; // unchanged
+    parts.push(bytes.subarray(r, s.start));
+    if (stripped?.cleaned) parts.push(segment(MARKER_APP1, concatBytes([EXIF_HEADER, stripped.cleaned])));
     r = s.end;
   }
-  out.set(b.subarray(r), w);
+  if (parts.length === 0) return { cleaned: bytes, fieldsFound, fieldsRemoved };
+  parts.push(bytes.subarray(r));
+  return { cleaned: concatBytes(parts), fieldsFound, fieldsRemoved };
+}
+
+const EXIF_HEADER = Uint8Array.from([0x45, 0x78, 0x69, 0x66, 0, 0]); // "Exif\0\0"
+
+/** A marker segment: 0xFF, the marker, a length that counts itself, the payload. */
+function segment(marker: number, payload: Uint8Array): Uint8Array {
+  const out = new Uint8Array(4 + payload.length);
+  out.set([0xff, marker, ((payload.length + 2) >> 8) & 0xff, (payload.length + 2) & 0xff]);
+  out.set(payload, 4);
   return out;
 }
 
-const ALL_METADATA_KINDS: Set<SegKind> = new Set(["exif", "xmp", "jumbf", "iptc", "com"]);
-
-export function stripJpeg(bytes: Uint8Array<ArrayBuffer>, options: StripOptions): Stripped {
-  const dataUrl = bytesToDataUrl(bytes);
-  const fieldsFound: MetadataField[] = [];
-
-  // EXIF cataloging via piexif (best-effort: absence is fine, e.g. a C2PA-only
-  // AI export). Other metadata may still be present.
-  let exifObj: Record<string, Record<string, unknown>> | null = null;
-  let exifFields: MetadataField[] = [];
-  try {
-    exifObj = piexif.load(dataUrl);
-    exifFields = catalogExifFields(exifObj);
-    fieldsFound.push(...exifFields);
-  } catch {
-    exifObj = null;
+function concatBytes(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let o = 0;
+  for (const p of parts) {
+    out.set(p, o);
+    o += p.length;
   }
-
-  // C2PA / XMP / IPTC / comment cataloging via the segment walker.
-  const segs = parseMetadataSegments(bytes);
-  fieldsFound.push(...catalogSegmentFields(bytes, segs));
-
-  const categoriesToStrip = (Object.entries(options) as [MetadataCategory, boolean][])
-    .filter(([, enabled]) => enabled)
-    .map(([cat]) => cat);
-  const strippingAll = (Object.keys(options) as MetadataCategory[]).every((cat) => categoriesToStrip.includes(cat));
-
-  // ── Fast path: remove everything ─────────────────────────────────────────
-  // Strip every metadata segment by byte range. Covers EXIF, XMP, C2PA, IPTC
-  // and comments, and correctly handles files with no EXIF at all.
-  if (strippingAll) {
-    return { cleaned: removeSegments(bytes, ALL_METADATA_KINDS), fieldsFound, fieldsRemoved: [...fieldsFound] };
-  }
-
-  // ── Selective removal ────────────────────────────────────────────────────
-  // Every non-EXIF segment is a single field whose category decides it, so
-  // those are removed exactly when their category is. EXIF is per tag, unless
-  // piexif can't rewrite it, below.
-  let fieldsRemoved = fieldsFound.filter((f) => categoriesToStrip.includes(f.category));
-
-  // EXIF: fine-grained per-tag removal with piexif (only if EXIF is present).
-  let outBytes: Uint8Array<ArrayBuffer> = bytes;
-  if (exifObj) {
-    if (options.gps) exifObj["GPS"] = {};
-    for (const ifd of ["0th", "Exif", "1st"]) {
-      if (exifObj[ifd]) {
-        for (const tagId of Object.keys(exifObj[ifd])) {
-          const ifdKey = IFD_MAP[ifd] || "ImageIFD";
-          const tagInfo =
-            piexif.TAGS[ifd]?.[tagId] ?? piexif.TAGS[ifdKey]?.[tagId];
-          const tagName = tagInfo?.["name"] ?? `Unknown_${ifd}_${tagId}`;
-          // Same classifier as the review, value included, so a generation
-          // record in UserComment goes with the AI toggle here too.
-          const category = exifCategory(tagName as string, formatExifValue(exifObj[ifd][tagId]));
-          if (categoriesToStrip.includes(category)) {
-            delete exifObj[ifd][tagId];
-          }
-        }
-      }
-    }
-    // The thumbnail went back in on every partial strip: piexif.dump re-embeds
-    // exifObj.thumbnail whatever happened to IFD1's tags. Checked on a JPEG
-    // with a red 160x120 thumbnail: keeping only Copyright still shipped it.
-    // It is reported under Custom (exif-catalog) and goes with that toggle.
-    if (categoriesToStrip.includes("custom")) {
-      (exifObj as Record<string, unknown>)["thumbnail"] = null;
-      exifObj["1st"] = {};
-    }
-    try {
-      const newExifBytes = piexif.dump(exifObj);
-      outBytes = dataUrlToUint8(piexif.insert(newExifBytes, dataUrl));
-    } catch {
-      // piexif couldn't write the edited EXIF back, so all of it goes, and the
-      // report says so rather than claiming the per-tag split. If even that
-      // fails, the throw makes this file a failure rather than a false report.
-      outBytes = dataUrlToUint8(piexif.remove(dataUrl));
-      fieldsRemoved = [...new Set([...fieldsRemoved, ...exifFields])];
-    }
-  }
-
-  // Non-EXIF metadata: remove the segment types whose category is being stripped.
-  const kinds = new Set<SegKind>();
-  if (categoriesToStrip.includes("ai")) kinds.add("jumbf");
-  // XMP goes with the category the review showed it under: AI when it carries
-  // an AI marker or a C2PA manifest link (a Firefly download), Custom otherwise.
-  if (categoriesToStrip.includes(xmpIsAi(bytes, segs) ? "ai" : "custom")) kinds.add("xmp");
-  if (categoriesToStrip.includes("custom")) kinds.add("iptc");
-  if (categoriesToStrip.includes("comments")) kinds.add("com");
-  if (kinds.size > 0) outBytes = removeSegments(outBytes, kinds);
-
-  return { cleaned: outBytes, fieldsFound, fieldsRemoved };
-}
-
-/** Build a base64 JPEG data URL from raw bytes — what piexif expects. Reads
- *  from the already-loaded ArrayBuffer (no FileReader), so it's consistent with
- *  the PNG/WebP processors and runnable outside the browser. Chunked to stay
- *  under the argument-count limit of String.fromCharCode on large files. */
-function bytesToDataUrl(bytes: Uint8Array): string {
-  let binary = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return "data:image/jpeg;base64," + btoa(binary);
-}
-
-function dataUrlToUint8(dataUrl: string): Uint8Array<ArrayBuffer> {
-  const data = dataUrl.split(",")[1] ?? "";
-  const binary = atob(data);
-  const array = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    array[i] = binary.charCodeAt(i);
-  }
-  return array;
+  return out;
 }
