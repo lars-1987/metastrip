@@ -178,6 +178,13 @@ export const jpegWithExif = (tiff: Uint8Array, { xmp = false } = {}): Bytes =>
     FRAME_AND_SCAN()
   );
 
+/** XMP as UTF-8 bytes; concat writes strings one byte per character. */
+const utf8 = (text: string) => new TextEncoder().encode(text);
+
+/** A JPEG whose only metadata is one XMP packet. */
+export const jpegWithXmp = (xmp: string): Bytes =>
+  concat([0xff, 0xd8], JFIF(), segment(0xe1, "http://ns.adobe.com/xap/1.0/\0", utf8(xmp)), FRAME_AND_SCAN());
+
 /* ── PNG ───────────────────────────────────────────────────────────── */
 
 const CRC_TABLE = (() => {
@@ -239,6 +246,17 @@ export const pngWithExif = (tiff: Uint8Array): Bytes =>
     chunk("IEND")
   );
 
+/** A PNG whose only metadata is an XMP packet in an iTXt chunk, the way
+ *  Adobe writes it: keyword "XML:com.adobe.xmp", uncompressed, no language. */
+export const pngWithXmp = (xmp: string): Bytes =>
+  concat(
+    PNG_SIGNATURE,
+    IHDR(),
+    chunk("iTXt", "XML:com.adobe.xmp\0\0\0\0\0", utf8(xmp)),
+    chunk("IDAT", [0x78, 0x9c, 0x63, 0x60, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01]),
+    chunk("IEND")
+  );
+
 /** The same PNG with the second chunk's length field overwritten with a value
  *  far past the end of the file. */
 export function pngWithBadChunkLength(): Bytes {
@@ -272,6 +290,9 @@ export const webpWithMetadata = (): Bytes =>
 /** A WebP whose only metadata is one EXIF chunk, flagged in VP8X. */
 export const webpWithExif = (tiff: Uint8Array): Bytes => webpFromChunks(VP8X(0x08), VP8L(), riffChunk("EXIF", tiff));
 
+/** A WebP whose only metadata is one XMP chunk, flagged in VP8X. */
+export const webpWithXmp = (xmp: string): Bytes => webpFromChunks(VP8X(0x04), VP8L(), riffChunk("XMP ", utf8(xmp)));
+
 /** VP8X intact, then an image chunk whose size runs past the end of the file. */
 export function webpWithBadChunkSize(): Bytes {
   const vp8l = VP8L();
@@ -299,12 +320,20 @@ const GIF_FRAME = () => concat([0x2c], zeros(4), [1, 0, 1, 0, 0], [2], [2, 0x44,
 /** XMP as GIF writers embed it: the raw packet straight after the app id, not
  *  in sub-blocks, then the 258-byte "magic trailer" (0x01, 0xFF down to 0x00,
  *  then the terminator) that steers a sub-block walker onto the real end. */
-const gifXmp = () => {
+const gifXmp = (xmp: string | Uint8Array = XMP_PACKET) => {
   const trailer = [1];
   for (let v = 0xff; v >= 0; v--) trailer.push(v);
   trailer.push(0);
-  return concat([0x21, 0xff, 11], "XMP DataXMP", XMP_PACKET, trailer);
+  return concat([0x21, 0xff, 11], "XMP DataXMP", xmp, trailer);
 };
+
+/** A GIF carrying an ICC colour profile, as an "ICCRGBG1012" application
+ *  extension in sub-blocks. The profile body is only shaped right. */
+export const gifWithIcc = (): Bytes =>
+  concat(GIF_HEAD(), [0x21, 0xff, 11], "ICCRGBG1012", subBlocks(concat(u32be(16), "appl", zeros(8))), GIF_FRAME(), [0x3b]);
+
+/** A GIF whose only metadata is one XMP packet. */
+export const gifWithXmp = (xmp: string): Bytes => concat(GIF_HEAD(), gifXmp(utf8(xmp)), GIF_FRAME(), [0x3b]);
 
 export function gifWithMetadata(): Bytes {
   return concat(
@@ -437,5 +466,16 @@ export const heicWithExif = (tiff: Uint8Array): Bytes =>
     items: [
       { id: 1, type: "hvc1", data: concat([0, 0, 0, 0, 0x26, 0x01, 0xaf]) },
       { id: 2, type: "Exif", data: heifExifItem(tiff) },
+    ],
+  });
+
+/** An HEIC whose only metadata is one XMP item in mdat. */
+export const heicWithXmp = (xmp: string): Bytes =>
+  heif({
+    brands: ["heic", "mif1", "heic"],
+    ilocVersion: 0,
+    items: [
+      { id: 1, type: "hvc1", data: concat([0, 0, 0, 0, 0x26, 0x01, 0xaf]) },
+      { id: 2, type: "mime", contentType: "application/rdf+xml", data: concat(utf8(xmp)) },
     ],
   });
