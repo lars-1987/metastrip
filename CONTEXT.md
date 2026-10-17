@@ -44,6 +44,10 @@ A metadata field a strip took out of the file.
 **Kept field**:
 A metadata field still in the file after a strip, because the user chose to keep its category or because it could not be removed on its own.
 
+**Display information**:
+Data a file needs to be shown correctly, such as a photo's orientation or its colour profile. It is not metadata: MetaStrip never removes it and never lists it as a metadata field.
+_Avoid_: technical metadata (it sounds removable)
+
 **Unreadable file**:
 A file in a supported format whose contents are not valid for that format, so MetaStrip hands it back untouched.
 _Avoid_: corrupt file (we can't always tell damage from a variant we don't handle)

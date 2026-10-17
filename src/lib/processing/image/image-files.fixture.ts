@@ -172,6 +172,16 @@ export function jpegWithMetadata(): Bytes {
   );
 }
 
+/** A JPEG holding one EXIF block and, optionally, an XMP packet beside it. */
+export const jpegWithExif = (tiff: Uint8Array, { xmp = false } = {}): Bytes =>
+  concat(
+    [0xff, 0xd8],
+    JFIF(),
+    segment(0xe1, "Exif\0\0", tiff),
+    xmp ? segment(0xe1, "http://ns.adobe.com/xap/1.0/\0", XMP_PACKET) : [],
+    FRAME_AND_SCAN()
+  );
+
 /* ── PNG ───────────────────────────────────────────────────────────── */
 
 const CRC_TABLE = (() => {
@@ -223,6 +233,16 @@ export function pngChunks(): Bytes[] {
 
 export const pngWithMetadata = (): Bytes => concat(PNG_SIGNATURE, ...pngChunks());
 
+/** A PNG whose only metadata is one eXIf chunk. */
+export const pngWithExif = (tiff: Uint8Array): Bytes =>
+  concat(
+    PNG_SIGNATURE,
+    IHDR(),
+    chunk("eXIf", tiff),
+    chunk("IDAT", [0x78, 0x9c, 0x63, 0x60, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01]),
+    chunk("IEND")
+  );
+
 /** The same PNG with the second chunk's length field overwritten with a value
  *  far past the end of the file. */
 export function pngWithBadChunkLength(): Bytes {
@@ -241,7 +261,7 @@ const riffChunk = (fourcc: string, ...payload: Part[]): Bytes => {
 };
 
 /** VP8X with the EXIF (0x08) and XMP (0x04) flags set, canvas 1x1. */
-const VP8X = () => riffChunk("VP8X", [0x0c, 0, 0, 0], [0, 0, 0], [0, 0, 0]);
+const VP8X = (flags = 0x0c) => riffChunk("VP8X", [flags, 0, 0, 0], [0, 0, 0], [0, 0, 0]);
 // A VP8L header for a 1x1 image; the bitstream after it is never read.
 const VP8L = () => riffChunk("VP8L", [0x2f, 0, 0, 0, 0, 0x07, 0x10, 0x11, 0x00]);
 
@@ -252,6 +272,9 @@ export function webpFromChunks(...chunks: Bytes[]): Bytes {
 
 export const webpWithMetadata = (): Bytes =>
   webpFromChunks(VP8X(), VP8L(), riffChunk("EXIF", exifTiff()), riffChunk("XMP ", XMP_PACKET), riffChunk("C2PA", c2paStore()));
+
+/** A WebP whose only metadata is one EXIF chunk, flagged in VP8X. */
+export const webpWithExif = (tiff: Uint8Array): Bytes => webpFromChunks(VP8X(0x08), VP8L(), riffChunk("EXIF", tiff));
 
 /** VP8X intact, then an image chunk whose size runs past the end of the file. */
 export function webpWithBadChunkSize(): Bytes {
@@ -331,7 +354,7 @@ export interface HeifSpec {
 const C2PA_UUID = [0xd8, 0xfe, 0xc3, 0xd6, 0x1b, 0x0e, 0x48, 0x3c, 0x92, 0x97, 0x58, 0x28, 0x87, 0x7e, 0xc4, 0x81];
 
 /** An HEIF Exif item: a 4-byte offset to the TIFF header (0 here), then TIFF. */
-export const heifExifItem = (): Bytes => concat(u32be(0), exifTiff());
+export const heifExifItem = (tiff: Uint8Array = exifTiff()): Bytes => concat(u32be(0), tiff);
 
 /** The smallest HEIF the processor accepts: ftyp, then meta holding hdlr,
  *  iinf (one infe v2 per item) and iloc (4-byte offsets and lengths, no base
@@ -407,5 +430,16 @@ export const avifWithMetadata = (): Bytes =>
       { id: 1, type: "av01", data: concat([0x12, 0x00, 0x0a, 0x0a]) },
       { id: 2, type: "Exif", data: heifExifItem() },
       { id: 3, type: "mime", contentType: "application/rdf+xml", data: concat(AI_XMP_PACKET), inIdat: true },
+    ],
+  });
+
+/** An HEIC whose only metadata is one Exif item. */
+export const heicWithExif = (tiff: Uint8Array): Bytes =>
+  heif({
+    brands: ["heic", "mif1", "heic"],
+    ilocVersion: 0,
+    items: [
+      { id: 1, type: "hvc1", data: concat([0, 0, 0, 0, 0x26, 0x01, 0xaf]) },
+      { id: 2, type: "Exif", data: heifExifItem(tiff) },
     ],
   });
