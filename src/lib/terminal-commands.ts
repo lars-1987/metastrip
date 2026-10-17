@@ -48,7 +48,7 @@ function getNeofetchMeta(): Record<string, string> {
     browser,
     shell: "metastrip v3.0",
     uptime: formatUptime(),
-    packages: "piexifjs, pdf-lib, jszip",
+    packages: "pdf-lib, jszip",
     privacy: "100% client-side",
     tracking: "none",
     accounts: "0 required",

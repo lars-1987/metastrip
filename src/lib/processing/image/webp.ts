@@ -6,6 +6,7 @@ import type {
 import { Unreadable, blockGoes, type Stripped } from "../contract";
 import { describeC2pa } from "../c2pa-manifest";
 import { aiCategoryFor, aiValueLabel, aiDisplayValue } from "../ai-signatures";
+import { stripExif } from "./exif";
 
 // RIFF header: "RIFF" + 4-byte LE size + "WEBP"
 const RIFF_HEADER = new TextEncoder().encode("RIFF");
@@ -63,53 +64,6 @@ function parseRiffChunks(buffer: Uint8Array): RiffChunk[] {
   return chunks;
 }
 
-function catalogueExifFields(data: Uint8Array): MetadataField[] {
-  // Basic EXIF cataloguing — report as a single block
-  // Full EXIF parsing would require piexifjs but WebP EXIF chunks
-  // may not have the JPEG wrapper piexifjs expects
-  const fields: MetadataField[] = [];
-
-  fields.push({
-    category: "device",
-    key: "EXIF",
-    label: "Embedded EXIF Data",
-    value: `(${data.length} bytes)`,
-    removable: true,
-  });
-
-  // Try to extract some readable strings from raw EXIF
-  const text = new TextDecoder("latin1").decode(data);
-
-  // Look for common EXIF string patterns
-  const patterns: { pattern: RegExp; key: string; label: string; category: MetadataCategory }[] = [
-    { pattern: /Apple/i, key: "exif-make", label: "Camera Make", category: "device" },
-    { pattern: /Canon/i, key: "exif-make", label: "Camera Make", category: "device" },
-    { pattern: /Nikon/i, key: "exif-make", label: "Camera Make", category: "device" },
-    { pattern: /Samsung/i, key: "exif-make", label: "Camera Make", category: "device" },
-    { pattern: /Google/i, key: "exif-make", label: "Camera Make", category: "device" },
-    { pattern: /Adobe Photoshop/i, key: "exif-software", label: "Software", category: "software" },
-    { pattern: /GIMP/i, key: "exif-software", label: "Software", category: "software" },
-  ];
-
-  for (const p of patterns) {
-    const match = text.match(p.pattern);
-    if (match) {
-      // Avoid duplicates
-      if (!fields.some((f) => f.key === p.key)) {
-        fields.push({
-          category: p.category,
-          key: p.key,
-          label: p.label,
-          value: `(detected: ${match[0]})`,
-          removable: true,
-        });
-      }
-    }
-  }
-
-  return fields;
-}
-
 function catalogueXmpFields(data: Uint8Array): MetadataField[] {
   const fields: MetadataField[] = [];
   const text = new TextDecoder().decode(data);
@@ -155,9 +109,7 @@ function catalogueXmpFields(data: Uint8Array): MetadataField[] {
 }
 
 function catalogueChunkFields(chunk: RiffChunk): MetadataField[] {
-  if (chunk.fourcc === "EXIF") {
-    return catalogueExifFields(chunk.data);
-  } else if (chunk.fourcc === "XMP ") {
+  if (chunk.fourcc === "XMP ") {
     return catalogueXmpFields(chunk.data);
   } else if (chunk.fourcc === "C2PA") {
     // What made the image and whose certificate signed it, not just a size.
@@ -237,9 +189,21 @@ export function stripWebp(buffer: Uint8Array, options: StripOptions): Stripped {
   const fieldsRemoved: MetadataField[] = [];
   const removedFourccs = new Set<string>();
 
-  // Each metadata chunk goes whole or stays whole, and only the fields of a
-  // chunk that really went are reported removed.
+  // EXIF goes through the EXIF reader, tag by tag. Every other metadata
+  // chunk goes whole or stays whole, and only the fields of a chunk that
+  // really went are reported removed.
   const keptChunks = parseRiffChunks(buffer).filter((chunk) => {
+    if (chunk.fourcc === "EXIF") {
+      const exif = stripExif(chunk.data, options);
+      fieldsFound.push(...exif.fieldsFound);
+      fieldsRemoved.push(...exif.fieldsRemoved);
+      if (exif.cleaned === null) {
+        removedFourccs.add("EXIF");
+        return false;
+      }
+      chunk.data = exif.cleaned;
+      return true;
+    }
     if (!METADATA_CHUNKS.has(chunk.fourcc)) return true;
     const fields = catalogueChunkFields(chunk);
     fieldsFound.push(...fields);

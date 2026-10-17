@@ -31,7 +31,7 @@ const PRIVACY_SECTIONS = [
     num: "03",
     title: "HOW WE PROCESS YOUR FILES",
     lines: [
-      "Images (JPEG, PNG, WebP)      → piexifjs (client-side JavaScript)",
+      "Images (JPEG, PNG, WebP, ...) → custom EXIF and chunk parsers",
       "PDF documents                 → pdf-lib (pure JS, in-browser)",
       "Office docs (DOCX/XLSX/PPTX)  → JSZip (unpack/modify in memory)",
       "Video (MP4, MOV, M4V)         → custom MP4 atom walker",

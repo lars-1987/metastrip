@@ -47,7 +47,7 @@ const techSteps = [
   {
     label: "Processing engine",
     description:
-      "Depending on file type, one of three open-source libraries processes the file. piexifjs strips EXIF from images, pdf-lib clears PDF properties, and JSZip modifies Office XML metadata. All processing happens in JavaScript on your device.",
+      "Depending on file type, MetaStrip's own parsers or an open-source library process the file. Images, video and audio are read and rewritten by parsers written for MetaStrip, pdf-lib clears PDF properties, and JSZip modifies Office XML metadata. All processing happens in JavaScript on your device.",
   },
   {
     label: "Output",
@@ -68,12 +68,6 @@ const libraries = [
     description:
       "ZIP file reader/writer used to unpack DOCX, XLSX, and PPTX files (which are ZIP archives) and modify their internal XML metadata files directly in the browser.",
     url: "https://github.com/Stuk/jszip",
-  },
-  {
-    name: "piexifjs",
-    description:
-      "Lightweight EXIF parser that reads and removes EXIF, IPTC, and GPS metadata from JPEG images without quality loss or re-encoding.",
-    url: "https://github.com/hMatoba/piexifjs",
   },
 ];
 

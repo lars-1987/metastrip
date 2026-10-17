@@ -23,7 +23,7 @@ const FEATURES: Feature[] = [
   {
     eyebrow: "How it works",
     title: "Drop a file. See what's exposed. Strip it.",
-    body: "MetaStrip runs entirely in your browser. There is no upload, no server, no temporary cache. You drop the file in, the tool reads its metadata locally with libraries like piexifjs and pdf-lib, shows you exactly what's embedded, and writes a clean copy back out.",
+    body: "MetaStrip runs entirely in your browser. There is no upload, no server, no temporary cache. You drop the file in, the tool reads its metadata locally with its own parsers and libraries like pdf-lib, shows you exactly what's embedded, and writes a clean copy back out.",
     bullets: [
       "Files never leave your device, verifiable in DevTools",
       `Batch up to ${BATCH_LIMIT} files at once`,

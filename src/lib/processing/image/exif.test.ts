@@ -68,6 +68,11 @@ describe("reading", () => {
     expect(found(block).map((f) => [f.category, f.key, f.value])).toEqual([["dates", "OffsetTimeOriginal", "+10:00"]]);
   });
 
+  it("shows a maker note by its size, since its bytes read as noise", () => {
+    const block = tiff({ ifd0: [], exif: [{ tag: 0x927c, type: UNDEFINED, value: new Uint8Array(1229) }] });
+    expect(found(block).map((f) => [f.category, f.value])).toEqual([["device", "1.2 KB of vendor data"]]);
+  });
+
   it("names an Exif tag a camera put in IFD0", () => {
     const block = tiff({ ifd0: [{ tag: 0xa403, type: SHORT, value: [0] }] }); // WhiteBalance
     expect(keys(found(block))).toEqual(["custom:WhiteBalance"]);

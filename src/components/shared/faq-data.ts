@@ -43,7 +43,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "Is MetaStrip open source?",
     answer:
-      "Yes: MIT licensed, source code on GitHub. You can audit the code, run it locally, fork it, or contribute. The whole tool is built with public libraries (piexifjs, pdf-lib, jszip) so you can verify exactly what it does to your files.",
+      "Yes: MIT licensed, source code on GitHub. You can audit the code, run it locally, fork it, or contribute. The whole tool is built from its own parsers plus two public libraries (pdf-lib and JSZip), so you can verify exactly what it does to your files.",
   },
   {
     question: "Can I batch process multiple files?",
