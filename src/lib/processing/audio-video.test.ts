@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { processFile } from "./coordinator";
+import { batchByteCap, processFile } from "./coordinator";
 import { expectFoundIgnoresOptions } from "./contract-checks.fixture";
 import type { MetadataField, ProcessingResult, StripOptions } from "./types";
 import {
@@ -477,5 +477,22 @@ describe("every audio and video format", () => {
     ["WAV", wavBytes, "take.wav", "audio/wav"],
   ] as const)("%s finds the same fields whatever the options", async (_, make, name, type) => {
     await expectFoundIgnoresOptions(() => fileOf(make(), name, type));
+  });
+});
+
+describe("how many bytes one drop can add", () => {
+  const MB = 1024 ** 2;
+
+  it("holds a single video to the video limit, not the batch cap", () => {
+    // The 750 MB batch cap used to refuse 800 MB to 1.1 GB videos that the
+    // video processor accepts.
+    expect(batchByteCap(["mp4"])).toBe(1.5 * 1024 ** 3);
+    expect(batchByteCap(["mov"])).toBe(1.5 * 1024 ** 3);
+  });
+
+  it("holds several files, and a single file of another kind, to the batch cap", () => {
+    expect(batchByteCap(["mp4", "mp4"])).toBe(750 * MB);
+    expect(batchByteCap(["jpeg"])).toBe(750 * MB);
+    expect(batchByteCap(["pdf"])).toBe(750 * MB);
   });
 });

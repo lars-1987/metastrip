@@ -1,6 +1,7 @@
 import { identify, mimeOf, notSupportedYet, type Format, type SupportedFormat } from "./formats";
 import { Unreadable, type Processor, type Stripped } from "./contract";
 import { formatBytes } from "../file-utils";
+import { BATCH_SIZE_HARD_CAP_BYTES } from "../constants";
 import { stripJpeg } from "./image/jpeg";
 import { stripPng } from "./image/png";
 import { stripWebp } from "./image/webp";
@@ -53,6 +54,14 @@ const processors = {
   flac: { strip: stripFlac },
   wav: { strip: stripWav },
 } satisfies Record<SupportedFormat, Entry>;
+
+/** The most bytes one drop can add. Several files share the batch cap; a
+ *  single file is held to its own format's limit when that is higher (video,
+ *  1.5 GB), so the batch cap can't quietly lower it. */
+export function batchByteCap(formats: readonly SupportedFormat[]): number {
+  const own = formats.length === 1 ? (processors[formats[0]] as Entry).maxBytes : undefined;
+  return Math.max(BATCH_SIZE_HARD_CAP_BYTES, own ?? 0);
+}
 
 const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
 

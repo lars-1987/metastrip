@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { processFile, failureReason } from "@/lib/processing/coordinator";
+import { processFile, failureReason, batchByteCap } from "@/lib/processing/coordinator";
 import { verifyCleaned, type VerifyResult } from "@/lib/processing/verify";
 import { formatBytes } from "@/lib/file-utils";
 import { identify, notSupportedYet, categoryOf, extensionOf, type Identity, type SupportedFormat } from "@/lib/processing/formats";
-import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, BATCH_SIZE_HARD_CAP_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
+import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, trackFileVerified, categoriesOf } from "@/lib/analytics";
 import { canShareFiles } from "@/lib/share";
@@ -102,7 +102,8 @@ export function useV3Tool() {
     }
 
     const totalBytes = supported.reduce((n, s) => n + s.file.size, 0);
-    if (totalBytes > BATCH_SIZE_HARD_CAP_BYTES) {
+    const byteCap = batchByteCap(supported.map((s) => s.format));
+    if (totalBytes > byteCap) {
       trackFileFailed({
         file_type: supported.map((s) => s.file.type).join(","),
         file_size: totalBytes,
@@ -111,8 +112,8 @@ export function useV3Tool() {
       });
       setAddError(
         supported.length === 1
-          ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(BATCH_SIZE_HARD_CAP_BYTES)} at a time.`
-          : `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(BATCH_SIZE_HARD_CAP_BYTES)} at a time, so try fewer files at once.`
+          ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} at a time.`
+          : `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} at a time, so try fewer files at once.`
       );
       return;
     }
