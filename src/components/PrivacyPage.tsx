@@ -344,8 +344,8 @@ function TermsContent() {
       <LegalSection number="3" title="Usage Limits">
         <p className="mb-3">
           MetaStrip allows processing of up to {BATCH_LIMIT} files per batch, up to
-          750 MB in total, supporting both images and documents. There are no
-          daily limits.
+          750 MB in total (a single video can be up to 1.5 GB), supporting both
+          images and documents. There are no daily limits.
         </p>
         <p>
           We reserve the right to modify usage limits at any time without
@@ -575,7 +575,7 @@ export function PrivacyPage() {
           >
             <span>Effective: March 1, 2026</span>
             <span style={{ opacity: 0.4 }}>·</span>
-            <span>Last updated: October 17, 2026</span>
+            <span>Last updated: October 25, 2026</span>
           </div>
 
           {/* Content — dark card */}
