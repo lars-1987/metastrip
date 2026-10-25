@@ -103,7 +103,7 @@ const TERMS_SECTIONS = [
     num: "03",
     title: "USAGE LIMITS",
     lines: [
-      `Up to ${BATCH_LIMIT} files (750 MB) per batch, or one video up to 1.5 GB. No daily limits.`,
+      `Up to ${BATCH_LIMIT} files (750 MB) per batch, or one video up to 1.5 GB on a computer. No daily limits.`,
       "We reserve the right to modify limits at any time.",
     ],
   },

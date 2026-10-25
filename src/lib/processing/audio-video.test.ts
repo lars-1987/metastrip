@@ -495,4 +495,9 @@ describe("how many bytes one drop can add", () => {
     expect(batchByteCap(["jpeg"])).toBe(750 * MB);
     expect(batchByteCap(["pdf"])).toBe(750 * MB);
   });
+
+  it("holds a single video on a phone to the batch cap", () => {
+    expect(batchByteCap(["mp4"], { onPhone: true })).toBe(750 * MB);
+    expect(batchByteCap(["mp4", "jpeg"], { onPhone: true })).toBe(750 * MB);
+  });
 });

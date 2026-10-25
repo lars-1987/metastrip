@@ -57,9 +57,11 @@ const processors = {
 
 /** The most bytes one drop can add. Several files share the batch cap; a
  *  single file is held to its own format's limit when that is higher (video,
- *  1.5 GB), so the batch cap can't quietly lower it. */
-export function batchByteCap(formats: readonly SupportedFormat[]): number {
-  const own = formats.length === 1 ? (processors[formats[0]] as Entry).maxBytes : undefined;
+ *  1.5 GB), so the batch cap can't quietly lower it. Phones and tablets keep
+ *  the batch cap even then: video is read whole into memory, and that has
+ *  never been profiled on a phone. */
+export function batchByteCap(formats: readonly SupportedFormat[], { onPhone = false } = {}): number {
+  const own = formats.length === 1 && !onPhone ? (processors[formats[0]] as Entry).maxBytes : undefined;
   return Math.max(BATCH_SIZE_HARD_CAP_BYTES, own ?? 0);
 }
 

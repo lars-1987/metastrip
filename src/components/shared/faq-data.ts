@@ -48,7 +48,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "Can I batch process multiple files?",
     answer:
-      `Yes: drop up to ${BATCH_LIMIT} files at once, up to 750 MB in total (a single video can be up to 1.5 GB). Each is processed independently in the browser, and you can download them individually or as a single zip. The limits exist purely because your browser's memory is finite, not because we're holding back features.`,
+      `Yes: drop up to ${BATCH_LIMIT} files at once, up to 750 MB in total (a single video can be up to 1.5 GB on a computer). Each is processed independently in the browser, and you can download them individually or as a single zip. The limits exist purely because your browser's memory is finite, not because we're holding back features.`,
   },
   {
     question: "Does it work on mobile?",

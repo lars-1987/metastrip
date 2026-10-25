@@ -102,7 +102,10 @@ export function useV3Tool() {
     }
 
     const totalBytes = supported.reduce((n, s) => n + s.file.size, 0);
-    const byteCap = batchByteCap(supported.map((s) => s.format));
+    const formats = supported.map((s) => s.format);
+    // Phones and tablets, by the same test the share sheet uses.
+    const onPhone = window.matchMedia("(pointer: coarse)").matches;
+    const byteCap = batchByteCap(formats, { onPhone });
     if (totalBytes > byteCap) {
       trackFileFailed({
         file_type: supported.map((s) => s.file.type).join(","),
@@ -110,8 +113,12 @@ export function useV3Tool() {
         stage: "add",
         reason: "batch_size_cap",
       });
+      // Point them at a computer when one would take the file.
+      const computerCap = batchByteCap(formats);
       setAddError(
-        supported.length === 1
+        supported.length === 1 && totalBytes <= computerCap
+          ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} on a phone; on a computer, videos can be up to ${formatBytes(computerCap)}.`
+          : supported.length === 1
           ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} at a time.`
           : `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} at a time, so try fewer files at once.`
       );
