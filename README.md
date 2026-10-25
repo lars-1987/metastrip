@@ -34,7 +34,7 @@ Photos carry GPS coordinates, device serial numbers, camera info, and timestamps
 
 The whole tool runs client-side. Files never leave your device: there is no server, no upload, no processing API. You can verify it yourself: open DevTools → Network tab → drop a file; no request carries it. The site does send anonymous usage events to PostHog (file types and the kinds of metadata found, never filenames, contents or values), and masks the tool's text in session replays before anything leaves the browser.
 
-Drop up to 100 files at once (750 MB in total, or a single video up to 1.5 GB) and download them one by one or as a single zip. On a phone or tablet, cleaned files can go straight to Photos or another app through the share sheet.
+Drop up to 100 files at once (750 MB in total, or a single video up to 1.5 GB on a computer) and download them one by one or as a single zip. On a phone or tablet, cleaned files can go straight to Photos or another app through the share sheet.
 
 It also checks its own work. After a strip, every cleaned file is read again with every metadata category switched on, the way you would check by dropping the download back in. Anything you chose to keep is expected to still be there; anything else it finds is reported as a leftover rather than hidden. (A file over 300 MB skips the re-read, since reading it twice could run the tab out of memory.)
 
