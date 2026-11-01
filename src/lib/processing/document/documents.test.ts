@@ -9,6 +9,7 @@
  *  "Quirk" are known gaps left for later. */
 
 import JSZip from "jszip";
+import { PDFDocument, PDFName, PDFNumber, PDFString } from "pdf-lib";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { processFile } from "../coordinator";
 import { expectFoundIgnoresOptions } from "../contract-checks.fixture";
@@ -22,7 +23,7 @@ import {
   buildPdf,
   buildPptx,
   buildXlsx,
-  pdfWithInfoString,
+  pdfWithInfo,
   truncated,
 } from "./document-files.fixture";
 
@@ -164,18 +165,64 @@ describe("PDF", () => {
     });
   });
 
-  describe("a crash", () => {
-    it("names the Info field it happened on", async () => {
-      // pdf-lib throws reading a CreationDate that isn't in PDF date format.
-      const input = await pdfWithInfoString("CreationDate", "Monday, 5 January");
-      const { result } = await run(input, name, PDF_MIME, ALL_ON);
-      expect(result.reason).toBe("crash: Error at info:CreationDate");
+  // pdf-lib's Info getters throw on anything they can't type, which used to
+  // fail the whole file as a crash and leave all its metadata in place.
+  describe("an Info value pdf-lib can't read", () => {
+    it.each([
+      ["a date in words", "CreationDate", PDFString.of("Monday, 5 January"), "dates:CreationDate", "Monday, 5 January"],
+      ["an impossible date", "ModDate", PDFString.of("D:20261399120000Z"), "dates:ModDate", "D:20261399120000Z"],
+      ["a date that's a number", "ModDate", PDFNumber.of(5), "dates:ModDate", "5"],
+      ["a title that's a name", "Title", PDFName.of("Foo"), "author:Title", "/Foo"],
+      ["keywords that are a name", "Keywords", PDFName.of("Foo"), "custom:Keywords", "/Foo"],
+    ])("reports and removes %s", async (_label, key, value, field, shown) => {
+      const { result } = await run(await pdfWithInfo(key, value), name, PDF_MIME, ALL_ON);
+
+      expect(result.error).toBeUndefined();
+      expect(summary(result.report.fieldsRemoved)).toEqual([field]);
+      expect(result.report.fieldsFound[0].value).toBe(shown);
+
+      const again = await reread(result, name, PDF_MIME);
+      expect(again.result.error).toBeUndefined();
+      expect(summary(again.result.report.fieldsFound)).toEqual([]);
     });
 
-    it("keeps the file's own text out of the reason", async () => {
-      const input = await pdfWithInfoString("ModDate", "Private Project Name");
+    it("keeps one whose category is off, and says so", async () => {
+      const input = await pdfWithInfo("CreationDate", PDFString.of("Monday, 5 January"));
+      const { result } = await run(input, name, PDF_MIME, allBut("dates"));
+
+      expect(result.error).toBeUndefined();
+      expect(summary(result.report.fieldsKept)).toEqual(["dates:CreationDate"]);
+
+      const again = await reread(result, name, PDF_MIME);
+      expect(summary(again.result.report.fieldsFound)).toEqual(["dates:CreationDate"]);
+    });
+
+    it("treats an empty date as nothing to report", async () => {
+      const { result } = await run(await pdfWithInfo("CreationDate", PDFString.of("")), name, PDF_MIME, ALL_ON);
+      expect(result.error).toBeUndefined();
+      expect(result.report.fieldsFound).toEqual([]);
+    });
+  });
+
+  describe("a crash", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("names the Info field it happened on", async () => {
+      const input = await buildPdf();
+      vi.spyOn(PDFDocument.prototype, "setTitle").mockImplementation(() => {
+        throw new Error("boom");
+      });
       const { result } = await run(input, name, PDF_MIME, ALL_ON);
-      expect(result.reason).toBe("crash: Error at info:ModDate");
+      expect(result.reason).toBe("crash: Error at info:Title");
+    });
+
+    it("keeps the error's own text out of the reason", async () => {
+      const input = await buildPdf();
+      vi.spyOn(PDFDocument.prototype, "save").mockRejectedValue(new Error("Private Project Name"));
+      const { result } = await run(input, name, PDF_MIME, ALL_ON);
+      expect(result.reason).toBe("crash: Error at save");
     });
   });
 });
