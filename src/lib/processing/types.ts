@@ -62,7 +62,8 @@ export interface ProcessingResult {
   /** What to tell the person, when the file could not be cleaned. */
   error?: string;
   /** Why it failed, as a short stable code for telemetry ("unreadable: png",
-   *  "too_large", "crash: RangeError"). Never carries text read from the file. */
+   *  "too_large", "crash: RangeError at strip"). Never carries text read from
+   *  the file. */
   reason?: string;
 }
 

@@ -431,7 +431,7 @@ describe("HEIC", () => {
     const { file, result } = await strip(input, name, type);
     // A parser bug rather than a check: the coordinator's guard catches the
     // RangeError, where the processor used to catch its own.
-    expectFailed(file, result, "crash: RangeError");
+    expectFailed(file, result, "crash: RangeError at strip");
   });
 });
 

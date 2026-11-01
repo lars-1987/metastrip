@@ -16,8 +16,18 @@ export interface Stripped {
   fieldsRemoved: MetadataField[];
 }
 
-/** Takes the whole file's bytes, which it may read but must not change. */
-export type Processor = (bytes: Uint8Array<ArrayBuffer>, options: StripOptions) => Stripped | Promise<Stripped>;
+/** Marks where a processor has got to, so a crash can say where it happened.
+ *  Takes a fixed name from our own code, never text read from the file: it goes
+ *  to telemetry as part of the failure reason. */
+export type MarkStep = (step: string) => void;
+
+/** Takes the whole file's bytes, which it may read but must not change. Calling
+ *  `at` is optional: a processor that doesn't reports its crashes as "strip". */
+export type Processor = (
+  bytes: Uint8Array<ArrayBuffer>,
+  options: StripOptions,
+  at: MarkStep
+) => Stripped | Promise<Stripped>;
 
 /** Thrown when a file isn't valid for its format: a bad signature, or a size
  *  that runs past the end of the file. Any other exception is a crash, a bug

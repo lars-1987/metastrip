@@ -22,6 +22,7 @@ import {
   buildPdf,
   buildPptx,
   buildXlsx,
+  pdfWithInfoString,
   truncated,
 } from "./document-files.fixture";
 
@@ -160,6 +161,21 @@ describe("PDF", () => {
       // used to return "Could not parse PDF" and a copy of the bytes.
       const { file, result } = await run(truncated(await buildPdf(), 64), name, PDF_MIME, ALL_ON);
       expectUnreadable(file, result, "pdf");
+    });
+  });
+
+  describe("a crash", () => {
+    it("names the Info field it happened on", async () => {
+      // pdf-lib throws reading a CreationDate that isn't in PDF date format.
+      const input = await pdfWithInfoString("CreationDate", "Monday, 5 January");
+      const { result } = await run(input, name, PDF_MIME, ALL_ON);
+      expect(result.reason).toBe("crash: Error at info:CreationDate");
+    });
+
+    it("keeps the file's own text out of the reason", async () => {
+      const input = await pdfWithInfoString("ModDate", "Private Project Name");
+      const { result } = await run(input, name, PDF_MIME, ALL_ON);
+      expect(result.reason).toBe("crash: Error at info:ModDate");
     });
   });
 });

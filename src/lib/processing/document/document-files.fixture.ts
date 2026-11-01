@@ -75,6 +75,16 @@ export async function pdfWithXmp(xmp: string): Promise<Uint8Array> {
   return doc.save({ updateFieldAppearances: false });
 }
 
+/** A one-page PDF with a single Info field set to a raw string, unchecked, for
+ *  the values other writers put there and pdf-lib's own setters never would. */
+export async function pdfWithInfoString(key: string, value: string): Promise<Uint8Array> {
+  const doc = await PDFDocument.create({ updateMetadata: false });
+  doc.addPage([200, 200]);
+  const info = doc.context.obj({ [key]: PDFString.of(value) });
+  doc.context.trailerInfo.Info = doc.context.register(info);
+  return doc.save({ updateFieldAppearances: false });
+}
+
 const CORE_XML = `${XML_HEAD}<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Quarterly Report</dc:title><dc:subject>Q3 numbers</dc:subject><dc:creator>Jane Doe</dc:creator><cp:keywords>finance, internal</cp:keywords><dc:description>Draft for the board</dc:description><cp:lastModifiedBy>John Smith</cp:lastModifiedBy><cp:revision>7</cp:revision><dcterms:created xsi:type="dcterms:W3CDTF">2026-01-02T03:04:05Z</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">2026-02-03T04:05:06Z</dcterms:modified></cp:coreProperties>`;
 
 /** app.xml with every element office-common.ts maps, under the application

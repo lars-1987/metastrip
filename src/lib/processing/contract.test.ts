@@ -69,7 +69,7 @@ describe("a failure", () => {
     file.arrayBuffer = () => Promise.reject(new DOMException("gone", "NotReadableError"));
     const result = await processFile(file, ALL_ON);
     expect(result.error).toMatch(/^Your browser couldn't open it\./);
-    expect(result.reason).toBe("crash: NotReadableError");
+    expect(result.reason).toBe("crash: NotReadableError at read");
     expect(result.cleanedBlob).toBe(file);
     expect(result.report.cleanedFileSize).toBe(file.size);
   });
