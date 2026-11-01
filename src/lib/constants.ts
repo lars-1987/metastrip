@@ -9,6 +9,8 @@ export const KOFI_URL = "https://ko-fi.com/larshdev";
 /** Public repo. Used by the nav, footer, terminal and the results-card star CTA. */
 export const GITHUB_REPO_URL = "https://github.com/lars-1987/metastrip";
 
+export const CONTACT_EMAIL = "hello@metastrip.app";
+
 /** Raised from 50 in Oct 2026: 14 of 15 refused batches in the four weeks
  *  before were 52 to 87 files, all under 240 MB. The byte caps below are the
  *  real memory guard. */
