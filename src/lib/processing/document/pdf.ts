@@ -1,13 +1,13 @@
 import { PDFDocument, PDFName, PDFDict, PDFRef, PDFRawStream } from "pdf-lib";
 import { stripXmp } from "../xmp";
-import { Unreadable, type Stripped } from "../contract";
+import { Unreadable, type MarkStep, type Stripped } from "../contract";
 import type {
   StripOptions,
   MetadataField,
   MetadataCategory,
 } from "../types";
 
-export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promise<Stripped> {
+export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: MarkStep): Promise<Stripped> {
   let pdfDoc: PDFDocument;
 
   try {
@@ -101,6 +101,7 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promis
   ];
 
   for (const meta of metadataMap) {
+    at(`info:${meta.key}`);
     const value = meta.getter();
     if (value) {
       const field: MetadataField = {
@@ -126,6 +127,7 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promis
   // fully intact — the classic "looks clean but isn't" trap. Drop the whole
   // stream, from both the catalog reference and the object table so it isn't
   // written back as an orphan.
+  at("xmp");
   const xmpValue = pdfDoc.catalog.get(PDFName.of("Metadata"));
   if (xmpValue) {
     // XMP streams are required to be plain, so decoding the raw contents is
@@ -146,6 +148,7 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promis
   // Templates and Office exports inject non-standard keys (Company, Manager,
   // classification codes, and so on) that the standard setters never clear.
   // Always looked for, so a kept one is reported kept.
+  at("custom");
   const infoRef = pdfDoc.context.trailerInfo.Info;
   const info = infoRef ? pdfDoc.context.lookup(infoRef, PDFDict) : undefined;
   if (info) {
@@ -172,5 +175,6 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions): Promis
     }
   }
 
+  at("save");
   return { cleaned: await pdfDoc.save(), fieldsFound, fieldsRemoved };
 }

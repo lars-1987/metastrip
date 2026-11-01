@@ -146,7 +146,7 @@ describe("MP4 (Android-style: udta tags plus mdta keys)", () => {
 
   it("explains a failed full read", async () => {
     const file = failFullRead(fileOf(mp4Bytes(), name, type));
-    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError at read");
   });
 
   it("refuses a file over the 1.5 GB cap without reading it", async () => {
@@ -338,7 +338,7 @@ describe("MP3 (ID3v2.3 at the front, ID3v1 at the end)", () => {
     // This used to come back as an empty Blob and the raw text "MP3 processing
     // failed: gone".
     const file = failFullRead(fileOf(mp3Bytes(), name, type));
-    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError at read");
   });
 });
 
@@ -401,7 +401,7 @@ describe("FLAC (STREAMINFO, APPLICATION, VORBIS_COMMENT, PICTURE)", () => {
     // This used to come back as an empty Blob and the raw text "FLAC processing
     // failed: gone".
     const file = failFullRead(fileOf(flacBytes(), name, type));
-    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError at read");
   });
 });
 
@@ -463,7 +463,7 @@ describe("WAV (fmt, LIST/INFO, bext, iXML, data)", () => {
     // This used to come back as an empty Blob and the raw text "WAV processing
     // failed: gone".
     const file = failFullRead(fileOf(wavBytes(), name, type));
-    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError");
+    expectFailed(file, await processFile(file, ALL), COULD_NOT_OPEN, "crash: NotFoundError at read");
   });
 });
 

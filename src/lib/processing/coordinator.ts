@@ -122,14 +122,19 @@ export async function processFile(
   // other throw (a bug, or the browser failing the read) used to reject the
   // whole scan, leaving the tool on "reading files" for good. So the guard
   // lives here once instead of in every parser.
+  let step = "read";
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const stripped = await entry.strip(bytes, options);
+    step = "strip";
+    const stripped = await entry.strip(bytes, options, (next) => { step = next; });
+    step = "assemble";
     return assemble(file, format, bytes, stripped);
   } catch (err) {
     if (err instanceof Unreadable) return failed(file, format, DAMAGED, `unreadable: ${format}`);
+    // pdf-lib's errors are all named plain "Error", and the message could quote
+    // the file, so the step is what tells one crash from another.
     const name = err instanceof Error ? err.name : "unknown";
-    return failed(file, format, crashMessage(name), `crash: ${name}`);
+    return failed(file, format, crashMessage(name), `crash: ${name} at ${step}`);
   }
 }
 
