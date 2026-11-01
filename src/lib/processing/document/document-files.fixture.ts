@@ -5,7 +5,7 @@
  *  and kept rather than an empty report. Nothing is read from disk. */
 
 import JSZip from "jszip";
-import { PDFDict, PDFDocument, PDFName, PDFString } from "pdf-lib";
+import { PDFDict, PDFDocument, PDFName, PDFObject, PDFString } from "pdf-lib";
 
 export const PDF_MIME = "application/pdf";
 export const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -75,12 +75,12 @@ export async function pdfWithXmp(xmp: string): Promise<Uint8Array> {
   return doc.save({ updateFieldAppearances: false });
 }
 
-/** A one-page PDF with a single Info field set to a raw string, unchecked, for
+/** A one-page PDF with a single Info field set to a raw value, unchecked, for
  *  the values other writers put there and pdf-lib's own setters never would. */
-export async function pdfWithInfoString(key: string, value: string): Promise<Uint8Array> {
+export async function pdfWithInfo(key: string, value: PDFObject): Promise<Uint8Array> {
   const doc = await PDFDocument.create({ updateMetadata: false });
   doc.addPage([200, 200]);
-  const info = doc.context.obj({ [key]: PDFString.of(value) });
+  const info = doc.context.obj({ [key]: value });
   doc.context.trailerInfo.Info = doc.context.register(info);
   return doc.save({ updateFieldAppearances: false });
 }

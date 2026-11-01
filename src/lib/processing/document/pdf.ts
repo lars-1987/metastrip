@@ -1,4 +1,4 @@
-import { PDFDocument, PDFName, PDFDict, PDFRef, PDFRawStream } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict, PDFHexString, PDFRef, PDFRawStream, PDFString } from "pdf-lib";
 import { stripXmp } from "../xmp";
 import { Unreadable, type MarkStep, type Stripped } from "../contract";
 import type {
@@ -6,6 +6,15 @@ import type {
   MetadataField,
   MetadataCategory,
 } from "../types";
+
+/** An Info value as the file holds it, whatever its type. */
+function rawInfoValue(pdfDoc: PDFDocument, key: string): string | undefined {
+  const infoRef = pdfDoc.context.trailerInfo.Info;
+  const info = infoRef ? pdfDoc.context.lookup(infoRef, PDFDict) : undefined;
+  const value = info?.lookup(PDFName.of(key));
+  if (value instanceof PDFString || value instanceof PDFHexString) return value.decodeText();
+  return value?.toString();
+}
 
 export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: MarkStep): Promise<Stripped> {
   let pdfDoc: PDFDocument;
@@ -100,9 +109,23 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: Mar
     },
   ];
 
+  // pdf-lib's getters throw on a value they can't type: a date written as text
+  // or left empty, a title that isn't a string. An impossible date doesn't
+  // throw, but comes back as an Invalid Date. Either way the field is still
+  // there and still has to go, so read what the file actually holds.
+  const readField = (meta: (typeof metadataMap)[number]) => {
+    try {
+      const value = meta.getter();
+      if (!(value instanceof Date) || !Number.isNaN(value.getTime())) return value;
+    } catch {
+      // Falls through to the raw value.
+    }
+    return rawInfoValue(pdfDoc, meta.key);
+  };
+
   for (const meta of metadataMap) {
     at(`info:${meta.key}`);
-    const value = meta.getter();
+    const value = readField(meta);
     if (value) {
       const field: MetadataField = {
         category: meta.category,
