@@ -2,9 +2,12 @@
 
 import { useMemo } from "react";
 import { Icon } from "@/components/shared/Icon";
-import { CATEGORY_CONFIG } from "@/lib/constants";
+import { trackFailureReportClicked } from "@/lib/analytics";
+import { CATEGORY_CONFIG, CONTACT_EMAIL } from "@/lib/constants";
 import { extractGpsCoordinates } from "@/lib/gps";
+import { isUnexplained } from "@/lib/processing/coordinator";
 import type { MetadataCategory } from "@/lib/processing/types";
+import { failureReportHref } from "@/lib/report-failure";
 import { Button } from "../ui/Button";
 import { Checkbox } from "../ui/Checkbox";
 import { InfoTip } from "../ui/InfoTip";
@@ -97,6 +100,26 @@ export function CardReview({
               {reason} Nothing was changed, and we cannot tell you whether it
               carries metadata, so treat it as unchecked rather than clean.
             </p>
+            {entry.reason && isUnexplained(entry.reason) && (
+              <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-body)]">
+                Want us to look into it?{" "}
+                <a
+                  href={failureReportHref({
+                    reason: entry.reason,
+                    format: entry.format,
+                    fileSize: entry.file.size,
+                    userAgent: navigator.userAgent,
+                  })}
+                  onClick={() =>
+                    trackFailureReportClicked({ file_type: entry.file.type || "unknown", reason: entry.reason! })
+                  }
+                  className="underline"
+                >
+                  Email {CONTACT_EMAIL}
+                </a>
+                . We fill in the error details, and you don&apos;t need to attach the file.
+              </p>
+            )}
           </div>
         ) : nothingFound ? (
           <div className="rounded-[var(--radius-sm)] bg-[var(--card)] p-6 text-[15px] text-[var(--text-body)]">

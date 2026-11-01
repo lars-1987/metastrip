@@ -67,6 +67,8 @@ export function batchByteCap(formats: readonly SupportedFormat[], { onPhone = fa
 
 const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doesn't handle yet.";
 
+const BROWSER_READ_ERRORS = ["NotFoundError", "NotReadableError"];
+
 /** A failed result: the original file, untouched, with a message and a reason. */
 function failed(file: File, fileType: Format | "unknown", error: string, reason: string): ProcessingResult {
   return {
@@ -171,7 +173,7 @@ function assemble(file: File, format: SupportedFormat, original: Uint8Array, s: 
  * file ("may be damaged"), which sent them looking in the wrong place.
  */
 function crashMessage(name: string): string {
-  if (name === "NotFoundError" || name === "NotReadableError") {
+  if (BROWSER_READ_ERRORS.includes(name)) {
     return "Your browser couldn't open it. If you just downloaded it, make sure the download has finished, or save it to a folder on this device (not a cloud-only one) and try again.";
   }
   return DAMAGED;
@@ -181,4 +183,13 @@ function crashMessage(name: string): string {
  *  quote content from the file. */
 export function failureReason(r: ProcessingResult): string {
   return r.reason ?? "unknown";
+}
+
+/** A failure we can't account for, so worth asking the person about: a crash,
+ *  or a file of a format we take that still wouldn't read. A browser read error
+ *  has its own advice, and a refused format or size explains itself. */
+export function isUnexplained(reason: string | undefined): boolean {
+  if (!reason) return false;
+  if (BROWSER_READ_ERRORS.some((name) => reason.startsWith(`crash: ${name}`))) return false;
+  return /^(crash|unreadable|empty_output): /.test(reason);
 }

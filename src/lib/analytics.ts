@@ -104,6 +104,13 @@ export function trackFileFailed(props: {
   });
 }
 
+/** The email link on a file we couldn't read. A click, not a sent email: the
+ *  mail app may never open, and what happens there is the person's business.
+ *  The same reason and mime type file_failed already sends. */
+export function trackFailureReportClicked(props: { file_type: string; reason: string }) {
+  posthog.capture("failure_report_clicked", { ...props, reason: props.reason.slice(0, 120) });
+}
+
 /** Only something shaped like a real extension gets through. "photo.from mum"
  *  would otherwise send part of the filename. */
 function safeExtension(ext: string): string {

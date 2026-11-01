@@ -35,6 +35,8 @@ export interface ToolEntry {
   cleanedBlob?: Blob;
   finalReport?: MetadataReport;
   error?: string;
+  /** Why it failed, as the telemetry code. Set whenever `error` is. */
+  reason?: string;
   /** The verify-clean re-read of cleanedBlob. Unset while it is still running. */
   verify?: VerifyResult;
 }
@@ -157,6 +159,7 @@ export function useV3Tool() {
           fullyStrippedBlob: r.cleanedBlob,
           options: { ...ALL_ON },
           error: r.error,
+          reason: r.error ? failureReason(r) : undefined,
         });
         // Publish as we go: each file appears in the list the moment it is really
         // done, so a 75-file batch shows genuine progress instead of looking hung.
@@ -245,6 +248,7 @@ export function useV3Tool() {
         let cleanedBlob = e.fullyStrippedBlob;
         let finalReport = e.scan;
         let error = e.error;
+        let reason = e.reason;
         // A file that already failed its scan is not re-read: it would only fail
         // again and log a second, misleading strip-stage failure.
         if (!error && !optionsAllOn(e.options)) {
@@ -256,11 +260,12 @@ export function useV3Tool() {
             // listed this file as "cleaned_<name>, −0 removed" and the download
             // shipped the untouched original under that name.
             error = r.error;
+            reason = failureReason(r);
             trackFileFailed({
               file_type: e.file.type || "unknown",
               file_size: e.file.size,
               stage: "strip",
-              reason: failureReason(r),
+              reason,
             });
           }
         }
@@ -276,7 +281,7 @@ export function useV3Tool() {
             categories_removed: categoriesOf(finalReport.fieldsRemoved),
           });
         }
-        finished.push({ ...e, cleanedBlob, finalReport, error });
+        finished.push({ ...e, cleanedBlob, finalReport, error, reason });
       }
       setEntries(finished);
       // Not awaited: neither the ticks nor the report wait for the re-check.
