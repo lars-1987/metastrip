@@ -75,7 +75,7 @@ const LOCKED: Record<LockKind, string> = {
   password:
     "It's password-protected, and MetaStrip can't change a locked file without breaking it. Unlock it with its password first, then add the unlocked copy.",
   permissions:
-    "It opens without a password but is locked against changes, and MetaStrip can't change a locked file without breaking it. Ask whoever made it for an unlocked copy.",
+    "It opens without a password but is locked against changes, and MetaStrip can't change a locked file without breaking it. Remove the lock first, then add the unlocked copy.",
   unknown:
     "It's encrypted, and MetaStrip can't change a locked file without breaking it. Remove the protection first, then add the unlocked copy.",
 };

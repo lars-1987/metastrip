@@ -12,8 +12,9 @@ export const GITHUB_REPO_URL = "https://github.com/lars-1987/metastrip";
 export const CONTACT_EMAIL = "hello@metastrip.app";
 
 /** SanctumPDF's unlock tool: the same maker, and like MetaStrip it runs in the
- *  browser, so a locked PDF and its password never leave the device. Offered
- *  only for PDFs that need a password to open, since the tool needs one. */
+ *  browser, so a locked PDF and its password never leave the device. It takes
+ *  the password for a PDF that needs one to open, and a blank one for a PDF
+ *  that only restricts edits (sanctumpdf#1). */
 export const SANCTUMPDF_UNLOCK_URL =
   "https://sanctumpdf.com/unlock-pdf?utm_source=metastrip&utm_medium=referral&utm_campaign=locked_pdf";
 
