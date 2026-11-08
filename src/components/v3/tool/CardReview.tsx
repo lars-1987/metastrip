@@ -101,11 +101,12 @@ export function CardReview({
               {reason} Nothing was changed, and we cannot tell you whether it
               carries metadata, so treat it as unchecked rather than clean.
             </p>
-            {/* Only where the password is the way in: SanctumPDF's unlock
-                needs one, and a permissions-only lock has none to give. */}
-            {lock === "password" && entry.format === "pdf" && (
+            {/* SanctumPDF's unlock takes the password for a file that needs one
+                to open, and a blank one for a file that only restricts edits.
+                A lock we couldn't classify gets no link: we can't say which. */}
+            {(lock === "password" || lock === "permissions") && entry.format === "pdf" && (
               <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-body)]">
-                Know the password?{" "}
+                {lock === "password" ? "Know the password? " : ""}
                 <a
                   href={SANCTUMPDF_UNLOCK_URL}
                   target="_blank"
@@ -115,7 +116,9 @@ export function CardReview({
                 >
                   Unlock it with SanctumPDF
                 </a>
-                , a free tool from the maker of MetaStrip that also runs in your browser, so the file and password stay on your device.
+                {lock === "permissions" ? ", leaving the password blank. It's" : ", which is"} a free tool from the maker of
+                MetaStrip that also runs in your browser, so the file
+                {lock === "password" ? " and password stay" : " stays"} on your device.
               </p>
             )}
             {entry.reason && isUnexplained(entry.reason) && (
