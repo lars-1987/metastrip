@@ -51,10 +51,10 @@ describe("identify", () => {
 
   it("marks supported, recognised and unknown files", async () => {
     const jpeg = HEADER_CASES.find((c) => c.label === "JPEG")!;
-    const tiff = HEADER_CASES.find((c) => c.label === "TIFF, little-endian")!;
+    const bmp = HEADER_CASES.find((c) => c.label === "BMP")!;
     const text = HEADER_CASES.find((c) => c.label === "Plain text")!;
     expect(await identify(fileOf(jpeg))).toEqual({ status: "supported", format: "jpeg" });
-    expect(await identify(fileOf(tiff))).toEqual({ status: "recognised", format: "tiff" });
+    expect(await identify(fileOf(bmp))).toEqual({ status: "recognised", format: "bmp" });
     expect(await identify(fileOf(text))).toEqual({ status: "unknown" });
   });
 });
@@ -62,17 +62,17 @@ describe("identify", () => {
 describe("notSupportedYet", () => {
   it("names recognised formats", () => {
     expect(notSupportedYet([
-      { status: "recognised", format: "tiff" },
-      { status: "recognised", format: "tiff" },
-    ])).toBe("TIFF files aren't supported yet.");
+      { status: "recognised", format: "raw" },
+      { status: "recognised", format: "raw" },
+    ])).toBe("Camera RAW files aren't supported yet.");
     expect(notSupportedYet([
-      { status: "recognised", format: "tiff" },
+      { status: "recognised", format: "raw" },
       { status: "recognised", format: "bmp" },
-    ])).toBe("TIFF and BMP files aren't supported yet.");
+    ])).toBe("Camera RAW and BMP files aren't supported yet.");
   });
 
   it("stays general when any file is unknown", () => {
-    expect(notSupportedYet([{ status: "recognised", format: "tiff" }, { status: "unknown" }]))
+    expect(notSupportedYet([{ status: "recognised", format: "bmp" }, { status: "unknown" }]))
       .toBe("Those file types aren't supported yet.");
   });
 });
@@ -112,7 +112,7 @@ describe("categoryOf", () => {
 describe("SUPPORTED_FORMATS", () => {
   it("lists formats in the order the dropzone shows them", () => {
     expect(SUPPORTED_FORMATS).toEqual([
-      "jpeg", "png", "webp", "gif", "heic", "avif",
+      "jpeg", "png", "webp", "gif", "heic", "avif", "tiff",
       "pdf", "docx", "xlsx", "pptx",
       "mp4", "mov",
       "mp3", "m4a", "flac", "wav",
@@ -130,7 +130,7 @@ describe("ACCEPT_ATTRIBUTE", () => {
   });
 
   it("lets recognised formats through the picker so they get a clear message", () => {
-    expect(accepted).toContain("image/tiff");
-    expect(accepted).toContain(".tif");
+    expect(accepted).toContain("image/bmp");
+    expect(accepted).toContain(".dng");
   });
 });

@@ -18,7 +18,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "What file types are supported?",
     answer:
-      "Images: JPEG, PNG, WebP, HEIC (Apple's iPhone photo format), AVIF, GIF. Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx). Video: MP4, MOV, M4V. Audio: MP3, M4A, FLAC, WAV. TIFF and additional document formats are on the roadmap.",
+      "Images: JPEG, PNG, WebP, HEIC (Apple's iPhone photo format), AVIF, GIF, TIFF. Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx). Video: MP4, MOV, M4V. Audio: MP3, M4A, FLAC, WAV. Camera RAW files (DNG, NEF, CR2 and others) aren't supported yet.",
   },
   {
     question: "Is MetaStrip really free?",

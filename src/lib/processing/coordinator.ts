@@ -7,6 +7,7 @@ import { stripPng } from "./image/png";
 import { stripWebp } from "./image/webp";
 import { stripGif } from "./image/gif";
 import { stripHeic, stripAvif } from "./image/heic";
+import { stripTiff } from "./image/tiff";
 import { stripPdf } from "./document/pdf";
 import { stripDocx, stripXlsx, stripPptx } from "./document/office";
 import { stripMp4 } from "./video/mp4";
@@ -42,6 +43,7 @@ const processors = {
   gif: { strip: stripGif },
   heic: { strip: stripHeic },
   avif: { strip: stripAvif },
+  tiff: { strip: stripTiff },
   pdf: { strip: stripPdf },
   docx: { strip: stripDocx },
   xlsx: { strip: stripXlsx },

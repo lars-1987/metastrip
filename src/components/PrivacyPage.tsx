@@ -138,7 +138,7 @@ function PrivacyPolicyContent() {
           running in your web browser. Specifically:
         </p>
         <p className="mb-2">
-          Image files (JPEG, PNG, WebP, GIF, HEIC, AVIF) are processed using
+          Image files (JPEG, PNG, WebP, GIF, HEIC, AVIF, TIFF) are processed using
           MetaStrip&apos;s own parsing code, which runs entirely in your
           browser&apos;s JavaScript engine.
         </p>

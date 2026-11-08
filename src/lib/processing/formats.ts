@@ -30,6 +30,7 @@ const FORMATS = {
     extensions: ["heic", "heif"],
   },
   avif: { label: "AVIF", category: "image", status: "supported", mimes: ["image/avif"], extensions: ["avif"] },
+  tiff: { label: "TIFF", category: "image", status: "supported", mimes: ["image/tiff"], extensions: ["tif", "tiff"] },
   pdf: { label: "PDF", category: "document", status: "supported", mimes: ["application/pdf"], extensions: ["pdf"] },
   docx: {
     label: "DOCX", category: "document", status: "supported",
@@ -52,8 +53,16 @@ const FORMATS = {
   m4a: { label: "M4A", category: "audio", status: "supported", mimes: ["audio/mp4", "audio/x-m4a", "audio/aac"], extensions: ["m4a"] },
   flac: { label: "FLAC", category: "audio", status: "supported", mimes: ["audio/flac", "audio/x-flac"], extensions: ["flac"] },
   wav: { label: "WAV", category: "audio", status: "supported", mimes: ["audio/wav", "audio/x-wav", "audio/wave"], extensions: ["wav"] },
-  tiff: { label: "TIFF", category: "image", status: "recognised", mimes: ["image/tiff"], extensions: ["tif", "tiff"] },
   bmp: { label: "BMP", category: "image", status: "recognised", mimes: ["image/bmp"], extensions: ["bmp"] },
+  // Most camera RAW formats are TIFF underneath and start with TIFF's bytes,
+  // but their image can depend on the maker notes, so they are named and
+  // turned away rather than stripped as TIFF. Browsers usually leave their
+  // MIME type empty, so the extension and the signatures below do the work.
+  raw: {
+    label: "Camera RAW", category: "image", status: "recognised",
+    mimes: ["image/x-adobe-dng", "image/x-canon-cr2", "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw", "image/x-fuji-raf"],
+    extensions: ["dng", "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2", "orf", "rw2", "raf", "pef", "srw", "3fr", "erf", "kdc", "mos", "iiq", "rwl", "x3f"],
+  },
 } as const satisfies Record<string, FormatEntry>;
 
 type Formats = typeof FORMATS;
@@ -80,8 +89,10 @@ export async function identify(file: File): Promise<Identity> {
     (buf) => new Uint8Array(buf),
     () => new Uint8Array(0)
   );
+  const fromBytes = formatFromBytes(head);
+  // TIFF's bytes don't tell a TIFF from a DNG, NEF or ARW; the extension does.
   const format =
-    formatFromBytes(head) ??
+    (fromBytes === "tiff" && (FORMATS.raw.extensions as readonly string[]).includes(extensionOf(file.name)) ? "raw" : fromBytes) ??
     ALL.find((f) => (FORMATS[f].mimes as readonly string[]).includes(file.type)) ??
     ALL.find((f) => (FORMATS[f].extensions as readonly string[]).includes(extensionOf(file.name)));
   if (!format) return { status: "unknown" };
@@ -146,7 +157,9 @@ function formatFromBytes(head: Uint8Array): Format | null {
   if (head[0] === 0x89 && at(1, 3) === "PNG") return "png";
   if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "jpeg";
   if (at(0, 3) === "GIF") return "gif";
-  if (at(0, 4) === "II*\u0000" || at(0, 4) === "MM\u0000*") return "tiff";
+  if (at(0, 4) === "II*\u0000" || at(0, 4) === "MM\u0000*") return at(8, 2) === "CR" ? "raw" : "tiff"; // CR2 marks itself
+  if (at(0, 4) === "IIRO" || at(0, 4) === "IIRS" || at(0, 4) === "MMOR" || at(0, 4) === "IIU\u0000") return "raw"; // ORF, RW2
+  if (at(0, 15) === "FUJIFILMCCD-RAW") return "raw";
   if (at(0, 5) === "%PDF-") return "pdf";
   if (at(0, 4) === "fLaC") return "flac";
   if (at(0, 3) === "ID3") return "mp3";
@@ -170,6 +183,7 @@ function formatFromBytes(head: Uint8Array): Format | null {
       return "heic";
     }
     if (brand === "qt  ") return "mov";
+    if (brand === "crx ") return "raw"; // Canon CR3
     // Apple's audio brands: music, audiobooks, protected music.
     if (brand === "M4A " || brand === "M4B " || brand === "M4P ") return "m4a";
     return "mp4";

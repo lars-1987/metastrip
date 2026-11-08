@@ -216,7 +216,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     metaTitle:
       "Remove Metadata from Photos Online: Free, No Upload | MetaStrip",
     metaDescription:
-      "Remove GPS, EXIF, camera info, and AI tags from photos in your browser. JPG, PNG, WebP, HEIC, AVIF. No upload, no account, no cost.",
+      "Remove GPS, EXIF, camera info, and AI tags from photos in your browser. JPG, PNG, WebP, HEIC, AVIF, TIFF. No upload, no account, no cost.",
   },
 
   "remove-author-from-pdf": {

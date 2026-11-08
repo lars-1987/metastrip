@@ -55,10 +55,10 @@ describe("a failure", () => {
   });
 
   it("names a recognised format it can't strip yet", async () => {
-    const file = new File([bytes("II*", [0, 8, 0, 0, 0]) as BlobPart], "scan.tif", { type: "image/tiff" });
+    const file = new File([bytes("II*", [0, 8, 0, 0, 0]) as BlobPart], "IMG_0001.dng", { type: "" });
     const result = await processFile(file, ALL_ON);
-    expect(result.error).toBe("TIFF files aren't supported yet.");
-    expect(result.reason).toBe("recognised: tiff");
+    expect(result.error).toBe("Camera RAW files aren't supported yet.");
+    expect(result.reason).toBe("recognised: raw");
     expect(result.cleanedBlob).toBe(file);
   });
 
@@ -75,7 +75,7 @@ describe("a failure", () => {
   });
 
   it("gives telemetry the reason code, never the message", async () => {
-    const file = new File([bytes("II*", [0, 8, 0, 0, 0]) as BlobPart], "scan.tif", { type: "image/tiff" });
-    expect(failureReason(await processFile(file, ALL_ON))).toBe("recognised: tiff");
+    const file = new File([bytes("II*", [0, 8, 0, 0, 0]) as BlobPart], "IMG_0001.dng", { type: "" });
+    expect(failureReason(await processFile(file, ALL_ON))).toBe("recognised: raw");
   });
 });
