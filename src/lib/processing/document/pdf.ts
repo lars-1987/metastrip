@@ -1,6 +1,7 @@
 import { PDFDocument, PDFName, PDFDict, PDFHexString, PDFRef, PDFRawStream, PDFString } from "pdf-lib";
 import { stripXmp } from "../xmp";
-import { Unreadable, type MarkStep, type Stripped } from "../contract";
+import { Locked, Unreadable, type MarkStep, type Stripped } from "../contract";
+import { opensWithoutPassword } from "./pdf-lock";
 import type {
   StripOptions,
   MetadataField,
@@ -25,9 +26,19 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: Mar
     // have read anything. That made us report pdf-lib as the user's PDF
     // Producer and "now" as their modification date, and it wrote both into
     // the output whenever the user chose to KEEP those categories.
-    pdfDoc = await PDFDocument.load(bytes, { updateMetadata: false });
+    //
+    // ignoreEncryption only lets an encrypted file load so we can see that it
+    // is one: it is never edited. Before, pdf-lib's EncryptedPDFError was
+    // caught below with everything else, so a locked PDF was called damaged.
+    pdfDoc = await PDFDocument.load(bytes, { updateMetadata: false, ignoreEncryption: true });
   } catch {
     throw new Unreadable();
+  }
+  if (pdfDoc.isEncrypted) {
+    // A lock we can't classify is still a lock: never let the check itself
+    // turn it into a crash.
+    const opens = await opensWithoutPassword(pdfDoc).catch(() => undefined);
+    throw new Locked(opens === undefined ? "unknown" : opens ? "permissions" : "password");
   }
   // pdf-lib loads a file cut off after its header without complaint, but a
   // PDF with no document catalog isn't a PDF, and reading it would throw.

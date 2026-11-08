@@ -9,9 +9,10 @@
  *  "Quirk" are known gaps left for later. */
 
 import JSZip from "jszip";
-import { PDFDocument, PDFName, PDFNumber, PDFString } from "pdf-lib";
+import { PDFDict, PDFDocument, PDFName, PDFNumber, PDFString } from "pdf-lib";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { processFile } from "../coordinator";
+import { isUnexplained, lockKindOf, processFile } from "../coordinator";
+import { lockedPdf } from "./locked-pdfs.fixture";
 import { expectFoundIgnoresOptions } from "../contract-checks.fixture";
 import type { MetadataCategory, MetadataField, ProcessingResult, StripOptions } from "../types";
 import {
@@ -225,7 +226,47 @@ describe("PDF", () => {
       expect(result.reason).toBe("crash: Error at save");
     });
   });
+
+  // pdf-lib refuses to load an encrypted PDF, and that refusal used to be
+  // caught as "unreadable", so a locked file was called damaged. Two real ones
+  // in the week of 1 Nov 2026 may have been this.
+  describe("a locked PDF", () => {
+    const opensFreely = ["r2-open", "r3-open", "r4-open", "r4-open-meta-clear", "r4-open-objstm", "r6-open", "r6-open-objstm"] as const;
+    const needsPassword = ["r2-pass", "r3-pass", "r4-pass", "r4-pass-objstm", "r6-pass", "r6-pass-objstm"] as const;
+
+    it.each(opensFreely)("%s opens without a password, so it's locked by permissions", async (fixture) => {
+      const { file, result } = await run(lockedPdf(fixture), name, PDF_MIME, ALL_ON);
+      expectLocked(file, result, "permissions");
+    });
+
+    it.each(needsPassword)("%s needs a password to open", async (fixture) => {
+      const { file, result } = await run(lockedPdf(fixture), name, PDF_MIME, ALL_ON);
+      expectLocked(file, result, "password");
+    });
+
+    it("is still locked, kind unknown, when the security handler isn't the standard one", async () => {
+      const pdf = await PDFDocument.load(lockedPdf("r4-pass"), { ignoreEncryption: true });
+      const encrypt = pdf.context.lookup(pdf.context.trailerInfo.Encrypt, PDFDict);
+      encrypt.set(PDFName.of("Filter"), PDFName.of("Adobe.PubSec"));
+      const { file, result } = await run(await pdf.save({ useObjectStreams: false }), name, PDF_MIME, ALL_ON);
+      expectLocked(file, result, "unknown");
+    });
+
+    it("is never reported as unexplained, so it gets no email link", async () => {
+      const { result } = await run(lockedPdf("r6-pass"), name, PDF_MIME, ALL_ON);
+      expect(isUnexplained(result.reason)).toBe(false);
+      expect(lockKindOf(result.reason)).toBe("password");
+    });
+  });
 });
+
+function expectLocked(file: File, result: ProcessingResult, kind: string) {
+  expect(result.reason).toBe(`locked: pdf ${kind}`);
+  expect(result.error).toMatch(/locked/);
+  expect(result.error).not.toBe(DAMAGED);
+  expect(result.cleanedBlob).toBe(file);
+  expect(result.report.fieldsFound).toEqual([]);
+}
 
 // ── Office (shared by DOCX, XLSX, PPTX) ──────────────────────────────────
 
