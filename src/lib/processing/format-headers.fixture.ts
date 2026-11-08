@@ -50,6 +50,14 @@ export const HEADER_CASES: HeaderCase[] = [
   { label: "TIFF, little-endian", name: "scan.tif", mime: "image/tiff", head: bytes("II*", [0, 8, 0, 0, 0]), identify: "tiff" },
   { label: "TIFF, big-endian", name: "scan.tiff", mime: "image/tiff", head: bytes("MM", [0], "*", [0, 0, 0, 8]), identify: "tiff" },
   { label: "BMP", name: "old.bmp", mime: "image/bmp", head: bytes("BM", [0x36, 0x10, 0, 0]), identify: "bmp" },
+  // Camera RAW: TIFF's bytes with a RAW extension, or a RAW signature of its own.
+  { label: "DNG (TIFF bytes, .dng)", name: "IMG_0001.DNG", mime: "", head: bytes("II*", [0, 8, 0, 0, 0]), identify: "raw" },
+  { label: "NEF (TIFF bytes, .nef)", name: "DSC_0001.NEF", mime: "", head: bytes("MM", [0], "*", [0, 0, 0, 8]), identify: "raw" },
+  { label: "CR2, even named .tif", name: "IMG_0001.tif", mime: "image/tiff", head: bytes("II*", [0, 16, 0, 0, 0], "CR", [2, 0]), identify: "raw" },
+  { label: "ORF", name: "P1010001.ORF", mime: "", head: bytes("IIRO", [8, 0, 0, 0, 0, 0, 0, 0]), identify: "raw" },
+  { label: "RW2", name: "P1000001.RW2", mime: "", head: bytes("IIU", [0, 8, 0, 0, 0, 0, 0, 0, 0]), identify: "raw" },
+  { label: "RAF", name: "DSCF0001.RAF", mime: "", head: bytes("FUJIFILMCCD-RAW 0201"), identify: "raw" },
+  { label: "CR3", name: "IMG_0001.CR3", mime: "", head: ftyp("crx ", "crx ", "isom"), identify: "raw" },
 
   // Documents
   { label: "PDF", name: "doc.pdf", mime: "application/pdf", head: bytes("%PDF-1.7\n"), identify: "pdf" },

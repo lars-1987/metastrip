@@ -8,6 +8,10 @@ import { tagName, type IfdName } from "./exif-tags";
    reads and strips it for every container, which only finds the block and
    puts back what comes out.
 
+   TIFF files are this same structure with the image hanging off it; tiff.ts
+   reads them with the Reader and fieldFor below, so a TIFF's fields are named
+   and filed exactly as a JPEG's are.
+
    Stripping edits in place: a removed tag's entry leaves its IFD and its
    value bytes are zeroed, so everything kept stays at its offset. HEIF items
    keep their size (their positions are absolute), and maker notes, whose
@@ -120,9 +124,9 @@ export function humanizeTagName(tagName: string): string {
 
 /** The block can't be walked: an offset or a count runs past its end, an IFD
  *  is reached twice, or a value has a type TIFF doesn't define. */
-class Malformed extends Error {}
+export class Malformed extends Error {}
 
-const TYPE_SIZE: Record<number, number> = {
+export const TYPE_SIZE: Record<number, number> = {
   1: 1, // BYTE
   2: 1, // ASCII
   3: 2, // SHORT
@@ -138,7 +142,7 @@ const TYPE_SIZE: Record<number, number> = {
   13: 4, // IFD
 };
 
-interface Entry {
+export interface Entry {
   tag: number;
   type: number;
   count: number;
@@ -149,7 +153,7 @@ interface Entry {
   size: number;
 }
 
-interface Ifd {
+export interface Ifd {
   name: IfdName;
   at: number;
   entries: Entry[];
@@ -171,7 +175,7 @@ const sizeOf = (bytes: number) => (bytes < 1024 ? `${bytes} bytes` : `${(bytes /
 /** IFD order for the report: the order the fields were always listed in. */
 const IFD_ORDER: IfdName[] = ["0th", "Exif", "GPS", "1st", "Interop"];
 
-class Reader {
+export class Reader {
   readonly le: boolean;
   constructor(readonly b: Uint8Array) {
     if (b.length < 8) throw new Malformed();
@@ -323,7 +327,7 @@ function isHidden(ifd: IfdName, tag: number): boolean {
   return false;
 }
 
-function fieldFor(r: Reader, ifd: IfdName, e: Entry): MetadataField {
+export function fieldFor(r: Reader, ifd: IfdName, e: Entry): MetadataField {
   const name = tagName(ifd, e.tag);
   const { raw, shown } = valueOf(r, ifd, e);
   if (!name) {
