@@ -1,4 +1,4 @@
-import { PDFDocument, PDFName, PDFDict, PDFHexString, PDFRef, PDFRawStream, PDFString } from "pdf-lib";
+import { PDFArray, PDFDocument, PDFName, PDFNumber, PDFDict, PDFHexString, PDFObject, PDFRef, PDFRawStream, PDFStream, PDFString } from "pdf-lib";
 import { stripXmp } from "../xmp";
 import { Locked, Unreadable, type MarkStep, type Stripped } from "../contract";
 import { opensWithoutPassword } from "./pdf-lock";
@@ -45,6 +45,10 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: Mar
   if (!pdfDoc.context.trailerInfo.Root) throw new Unreadable();
 
   const fieldsFound: MetadataField[] = [];
+
+  // Objects nothing in the document refers to any more, read before anything
+  // is changed so what's found never depends on the options. See leftovers().
+  const leftover = leftovers(pdfDoc);
   const fieldsRemoved: MetadataField[] = [];
 
   // Dates are deleted outright. Setting them to the epoch left a 1 Jan 1970
@@ -209,6 +213,84 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: Mar
     }
   }
 
+  // ── Leftovers from earlier edits ───────────────────────────────────────
+  // pdf-lib loads every object in the file and saves every object it loaded,
+  // including ones nothing refers to any more: an XMP stream an earlier edit
+  // unlinked, an Info dictionary it replaced, a deleted comment or page. A
+  // checker shows none of them, because they aren't part of the document, but
+  // the bytes are still there. A PDF ExifTool had "stripped" came out of
+  // MetaStrip with its first author's name intact this way (8 Nov 2026). They
+  // can hold anything, so they go whenever anything is being removed.
+  at("leftovers");
+  if (leftover.field) {
+    fieldsFound.push(leftover.field);
+    if (Object.values(options).some(Boolean)) fieldsRemoved.push(leftover.field);
+  }
+  if (fieldsRemoved.length > 0) {
+    for (const [ref] of leftovers(pdfDoc).unreachable) pdfDoc.context.delete(ref);
+  }
+
   at("save");
   return { cleaned: await pdfDoc.save(), fieldsFound, fieldsRemoved };
+}
+
+/** Every indirect object the document can't reach from its trailer (the
+ *  catalog and the Info dictionary), and a field describing them. pdf-lib's
+ *  own bookkeeping from the old file (cross-reference and object streams, a
+ *  linearisation dictionary) is unreachable too and goes with the rest, but
+ *  isn't counted: it carries no content. */
+function leftovers(pdfDoc: PDFDocument): { unreachable: [PDFRef, PDFObject][]; field?: MetadataField } {
+  const ctx = pdfDoc.context;
+  const reached = new Set<string>();
+  const visit = (obj: PDFObject | undefined) => {
+    const stack = [obj];
+    while (stack.length) {
+      const o = stack.pop();
+      if (o instanceof PDFRef) {
+        if (reached.has(o.tag)) continue;
+        reached.add(o.tag);
+        stack.push(ctx.lookup(o));
+      } else if (o instanceof PDFDict) {
+        stack.push(...o.values());
+      } else if (o instanceof PDFArray) {
+        stack.push(...o.asArray());
+      } else if (o instanceof PDFStream) {
+        stack.push(...o.dict.values());
+      }
+    }
+  };
+  visit(ctx.trailerInfo.Root);
+  visit(ctx.trailerInfo.Info);
+
+  const unreachable = ctx.enumerateIndirectObjects().filter(([ref]) => !reached.has(ref.tag));
+  const dictOf = (o: PDFObject) => (o instanceof PDFStream ? o.dict : o instanceof PDFDict ? o : undefined);
+  const linearized = unreachable.some(([, o]) => dictOf(o)?.has(PDFName.of("Linearized")));
+  const content = unreachable.filter(([, o]) => {
+    const d = dictOf(o);
+    const type = d?.get(PDFName.of("Type"));
+    if (type === PDFName.of("XRef") || type === PDFName.of("ObjStm") || d?.has(PDFName.of("Linearized"))) return false;
+    // A linearised file's hint stream: untyped, with the shared-object hint
+    // table's offset in /S.
+    if (linearized && o instanceof PDFStream && !type && d?.get(PDFName.of("S")) instanceof PDFNumber) return false;
+    return true;
+  });
+  if (content.length === 0) return { unreachable };
+
+  const metadata = content.some(([, o]) => {
+    const d = dictOf(o);
+    if (!d) return false;
+    if (d.get(PDFName.of("Type")) === PDFName.of("Metadata")) return true;
+    return ["Author", "Title", "Creator", "Producer"].some((k) => d.has(PDFName.of(k)));
+  });
+  const n = content.length;
+  return {
+    unreachable,
+    field: {
+      category: "custom",
+      key: "Leftovers",
+      label: "Leftovers from earlier edits",
+      value: `${n} object${n === 1 ? "" : "s"} the document no longer uses${metadata ? ", including an earlier copy of its metadata" : ""}`,
+      removable: true,
+    },
+  };
 }

@@ -196,12 +196,12 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
         </Link>
 
         {/* Meta row */}
-        <div className="flex items-center gap-2.5 mb-4">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mb-4">
           <span className="text-[11px] px-2.5 py-[3px] rounded-md bg-[color:color-mix(in_srgb,var(--accent-strong)_18%,transparent)] text-[color:var(--accent-strong)] font-[family-name:var(--font-mono)] font-semibold uppercase tracking-[0.05em]">
             {getCategoryLabel(article.category)}
           </span>
           <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
-            {article.date}
+            {article.updated ? `Updated ${article.updated}` : article.date}
           </span>
           <span className="text-xs text-[color:var(--text-muted)] font-[family-name:var(--font-mono)]">
             &middot;
@@ -225,7 +225,7 @@ export default function ArticlePage({ article }: { article: BlogArticle }) {
         </h1>
 
         {/* Tags */}
-        <div className="flex gap-1.5 mb-8">
+        <div className="flex flex-wrap gap-1.5 mb-8">
           {article.tags.map((tag) => (
             <span
               key={tag}

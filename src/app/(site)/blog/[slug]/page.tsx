@@ -44,7 +44,11 @@ export async function generateMetadata({
  *  for CTR on time-sensitive ("2026", "news") queries. */
 function toIsoDate(date: string): string {
   const parsed = new Date(date);
-  return isNaN(parsed.getTime()) ? date : parsed.toISOString().slice(0, 10);
+  if (isNaN(parsed.getTime())) return date;
+  // "Nov 8, 2026" parses as local midnight; toISOString would shift it to
+  // UTC, a day early on any machine east of Greenwich.
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`;
 }
 
 /** Strip inline markdown (bold, italic, code, links) down to the plain text a
@@ -94,7 +98,7 @@ export default async function Page({ params }: PageProps) {
     description: article.excerpt,
     url,
     datePublished: iso,
-    dateModified: iso,
+    dateModified: article.updated ? toIsoDate(article.updated) : iso,
     image: "https://metastrip.app/opengraph-image",
     author: {
       "@type": "Person",
