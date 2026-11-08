@@ -691,6 +691,150 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
       "Remove C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images. Runs entirely in your browser, nothing uploaded, unlimited files, no signup.",
   },
 
+  "remove-content-credentials-linkedin": {
+    slug: "remove-content-credentials-linkedin",
+    datePublished: "2026-11-08",
+    keyword: "remove content credentials label LinkedIn",
+    title: "Remove the LinkedIn Content Credentials Label",
+    subtitle:
+      "LinkedIn puts a CR icon on any image that carries a C2PA content credential, AI-made or not. Remove the credential before you post. Runs in your browser, nothing uploaded.",
+    heroLabel: "REMOVE LINKEDIN'S CR LABEL BEFORE YOU POST: NOTHING UPLOADED",
+    metadataCategories: [
+      {
+        category: "ai",
+        icon: "Robot",
+        color: "#c084fc",
+        label: "What the CR panel reads (a ChatGPT image)",
+        fields: [
+          { label: "Issued by", value: "OpenAI OpCo, LLC" },
+          { label: "App or device used", value: "OpenAI Media Service API" },
+          { label: "AI model", value: "gpt-image 2.0" },
+          { label: "Digital source type", value: "trainedAlgorithmicMedia" },
+        ],
+      },
+      {
+        category: "device",
+        icon: "Camera",
+        color: "#818cf8",
+        label: "A Pixel 10 photo, no AI involved",
+        fields: [
+          { label: "Issued by", value: "Google" },
+          { label: "App or device used", value: "Pixel Camera" },
+          { label: "c2pa.action", value: "c2pa.created" },
+        ],
+      },
+      {
+        category: "gps",
+        icon: "MapPin",
+        color: "#38bdf8",
+        label: "Riding along in the same file",
+        fields: [
+          { label: "GPS", value: "-37.8136, 144.9631" },
+          { label: "exif:Model", value: "Pixel 10" },
+          { label: "exif:DateTimeOriginal", value: "2026:11:02 08:41:17" },
+        ],
+      },
+    ],
+    explainerTabs: [
+      {
+        id: "what",
+        label: "What the CR Is",
+        icon: "ShieldCheck",
+        color: "#c084fc",
+        title: "A label LinkedIn reads from your file",
+        description:
+          "LinkedIn shows a small CR icon on images and videos that carry a C2PA content credential, a signed record embedded in the file. Anyone viewing the post can click it to see whether AI was used, the app or device that made the file, who issued the credential and when. What it shows comes from the file, not from LinkedIn looking at the picture.",
+        example: {
+          label: "Where it comes from",
+          value: "A C2PA manifest inside the file you upload",
+        },
+        risk: "Every viewer of the post can open the panel, and LinkedIn's help page offers no setting to hide it.",
+      },
+      {
+        id: "real-photos",
+        label: "Why Real Photos Get It",
+        icon: "Camera",
+        color: "#818cf8",
+        title: "It isn't only for AI images",
+        description:
+          "Content credentials record where a file came from, not just whether AI made it. The Pixel 10 camera signs every JPEG it takes, some Sony, Nikon and Leica cameras sign their photos, and Photoshop and Lightroom add one when Content Credentials are switched on. An untouched photo from any of those can arrive on LinkedIn with a CR icon, and many people read CR as \"made with AI\".",
+        example: {
+          label: "A Pixel 10 photo's panel",
+          value: "Made with Pixel Camera, no AI recorded",
+        },
+        risk: "LinkedIn itself has said people find the CR symbol confusing, so a real photo can look AI-made to your network.",
+      },
+      {
+        id: "remove",
+        label: "How to Remove It",
+        icon: "Prohibit",
+        color: "#38bdf8",
+        title: "Strip the credential before you upload",
+        description:
+          "Drop the image into the tool above. If it carries a credential, it shows under AI with who signed it and what made it. Remove it, download the cleaned copy and post that. The manifest sits beside the image data, not in it, so the picture is unchanged. With no credential in the file, there is nothing for the CR icon to show.",
+        example: {
+          label: "Already posted?",
+          value: "Delete the post and share it again with the cleaned image",
+        },
+        risk: "Uploading the original again brings the credential back, so post the cleaned download, not the file you started with.",
+      },
+      {
+        id: "limits",
+        label: "What It Cannot Do",
+        icon: "Eye",
+        color: "#f472b6",
+        title: "Images only, and the metadata layer only",
+        description:
+          "MetaStrip removes credentials from JPEG, PNG, WebP, HEIC and AVIF images. It doesn't yet remove them from videos, which LinkedIn labels too. Removal also leaves any invisible watermark in the pixels: a ChatGPT image records that it carries one. LinkedIn's help describes the CR icon as coming from the file's content credential, not from watermarks.",
+        example: {
+          label: "Honest scope",
+          value: "Image credentials removed; video credentials and pixel watermarks untouched",
+        },
+        risk: "If an AI image is going to people who would want to know, say so in the post. Removing the label doesn't change what the image is.",
+      },
+    ],
+    seoContent: {
+      heading: "How to remove the Content Credentials (CR) label on LinkedIn",
+      paragraphs: [
+        "Drop the image into the tool above before you post it. MetaStrip reads the file in your browser and shows any C2PA content credential under AI, with who signed it and what made it. Remove it, download the cleaned copy, and upload that to LinkedIn. Nothing is sent to a server at any point, so the image and everything in it stay on your device.",
+        "The CR icon is LinkedIn's Content Credentials label. LinkedIn's help page says it appears on image and video content signed with C2PA, and that clicking it shows the credential: whether AI was used to make or edit the content, the app or device used, who issued the credential and when. The label is read from the credential in the file, and LinkedIn's help page says it can't yet identify and label all AI-generated content.",
+        "That is why a real photo can carry the label. The Pixel 10 camera adds a credential to every JPEG it takes, several Sony, Nikon and Leica cameras sign their photos, and Adobe apps add one when Content Credentials are on. ChatGPT images carry a signed manifest that names OpenAI and the model. Adobe Firefly downloads we tested held only a link to a credential stored on Adobe's servers, not the credential itself.",
+        "For a post that is already up, LinkedIn's help page offers no setting to hide the label. The way to change it is to delete the post and share it again with the cleaned image. Removing the credential also clears the camera model, timestamps and GPS coordinates stored alongside it, which LinkedIn's own processing may or may not keep.",
+        "Two limits worth knowing. MetaStrip removes credentials from images, not yet from videos. And removing the credential removes the metadata, not an invisible watermark in the pixels, which no metadata tool can touch. If the image is AI-generated, consider saying so in the post: the EU AI Act's Article 50 expects AI-generated content to be disclosed in some contexts, and your network may simply want to know.",
+      ],
+    },
+    supportedFormats: [
+      {
+        ext: "JPEG",
+        desc: "Pixel 10 photos, camera and Photoshop exports: APP11 C2PA manifest",
+        color: "#c084fc",
+      },
+      {
+        ext: "PNG",
+        desc: "ChatGPT downloads: caBX manifest chunk, XMP alongside",
+        color: "#a78bfa",
+      },
+      {
+        ext: "WebP",
+        desc: "C2PA RIFF chunk, XMP and EXIF chunks",
+        color: "#38bdf8",
+      },
+      {
+        ext: "HEIC",
+        desc: "C2PA uuid box, Exif and XMP items, iPhone's default format",
+        color: "#818cf8",
+      },
+      {
+        ext: "AVIF",
+        desc: "C2PA uuid box, Exif and XMP items",
+        color: "#f472b6",
+      },
+    ],
+    metaTitle: "Remove the LinkedIn CR Label (Content Credentials) | MetaStrip",
+    metaDescription:
+      "LinkedIn shows a CR icon on any image with a C2PA content credential, even real photos. Remove it before you post, in your browser, with nothing uploaded.",
+  },
+
   "check-pdf-metadata": {
     slug: "check-pdf-metadata",
     datePublished: "2026-09-03",

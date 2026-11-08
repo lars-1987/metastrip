@@ -15,6 +15,7 @@ const TOOLS = [
   { label: "Check PDF metadata", href: "/check-pdf-metadata" },
   { label: "Strip Word document metadata", href: "/strip-metadata-from-word-document" },
   { label: "Remove C2PA metadata", href: "/remove-c2pa-metadata" },
+  { label: "Remove LinkedIn CR label", href: "/remove-content-credentials-linkedin" },
   { label: "Remove AI metadata", href: "/remove-ai-metadata" },
   { label: "Remove metadata before sharing", href: "/remove-metadata-before-sharing" },
 ];
