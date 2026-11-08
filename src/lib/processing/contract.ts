@@ -36,6 +36,21 @@ export class Unreadable extends Error {
   name = "Unreadable";
 }
 
+/** How a locked file is locked. "password": it asks for one to open.
+ *  "permissions": it opens freely, but an owner password guards changes.
+ *  "unknown": encrypted in a way we can't tell apart. */
+export type LockKind = "password" | "permissions" | "unknown";
+
+/** Thrown when a file is valid but encrypted, so it can't be changed without
+ *  breaking it. Not a fault in the file or in MetaStrip, so it gets its own
+ *  advice instead of "may be damaged". */
+export class Locked extends Error {
+  name = "Locked";
+  constructor(readonly kind: LockKind) {
+    super(`locked (${kind})`);
+  }
+}
+
 /** Whether a block of metadata that can only be removed whole should go: yes
  *  if any field in it is in a category being removed, so nothing someone asked
  *  to remove is left behind. A kept field that shares the block goes too, and

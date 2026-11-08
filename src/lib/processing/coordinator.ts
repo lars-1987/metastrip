@@ -1,5 +1,5 @@
 import { identify, mimeOf, notSupportedYet, type Format, type SupportedFormat } from "./formats";
-import { Unreadable, type Processor, type Stripped } from "./contract";
+import { Locked, Unreadable, type LockKind, type Processor, type Stripped } from "./contract";
 import { formatBytes } from "../file-utils";
 import { BATCH_SIZE_HARD_CAP_BYTES } from "../constants";
 import { stripJpeg } from "./image/jpeg";
@@ -69,6 +69,28 @@ const DAMAGED = "It may be damaged, or use a variant of the format MetaStrip doe
 
 const BROWSER_READ_ERRORS = ["NotFoundError", "NotReadableError"];
 
+/** What to tell someone whose file is encrypted. Plain text only: the tool
+ *  card adds the unlock link where one can help. */
+const LOCKED: Record<LockKind, string> = {
+  password:
+    "It's password-protected, and MetaStrip can't change a locked file without breaking it. Unlock it with its password first, then add the unlocked copy.",
+  permissions:
+    "It opens without a password but is locked against changes, and MetaStrip can't change a locked file without breaking it. Ask whoever made it for an unlocked copy.",
+  unknown:
+    "It's encrypted, and MetaStrip can't change a locked file without breaking it. Remove the protection first, then add the unlocked copy.",
+};
+
+/** "locked: pdf password". The kind is ours, never text from the file. */
+export function lockedReason(format: Format, kind: LockKind): string {
+  return `locked: ${format} ${kind}`;
+}
+
+/** The lock kind in a failure reason, if the file was locked. */
+export function lockKindOf(reason: string | undefined): LockKind | undefined {
+  const m = reason?.match(/^locked: \S+ (password|permissions|unknown)$/);
+  return m ? (m[1] as LockKind) : undefined;
+}
+
 /** A failed result: the original file, untouched, with a message and a reason. */
 function failed(file: File, fileType: Format | "unknown", error: string, reason: string): ProcessingResult {
   return {
@@ -133,6 +155,7 @@ export async function processFile(
     return assemble(file, format, bytes, stripped);
   } catch (err) {
     if (err instanceof Unreadable) return failed(file, format, DAMAGED, `unreadable: ${format}`);
+    if (err instanceof Locked) return failed(file, format, LOCKED[err.kind], lockedReason(format, err.kind));
     // pdf-lib's errors are all named plain "Error", and the message could quote
     // the file, so the step is what tells one crash from another.
     const name = err instanceof Error ? err.name : "unknown";

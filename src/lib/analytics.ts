@@ -81,6 +81,10 @@ export function trackFileShared(props: { file_type: string }) {
  *   "scan"  — a processor errored while reading the file on drop.
  *   "strip" — a processor errored during removal.
  *
+ * An encrypted PDF fails at "scan" with "locked: pdf password" (needs one to
+ * open), "locked: pdf permissions" (opens freely, edits need the owner's) or
+ * "locked: pdf unknown". Before 8 Nov 2026 these were "unreadable: pdf".
+ *
  * Deliberately carries no filename and no file content, only the same mime
  * type and byte size the other file events already send, plus the extension
  * on add-stage rejects. Browsers leave the mime type empty for formats the OS
@@ -109,6 +113,12 @@ export function trackFileFailed(props: {
  *  The same reason and mime type file_failed already sends. */
 export function trackFailureReportClicked(props: { file_type: string; reason: string }) {
   posthog.capture("failure_report_clicked", { ...props, reason: props.reason.slice(0, 120) });
+}
+
+/** The SanctumPDF unlock link on a PDF that needs a password to open. A
+ *  click, not an unlock: what happens on SanctumPDF isn't visible from here. */
+export function trackUnlockLinkClicked(props: { lock: "password" | "permissions" | "unknown" }) {
+  posthog.capture("unlock_link_clicked", props);
 }
 
 /** Only something shaped like a real extension gets through. "photo.from mum"

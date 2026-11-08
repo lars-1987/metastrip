@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 import { Icon } from "@/components/shared/Icon";
-import { trackFailureReportClicked } from "@/lib/analytics";
-import { CATEGORY_CONFIG, CONTACT_EMAIL } from "@/lib/constants";
+import { trackFailureReportClicked, trackUnlockLinkClicked } from "@/lib/analytics";
+import { CATEGORY_CONFIG, CONTACT_EMAIL, SANCTUMPDF_UNLOCK_URL } from "@/lib/constants";
 import { extractGpsCoordinates } from "@/lib/gps";
-import { isUnexplained } from "@/lib/processing/coordinator";
+import { isUnexplained, lockKindOf } from "@/lib/processing/coordinator";
 import type { MetadataCategory } from "@/lib/processing/types";
 import { failureReportHref } from "@/lib/report-failure";
 import { Button } from "../ui/Button";
@@ -77,6 +77,7 @@ export function CardReview({
   // Some parser errors end without a full stop ("Invalid PNG file"), which ran
   // straight into the sentence after it.
   const reason = entry.error && !/[.!?]$/.test(entry.error) ? `${entry.error}.` : entry.error;
+  const lock = lockKindOf(entry.reason);
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
@@ -94,12 +95,29 @@ export function CardReview({
             className="rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--card)] p-6"
           >
             <p className="mb-2 text-[15px] font-medium text-[var(--text)]">
-              This file could not be read.
+              {lock ? "This file is locked." : "This file could not be read."}
             </p>
             <p className="text-[14px] leading-relaxed text-[var(--text-body)]">
               {reason} Nothing was changed, and we cannot tell you whether it
               carries metadata, so treat it as unchecked rather than clean.
             </p>
+            {/* Only where the password is the way in: SanctumPDF's unlock
+                needs one, and a permissions-only lock has none to give. */}
+            {lock === "password" && entry.format === "pdf" && (
+              <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-body)]">
+                Know the password?{" "}
+                <a
+                  href={SANCTUMPDF_UNLOCK_URL}
+                  target="_blank"
+                  rel="noopener"
+                  onClick={() => trackUnlockLinkClicked({ lock })}
+                  className="underline"
+                >
+                  Unlock it with SanctumPDF
+                </a>
+                , a free tool from the maker of MetaStrip that also runs in your browser, so the file and password stay on your device.
+              </p>
+            )}
             {entry.reason && isUnexplained(entry.reason) && (
               <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-body)]">
                 Want us to look into it?{" "}
