@@ -63,11 +63,14 @@ export const RELEVANT_CATEGORIES_BY_FILE_CATEGORY: Record<
   // author, comments and copyright surface once the MP4 processor reads inside
   // udta and meta: a video's ©ART or com.apple.quicktime.author was stripped
   // but, filtered out here, never shown.
+  // ai: a signed MP4 or MOV carries a C2PA manifest, read and removed since
+  // Nov 2026. Filtered out here it was removed but never shown. M4A goes
+  // through the same processor, so audio can carry one too.
   video: new Set([
-    "gps", "device", "dates", "author", "software", "copyright", "comments", "custom",
+    "gps", "device", "dates", "author", "software", "copyright", "ai", "comments", "custom",
   ]),
   audio: new Set([
-    "dates", "author", "software", "copyright", "comments", "custom",
+    "dates", "author", "software", "copyright", "ai", "comments", "custom",
   ]),
 };
 
