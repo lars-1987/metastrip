@@ -227,6 +227,43 @@ describe("PDF", () => {
     });
   });
 
+  // pdf-lib saves every object it loaded, including ones nothing refers to any
+  // more. A PDF that ExifTool had "stripped" (it unlinks the XMP stream and
+  // leaves it in the file) came out of MetaStrip with its first author's name
+  // still in the bytes, and the review never listed it (8 Nov 2026).
+  describe("leftovers from earlier edits", () => {
+    async function withOrphan(): Promise<Uint8Array> {
+      const doc = await PDFDocument.load(await buildPdf(), { updateMetadata: false });
+      const xmp = doc.context.flateStream("<x:xmpmeta><dc:creator>Original Author Alice</dc:creator></x:xmpmeta>", {
+        Type: "Metadata", Subtype: "XML",
+      });
+      doc.context.register(xmp); // in the file, referred to by nothing
+      return doc.save({ useObjectStreams: false });
+    }
+    const text = async (r: ProcessingResult) => new TextDecoder("latin1").decode(await r.cleanedBlob.arrayBuffer());
+
+    it("lists them and removes them with everything else", async () => {
+      const { result } = await run(await withOrphan(), name, PDF_MIME, ALL_ON);
+      const field = result.report.fieldsFound.find((f) => f.key === "Leftovers");
+      expect(field?.value).toBe("1 object the document no longer uses, including an earlier copy of its metadata");
+      expect(summary(result.report.fieldsRemoved)).toContain("custom:Leftovers");
+      expect(await text(result)).not.toContain("Original Author Alice");
+      const again = await reread(result, name, PDF_MIME);
+      expect(summary(again.result.report.fieldsFound)).toEqual([]);
+    });
+
+    it("removes them whenever anything is removed, even with Custom off", async () => {
+      const { result } = await run(await withOrphan(), name, PDF_MIME, allBut("custom"));
+      expect(summary(result.report.fieldsRemoved)).toContain("custom:Leftovers");
+      expect(await text(result)).not.toContain("Original Author Alice");
+    });
+
+    it("finds none in an ordinary PDF", async () => {
+      const { result } = await run(await buildPdf(), name, PDF_MIME, ALL_ON);
+      expect(result.report.fieldsFound.some((f) => f.key === "Leftovers")).toBe(false);
+    });
+  });
+
   // pdf-lib refuses to load an encrypted PDF, and that refusal used to be
   // caught as "unreadable", so a locked file was called damaged. Two real ones
   // in the week of 1 Nov 2026 may have been this.
