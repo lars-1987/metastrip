@@ -245,7 +245,7 @@ describe("PDF", () => {
     it("lists them and removes them with everything else", async () => {
       const { result } = await run(await withOrphan(), name, PDF_MIME, ALL_ON);
       const field = result.report.fieldsFound.find((f) => f.key === "Leftovers");
-      expect(field?.value).toBe("1 object the document no longer uses, including an earlier copy of its metadata");
+      expect(field?.value).toBe("1 unused object, including old metadata");
       expect(summary(result.report.fieldsRemoved)).toContain("custom:Leftovers");
       expect(await text(result)).not.toContain("Original Author Alice");
       const again = await reread(result, name, PDF_MIME);

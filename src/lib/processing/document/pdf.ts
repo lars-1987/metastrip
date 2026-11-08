@@ -289,7 +289,9 @@ function leftovers(pdfDoc: PDFDocument): { unreachable: [PDFRef, PDFObject][]; f
       category: "custom",
       key: "Leftovers",
       label: "Leftovers from earlier edits",
-      value: `${n} object${n === 1 ? "" : "s"} the document no longer uses${metadata ? ", including an earlier copy of its metadata" : ""}`,
+      // Short enough for the review card, which cuts values at 60 characters:
+      // the old wording lost "metadata", the part that matters.
+      value: `${n} unused object${n === 1 ? "" : "s"}${metadata ? ", including old metadata" : ""}`,
       removable: true,
     },
   };
