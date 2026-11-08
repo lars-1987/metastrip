@@ -117,3 +117,42 @@ export function writeAscii(buf: Uint8Array, offset: number, text: string) {
 export function zeroBytes(buf: Uint8Array, offset: number, length: number) {
   buf.fill(0, offset, offset + length);
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   Extended-type (`uuid`) boxes that carry metadata
+   ────────────────────────────────────────────────────────────────── */
+
+/** The C2PA manifest store's box (C2PA spec, BMFF binding):
+ *  d8fec3d6-1b0e-483c-9297-5828877ec481. HEIC, AVIF, MP4 and MOV all put it
+ *  at the top level. Fragmented video may add more with the same UUID (purpose
+ *  "merkle"), which belong to the same credential. */
+export const C2PA_BMFF_UUID = Uint8Array.of(
+  0xd8, 0xfe, 0xc3, 0xd6, 0x1b, 0x0e, 0x48, 0x3c,
+  0x92, 0x97, 0x58, 0x28, 0x87, 0x7e, 0xc4, 0x81,
+);
+
+/** Adobe's XMP box (XMP spec part 3): be7acfcb-97a9-42e8-9c71-999491e3afac.
+ *  Premiere, After Effects and C2PA signing tools write it into MP4 and MOV. */
+export const XMP_BMFF_UUID = Uint8Array.of(
+  0xbe, 0x7a, 0xcf, 0xcb, 0x97, 0xa9, 0x42, 0xe8,
+  0x9c, 0x71, 0x99, 0x94, 0x91, 0xe3, 0xaf, 0xac,
+);
+
+/** Whether a `uuid` box carries the given 16-byte extended type. */
+export function uuidIs(view: DataView, box: BoxInfo, uuid: Uint8Array): boolean {
+  if (box.type !== "uuid" || box.contentStart + 16 > box.end) return false;
+  for (let i = 0; i < 16; i++) if (view.getUint8(box.contentStart + i) !== uuid[i]) return false;
+  return true;
+}
+
+/** Top-level `uuid` boxes carrying the C2PA manifest store. */
+export function findC2paBoxes(view: DataView): BoxInfo[] {
+  return [...iterBoxes(view, 0, view.byteLength)].filter((box) => uuidIs(view, box, C2PA_BMFF_UUID));
+}
+
+/** Neutralise a box in place: rename it `free` and zero its payload. Same
+ *  size, so absolute offsets elsewhere in the file (iloc, stco) stay valid. */
+export function freeBox(buf: Uint8Array, box: BoxInfo) {
+  writeAscii(buf, box.offset + 4, "free");
+  zeroBytes(buf, box.contentStart, box.end - box.contentStart);
+}

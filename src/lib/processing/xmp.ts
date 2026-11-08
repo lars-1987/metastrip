@@ -128,6 +128,10 @@ function categoryOf(key: string, value: string): MetadataCategory {
 
 function labelOf(key: string, value: string): string {
   if (key === "Iptc4xmpExt:DigitalSourceType") return iptcSourceTypeLabel(value) ?? "XMP Digital Source Type";
+  // C2PA signing tools point dcterms:provenance at the manifest embedded in the
+  // same file ("self#jumbf=/c2pa/…"). Only Firefly-style web addresses are a
+  // credential stored online.
+  if (key === "dcterms:provenance" && value.startsWith("self#jumbf=")) return "C2PA manifest reference";
   if (LABELS[key]) return LABELS[key];
   const name = humanizeTagName(key.split(":")[1]);
   return `XMP ${name.charAt(0).toUpperCase()}${name.slice(1)}`;

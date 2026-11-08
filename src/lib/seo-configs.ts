@@ -535,7 +535,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
     keyword: "remove C2PA metadata from images",
     title: "Remove C2PA Metadata",
     subtitle:
-      "Strip C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images in your browser. Unlimited files, no signup, nothing uploaded.",
+      "Strip C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images and MP4 and MOV videos, in your browser. Unlimited files, no signup, nothing uploaded.",
     heroLabel: "REMOVE C2PA CONTENT CREDENTIALS: UNLIMITED, NOTHING UPLOADED",
     metadataCategories: [
       {
@@ -624,12 +624,12 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         label: "Every Format",
         icon: "ImageSquare",
         color: "#38bdf8",
-        title: "Including JPEG, HEIC and AVIF",
+        title: "Including HEIC, AVIF and video",
         description:
-          "C2PA binds differently in each format, which is why many tools only handle one or two. MetaStrip reads all four bindings: APP11 JUMBF segments in JPEG, the caBX chunk in PNG, the C2PA RIFF chunk in WebP, and the uuid box shared by HEIC, the format every iPhone shoots by default, and AVIF, the compact format more AI tools now export.",
+          "C2PA binds differently in each format, which is why many tools only handle one or two. MetaStrip reads all four bindings: APP11 JUMBF segments in JPEG, the caBX chunk in PNG, the C2PA RIFF chunk in WebP, and the uuid box shared by HEIC, the format every iPhone shoots by default, AVIF, the compact format more AI tools now export, and MP4 and MOV video.",
         example: {
           label: "Supported",
-          value: "JPEG, PNG, WebP, HEIC, AVIF, plus EXIF, XMP and IPTC alongside",
+          value: "JPEG, PNG, WebP, HEIC, AVIF, MP4 and MOV, plus EXIF, XMP and IPTC alongside",
         },
         risk: "A tool that only supports PNG and WebP leaves your camera photos and iPhone shots untouched.",
       },
@@ -684,11 +684,16 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         desc: "C2PA uuid box, Exif and XMP items, IPTC AI marker",
         color: "#f472b6",
       },
+      {
+        ext: "MP4 / MOV",
+        desc: "C2PA uuid box and Adobe's XMP uuid box, video and audio untouched",
+        color: "#fb923c",
+      },
     ],
     metaTitle:
       "Remove C2PA Metadata from Images: Free & Unlimited | MetaStrip",
     metaDescription:
-      "Remove C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images. Runs entirely in your browser, nothing uploaded, unlimited files, no signup.",
+      "Remove C2PA content credentials from JPEG, PNG, WebP, HEIC and AVIF images and MP4 and MOV videos. Runs in your browser, nothing uploaded, no signup.",
   },
 
   "remove-content-credentials-linkedin": {
@@ -783,12 +788,12 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         label: "What It Cannot Do",
         icon: "Eye",
         color: "#f472b6",
-        title: "Images only, and the metadata layer only",
+        title: "The metadata layer only",
         description:
-          "MetaStrip removes credentials from JPEG, PNG, WebP, HEIC and AVIF images. It doesn't yet remove them from videos, which LinkedIn labels too. Removal also leaves any invisible watermark in the pixels: a ChatGPT image records that it carries one. LinkedIn's help describes the CR icon as coming from the file's content credential, not from watermarks.",
+          "MetaStrip removes credentials from JPEG, PNG, WebP, HEIC and AVIF images, and from MP4 and MOV videos, which LinkedIn labels too. Removal leaves any invisible watermark in the pixels: a ChatGPT image records that it carries one. LinkedIn's help describes the CR icon as coming from the file's content credential, not from watermarks.",
         example: {
           label: "Honest scope",
-          value: "Image credentials removed; video credentials and pixel watermarks untouched",
+          value: "Credentials removed from images and video; pixel watermarks untouched",
         },
         risk: "If an AI image is going to people who would want to know, say so in the post. Removing the label doesn't change what the image is.",
       },
@@ -800,7 +805,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "The CR icon is LinkedIn's Content Credentials label. LinkedIn's help page says it appears on image and video content signed with C2PA, and that clicking it shows the credential: whether AI was used to make or edit the content, the app or device used, who issued the credential and when. The label is read from the credential in the file, and LinkedIn's help page says it can't yet identify and label all AI-generated content.",
         "That is why a real photo can carry the label. The Pixel 10 camera adds a credential to every JPEG it takes, several Sony, Nikon and Leica cameras sign their photos, and Adobe apps add one when Content Credentials are on. ChatGPT images carry a signed manifest that names OpenAI and the model. Adobe Firefly downloads we tested held only a link to a credential stored on Adobe's servers, not the credential itself.",
         "For a post that is already up, LinkedIn's help page offers no setting to hide the label. The way to change it is to delete the post and share it again with the cleaned image. Removing the credential also clears the camera model, timestamps and GPS coordinates stored alongside it, which LinkedIn's own processing may or may not keep.",
-        "Two limits worth knowing. MetaStrip removes credentials from images, not yet from videos. And removing the credential removes the metadata, not an invisible watermark in the pixels, which no metadata tool can touch. If the image is AI-generated, consider saying so in the post: the EU AI Act's Article 50 expects AI-generated content to be disclosed in some contexts, and your network may simply want to know.",
+        "Videos work the same way: MetaStrip removes the credential from MP4 and MOV files too. One limit worth knowing: removing the credential removes the metadata, not an invisible watermark in the pixels, which no metadata tool can touch. If the image is AI-generated, consider saying so in the post: the EU AI Act's Article 50 expects AI-generated content to be disclosed in some contexts, and your network may simply want to know.",
       ],
     },
     supportedFormats: [
@@ -828,6 +833,11 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         ext: "AVIF",
         desc: "C2PA uuid box, Exif and XMP items",
         color: "#f472b6",
+      },
+      {
+        ext: "MP4 / MOV",
+        desc: "C2PA uuid box and Adobe's XMP uuid box, video and audio untouched",
+        color: "#fb923c",
       },
     ],
     metaTitle: "Remove the LinkedIn CR Label (Content Credentials) | MetaStrip",
@@ -1090,7 +1100,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         color: "#f472b6",
         title: "Metadata only, not pixels",
         description:
-          "Removing metadata doesn't remove an invisible watermark in the pixels. ChatGPT's manifest records that one was added, and Google uses SynthID; no metadata tool can touch either. Firefly's credential stays on Adobe's server even after the link is gone. And MetaStrip doesn't yet remove C2PA from videos.",
+          "Removing metadata doesn't remove an invisible watermark in the pixels. ChatGPT's manifest records that one was added, and Google uses SynthID; no metadata tool can touch either. Firefly's credential stays on Adobe's server even after the link is gone. Credentials in MP4 and MOV videos are removed the same way as in images.",
         example: {
           label: "Honest scope",
           value: "Metadata removed; pixel watermarks and online credentials untouched",

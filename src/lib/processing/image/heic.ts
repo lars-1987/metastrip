@@ -14,6 +14,8 @@ import {
   readFullBoxHeader,
   readUintN,
   zeroBytes,
+  findC2paBoxes,
+  freeBox,
   type BoxInfo,
 } from "../isobmff";
 
@@ -163,7 +165,7 @@ function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
   // Every field read from a box goes with it; reporting one per box left the
   // rest neither removed nor kept.
   if (enabled.has("ai")) {
-    for (const box of c2paBoxes) stripC2paBox(cleaned, box);
+    for (const box of c2paBoxes) freeBox(cleaned, box);
     fieldsRemoved.push(...c2paFields);
   }
 
@@ -189,40 +191,6 @@ function isHeifFile(view: DataView): boolean {
 
 function findTopLevelBox(view: DataView, type: string): BoxInfo | null {
   return findBox(view, 0, view.byteLength, type);
-}
-
-// C2PA BMFF manifest-store box UUID (d8fec3d6-1b0e-483c-9297-5828877ec481).
-const C2PA_BMFF_UUID = [
-  0xd8, 0xfe, 0xc3, 0xd6, 0x1b, 0x0e, 0x48, 0x3c,
-  0x92, 0x97, 0x58, 0x28, 0x87, 0x7e, 0xc4, 0x81,
-];
-
-/** Find top-level `uuid` boxes carrying the C2PA manifest store. */
-function findC2paBoxes(view: DataView): BoxInfo[] {
-  const out: BoxInfo[] = [];
-  for (const box of iterBoxes(view, 0, view.byteLength)) {
-    if (box.type !== "uuid" || box.contentStart + 16 > box.end) continue;
-    let match = true;
-    for (let i = 0; i < 16; i++) {
-      if (view.getUint8(box.contentStart + i) !== C2PA_BMFF_UUID[i]) {
-        match = false;
-        break;
-      }
-    }
-    if (match) out.push(box);
-  }
-  return out;
-}
-
-/** Neutralize a C2PA uuid box in place: rename it to a `free` box and zero its
- *  payload (the UUID + manifest). Same size, so iloc's absolute offsets remain
- *  correct and the image itself is untouched. */
-function stripC2paBox(buf: Uint8Array, box: BoxInfo) {
-  buf[box.offset + 4] = 0x66; // 'f'
-  buf[box.offset + 5] = 0x72; // 'r'
-  buf[box.offset + 6] = 0x65; // 'e'
-  buf[box.offset + 7] = 0x65; // 'e'
-  zeroBytes(buf, box.contentStart, box.end - box.contentStart);
 }
 
 /** Parse iinf → item_ID → { type, contentType }. */

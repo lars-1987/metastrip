@@ -20,6 +20,7 @@ import {
   u16be,
   wavBytes,
 } from "./audio-video-files.fixture";
+import { AI_XMP_PACKET, c2paStore } from "./image/image-files.fixture";
 
 // Behaviour tests for the audio and video processors, driven through
 // processFile as the app drives them. They began as characterisation tests
@@ -160,6 +161,85 @@ describe("MP4 (Android-style: udta tags plus mdta keys)", () => {
     // It used to hand back 0 bytes.
     expect(result.cleanedBlob).toBe(file);
     expect(result.report.fileSize).toBe(2 * 1024 ** 3);
+  });
+});
+
+// Content credentials in video. C2PA binds to MP4 and MOV the way it binds to
+// HEIC: a top-level uuid box. Adobe tools and C2PA signers also write XMP into
+// a uuid box of its own. Both used to pass through unread and unremoved, so a
+// signed video kept its credential and LinkedIn kept showing its CR icon.
+// Checked against c2pa-rs's signed sample videos (video1.mp4, legacy.mp4 and
+// the fragmented dashinit.mp4) on 8 Nov 2026: the official reader found no
+// manifest in the cleaned copies, and ffmpeg decoded them without errors.
+describe("MP4 and MOV with content credentials (C2PA and XMP uuid boxes)", () => {
+  const C2PA_UUID = Uint8Array.of(0xd8, 0xfe, 0xc3, 0xd6, 0x1b, 0x0e, 0x48, 0x3c, 0x92, 0x97, 0x58, 0x28, 0x87, 0x7e, 0xc4, 0x81);
+  const XMP_UUID = Uint8Array.of(0xbe, 0x7a, 0xcf, 0xcb, 0x97, 0xa9, 0x42, 0xe8, 0x9c, 0x71, 0x99, 0x94, 0x91, 0xe3, 0xaf, 0xac);
+  // After the UUID: version and flags, the purpose, then (for a manifest) an
+  // 8-byte offset to auxiliary data.
+  const c2paBox = (purpose: "manifest" | "merkle", payload: Uint8Array) =>
+    box("uuid", C2PA_UUID, new Uint8Array(4), utf8(`${purpose}\0`), new Uint8Array(8), payload);
+  const xmpBox = (packet: string) => box("uuid", XMP_UUID, utf8(packet));
+  const C2PA_FOUND = ["ai:C2PA", "ai:C2PA:actions", "ai:C2PA:generator", "ai:C2PA:model", "ai:C2PA:source"];
+  const XMP_FOUND = ["ai:XMP:Iptc4xmpExt:DigitalSourceType", "author:XMP:dc:creator"];
+
+  /** A signed video: the credential and the XMP box ahead of the movie, as
+   *  c2pa-rs writes them. */
+  const signed = (base: Uint8Array, ...extra: Uint8Array[]) => {
+    const ftypEnd = new DataView(base.buffer, base.byteOffset).getUint32(0);
+    return concat(base.subarray(0, ftypEnd), c2paBox("manifest", c2paStore()), xmpBox(AI_XMP_PACKET), ...extra, base.subarray(ftypEnd));
+  };
+  const withoutBoth = (fields: MetadataField[], also: string[]) =>
+    summary(fields).filter((k) => !also.includes(k));
+
+  it("reads and removes the credential and the XMP with all categories on", async () => {
+    const input = signed(mp4Bytes());
+    const result = await processFile(fileOf(input, "signed.mp4", "video/mp4"), ALL);
+    expect(result.error).toBeUndefined();
+    const found = summary(result.report.fieldsFound);
+    for (const k of [...C2PA_FOUND, ...XMP_FOUND]) expect(found).toContain(k);
+    expect(summary(result.report.fieldsRemoved)).toEqual(found);
+    expect(result.cleanedBlob.size).toBe(input.length);
+    expect(await contains(result.cleanedBlob, "jumb")).toBe(false);
+    expect(await contains(result.cleanedBlob, "Jane Doe")).toBe(false);
+    expect(await reread(result, "signed.mp4", "video/mp4")).toEqual([]);
+  });
+
+  it("keeps the credential when the AI category is off", async () => {
+    const result = await processFile(fileOf(signed(mp4Bytes()), "signed.mp4", "video/mp4"), { ...ALL, ai: false });
+    expect(result.error).toBeUndefined();
+    expect(summary(result.report.fieldsKept)).toEqual(C2PA_FOUND);
+    // The XMP box can only go whole, and its author is being removed, so its
+    // AI tag goes too and is reported removed.
+    expect(summary(result.report.fieldsRemoved)).toEqual(expect.arrayContaining(XMP_FOUND));
+    expect(await reread(result, "signed.mp4", "video/mp4")).toEqual(C2PA_FOUND);
+  });
+
+  it("removes a fragmented video's merkle box with the credential, without listing it", async () => {
+    const input = signed(mp4Bytes(), c2paBox("merkle", new Uint8Array(64).fill(7)));
+    const on = await processFile(fileOf(input, "dash.mp4", "video/mp4"), ALL);
+    expect(withoutBoth(on.report.fieldsFound, [...C2PA_FOUND, ...XMP_FOUND])).not.toContain("ai:C2PA");
+    expect(summary(on.report.fieldsFound).filter((k) => k === "ai:C2PA")).toHaveLength(1);
+    expect(await contains(on.cleanedBlob, "merkle")).toBe(false);
+
+    const off = await processFile(fileOf(input, "dash.mp4", "video/mp4"), { ...ALL, ai: false });
+    expect(await contains(off.cleanedBlob, "merkle")).toBe(true);
+  });
+
+  it("does the same for a MOV", async () => {
+    const input = signed(movBytes());
+    const result = await processFile(fileOf(input, "signed.mov", "video/quicktime"), ALL);
+    expect(result.error).toBeUndefined();
+    expect(summary(result.report.fieldsRemoved)).toEqual(expect.arrayContaining([...C2PA_FOUND, ...XMP_FOUND]));
+    expect(await reread(result, "signed.mov", "video/quicktime")).toEqual([]);
+  });
+
+  it("calls a provenance pointer to the embedded manifest a reference, not a credential online", async () => {
+    const packet = AI_XMP_PACKET.replace('rdf:about=""', 'rdf:about="" xmlns:dcterms="http://purl.org/dc/terms/" dcterms:provenance="self#jumbf=/c2pa/urn:uuid:test"');
+    const ftypEnd = new DataView(mp4Bytes().buffer).getUint32(0);
+    const input = concat(mp4Bytes().subarray(0, ftypEnd), xmpBox(packet), mp4Bytes().subarray(ftypEnd));
+    const result = await processFile(fileOf(input, "clip.mp4", "video/mp4"), ALL);
+    const provenance = result.report.fieldsFound.find((f) => f.key === "XMP:dcterms:provenance");
+    expect(provenance?.label).toBe("C2PA manifest reference");
   });
 });
 

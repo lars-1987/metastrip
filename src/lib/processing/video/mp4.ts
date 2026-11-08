@@ -23,7 +23,9 @@ import type {
   MetadataCategory,
 } from "../types";
 import { Unreadable, blockGoes, type Stripped } from "../contract";
-import { readBox, iterBoxes, writeAscii, zeroBytes, type BoxInfo } from "../isobmff";
+import { readBox, iterBoxes, writeAscii, zeroBytes, uuidIs, freeBox, C2PA_BMFF_UUID, XMP_BMFF_UUID, type BoxInfo } from "../isobmff";
+import { describeC2pa } from "../c2pa-manifest";
+import { stripXmp } from "../xmp";
 
 /* ──────────────────────────────────────────────────────────────────
    Atom types we care about
@@ -62,6 +64,15 @@ const CONTAINER_ATOMS = new Set([
    ────────────────────────────────────────────────────────────────── */
 
 const ASCII = new TextDecoder("ascii");
+
+/** A C2PA uuid box whose purpose string is "merkle": hashes for fragmented
+ *  video, no manifest. Layout after the UUID: version and flags (4 bytes),
+ *  then the purpose, null-terminated. */
+function isMerkle(view: DataView, box: BoxInfo): boolean {
+  const start = box.contentStart + 20;
+  if (start + 6 > box.end) return false;
+  return ASCII.decode(new Uint8Array(view.buffer, view.byteOffset + start, 6)) === "merkle";
+}
 
 /** Sibling boxes across [start, end), strictly. A box that runs past the end
  *  was cut short: unreadable, rather than stopping quietly and passing the file
@@ -163,6 +174,37 @@ export function stripMp4(input: Uint8Array, options: StripOptions): Stripped {
         if (blockGoes(fields, options)) {
           makeFreeBox(cleaned, box);
           fieldsRemoved.push(...fields);
+        }
+        continue;
+      }
+
+      // Content credentials (C2PA) in their own top-level uuid box, the same
+      // binding HEIC uses. Video used to pass them through unread: a signed
+      // video kept its whole manifest, and LinkedIn kept showing its CR icon.
+      // The manifest follows the 16-byte UUID, after a version, a purpose and
+      // an offset, which describeC2pa skips by finding the JUMBF itself. A
+      // "merkle" box has no manifest of its own but belongs to the same
+      // credential, so it goes with the AI category too.
+      if (uuidIs(view, box, C2PA_BMFF_UUID)) {
+        const fields = describeC2pa(cleaned.slice(box.contentStart + 16, box.end), box.end - box.contentStart);
+        const merkle = !fields.some((f) => f.key !== "C2PA") && isMerkle(view, box);
+        if (!merkle) fieldsFound.push(...fields);
+        if (options.ai) {
+          freeBox(cleaned, box);
+          if (!merkle) fieldsRemoved.push(...fields);
+        }
+        continue;
+      }
+
+      // XMP in Adobe's uuid box: Premiere, After Effects and signing tools write
+      // author, tool, edit history and document IDs here. It goes whole when
+      // any category it holds is being removed, like every container here.
+      if (uuidIs(view, box, XMP_BMFF_UUID)) {
+        const xmp = stripXmp(UTF8.decode(cleaned.subarray(box.contentStart + 16, box.end)), options);
+        fieldsFound.push(...xmp.fieldsFound);
+        if (xmp.goes) {
+          freeBox(cleaned, box);
+          fieldsRemoved.push(...xmp.fieldsFound);
         }
         continue;
       }
