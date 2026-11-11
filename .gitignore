@@ -46,3 +46,6 @@ next-env.d.ts
 # local design references + Claude Code tooling (keep out of the repo)
 /V3/
 /.claude/
+
+# image converter worker + libheif, built by scripts/build-converter.mjs
+/public/convert/

@@ -56,12 +56,12 @@ const UTF8 = new TextDecoder("utf-8");
 export const stripHeic = stripHeif;
 export const stripAvif = stripHeif;
 
-function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
+/** The items with bytes in the file. Every HEIF image has a meta box with
+ *  iinf and iloc; a file without them is damaged or not HEIF. These used to
+ *  hand the file back with no error, so a truncated HEIC read as "no metadata
+ *  found, already clean". */
+function readItems(original: Uint8Array): HeifItem[] {
   const view = new DataView(original.buffer, original.byteOffset, original.byteLength);
-
-  // Every HEIF image has a meta box with iinf and iloc; a file without them is
-  // damaged or not HEIF. These used to hand the file back with no error, so a
-  // truncated HEIC read as "no metadata found, already clean".
   if (!isHeifFile(view)) throw new Unreadable();
   const meta = findTopLevelBox(view, "meta");
   if (!meta) throw new Unreadable();
@@ -81,6 +81,27 @@ function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
     if (!extents || !extents.length) continue;
     items.push({ id, type: info.type, contentType: info.contentType, extents });
   }
+  return items;
+}
+
+/** The first Exif item's TIFF block, as the converter carries it into a new
+ *  file; null when there is none or it can't be read. */
+export function heifExif(original: Uint8Array): Uint8Array | null {
+  let items: HeifItem[];
+  try {
+    items = readItems(original);
+  } catch (err) {
+    if (err instanceof Unreadable) return null;
+    throw err;
+  }
+  const item = items.find((it) => it.type === "Exif");
+  if (!item || item.extents.some((e) => e.offset + e.length > original.length)) return null;
+  return extractTiff(readExtents(original, item.extents));
+}
+
+function stripHeif(original: Uint8Array, options: StripOptions): Stripped {
+  const view = new DataView(original.buffer, original.byteOffset, original.byteLength);
+  const items = readItems(original);
 
   const exifItems = items.filter((it) => it.type === "Exif");
   const xmpItems = items.filter(

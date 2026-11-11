@@ -129,6 +129,17 @@ function rebuildWebp(chunks: RiffChunk[]): Uint8Array {
   return result;
 }
 
+/** The EXIF chunk's TIFF block, as the converter carries it into a new
+ *  file; null when there is none or the file can't be walked. */
+export function webpExif(buffer: Uint8Array): Uint8Array | null {
+  try {
+    return parseRiffChunks(buffer).find((c) => c.fourcc === "EXIF")?.data ?? null;
+  } catch (err) {
+    if (err instanceof Unreadable) return null;
+    throw err;
+  }
+}
+
 export function stripWebp(buffer: Uint8Array, options: StripOptions): Stripped {
   if (
     buffer.length < 12 ||
