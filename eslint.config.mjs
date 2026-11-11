@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Built by scripts/build-converter.mjs: minified, and libheif is a vendor file.
+    "public/convert/**",
   ]),
 ]);
 

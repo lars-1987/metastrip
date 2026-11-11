@@ -190,6 +190,33 @@ export function stripJpeg(bytes: Uint8Array<ArrayBuffer>, options: StripOptions)
   return { cleaned: concatBytes(parts), fieldsFound, fieldsRemoved };
 }
 
+/** The first EXIF segment's TIFF block, as the converter carries it into a
+ *  new file; null when there is none or the header can't be walked. */
+export function jpegExif(bytes: Uint8Array): Uint8Array | null {
+  let segs: Segment[];
+  try {
+    segs = parseMetadataSegments(bytes);
+  } catch (err) {
+    if (err instanceof Unreadable) return null;
+    throw err;
+  }
+  const s = segs.find((x) => x.kind === "exif");
+  return s ? bytes.subarray(s.start + 10, s.end) : null;
+}
+
+/** `jpeg` with an EXIF segment holding `tiff`, placed where readers look for
+ *  it: straight after SOI, or after a JFIF APP0. Any EXIF it had stays. */
+export function withExif(jpeg: Uint8Array, tiff: Uint8Array): Uint8Array<ArrayBuffer> {
+  if (jpeg.length < 4 || jpeg[0] !== 0xff || jpeg[1] !== 0xd8) throw new Unreadable();
+  const app0 = jpeg[2] === 0xff && jpeg[3] === 0xe0 ? 2 + ((jpeg[4] << 8) | jpeg[5]) : 0;
+  const at = 2 + app0;
+  return concatBytes([jpeg.subarray(0, at), segment(MARKER_APP1, concatBytes([EXIF_HEADER, tiff])), jpeg.subarray(at)]);
+}
+
+/** The largest TIFF block one EXIF segment can hold: a segment's length
+ *  field counts itself and "Exif\0\0". */
+export const MAX_EXIF_BYTES = 0xffff - 2 - 6;
+
 const EXIF_HEADER = Uint8Array.from([0x45, 0x78, 0x69, 0x66, 0, 0]); // "Exif\0\0"
 
 /** A marker segment: 0xFF, the marker, a length that counts itself, the payload. */

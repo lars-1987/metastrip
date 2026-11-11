@@ -259,6 +259,17 @@ function rebuildPng(chunks: PngChunk[]): Uint8Array {
   return result;
 }
 
+/** The eXIf chunk's TIFF block, as the converter carries it into a new
+ *  file; null when there is none or the file can't be walked. */
+export function pngExif(buffer: Uint8Array): Uint8Array | null {
+  try {
+    return parseChunks(buffer).chunks.find((c) => c.type === "eXIf")?.data ?? null;
+  } catch (err) {
+    if (err instanceof Unreadable) return null;
+    throw err;
+  }
+}
+
 export function stripPng(buffer: Uint8Array, options: StripOptions): Stripped {
   for (let i = 0; i < 8; i++) {
     if (buffer[i] !== PNG_SIGNATURE[i]) throw new Unreadable();
