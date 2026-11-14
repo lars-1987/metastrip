@@ -9,6 +9,7 @@ import { MetaStripIcon } from "@/components/shared/Logo";
 
 const TOOLS = [
   { label: "Remove metadata from photos", href: "/remove-metadata-from-photos" },
+  { label: "HEIC to JPG converter", href: "/heic-to-jpg" },
   { label: "Strip EXIF data", href: "/strip-exif-data" },
   { label: "Remove GPS from photos", href: "/remove-gps-location-from-photos" },
   { label: "Remove author from PDF", href: "/remove-author-from-pdf" },

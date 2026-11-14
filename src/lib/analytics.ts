@@ -128,3 +128,62 @@ function safeExtension(ext: string): string {
   return /^[a-z0-9]{1,10}$/.test(ext) ? ext : "other";
 }
 
+
+/* ------------------------------------------------------------------ */
+/*  The image converter (/heic-to-jpg). Its own events, so conversions */
+/*  never count as strips. Formats and categories only: no names, no  */
+/*  file contents, no values.                                          */
+/* ------------------------------------------------------------------ */
+
+/** A batch accepted by the converter. `keep` lists the categories the person
+ *  chose to carry into the JPGs (empty: everything removed). */
+export function trackConverterAdded(props: {
+  file_count: number;
+  total_size: number;
+  formats: string[];
+  keep: MetadataCategory[];
+}) {
+  posthog.capture("converter_added", props);
+}
+
+/** One file converted. `decoder` says whether the browser read it or libheif
+ *  had to; `colour` is the JPG's colour space. */
+export function trackConverterConverted(props: {
+  source_format: string;
+  file_size: number;
+  output_size: number;
+  megapixels: number;
+  decoder: "browser" | "libheif";
+  colour: "display-p3" | "srgb";
+  duration_ms: number;
+}) {
+  posthog.capture("converter_converted", props);
+}
+
+/** A file the converter turned away ("add") or couldn't convert ("convert").
+ *  `detail` is an error name, never text from the file. */
+export function trackConverterFailed(props: {
+  stage: "add" | "convert";
+  reason: string;
+  source_format?: string;
+  file_type?: string;
+  file_ext?: string;
+  file_size?: number;
+  detail?: string;
+}) {
+  posthog.capture("converter_failed", {
+    ...props,
+    ...(props.file_ext !== undefined && { file_ext: safeExtension(props.file_ext) }),
+    ...(props.detail !== undefined && { detail: props.detail.slice(0, 60) }),
+  });
+}
+
+/** The re-read of a converted JPG, the same check the main tool runs. */
+export function trackConverterVerified(props: { status: string; leftover_categories: MetadataCategory[] }) {
+  posthog.capture("converter_verified", props);
+}
+
+/** Converted files saved: one file, a zip, the share sheet, or one row's own link. */
+export function trackConverterDownloaded(props: { file_count: number; method: "single" | "zip" | "share" | "row" }) {
+  posthog.capture("converter_downloaded", props);
+}

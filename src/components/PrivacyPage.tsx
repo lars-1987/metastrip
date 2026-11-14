@@ -143,6 +143,28 @@ function PrivacyPolicyContent() {
           browser&apos;s JavaScript engine.
         </p>
         <p className="mb-2">
+          The HEIC to JPG converter decodes HEIC photos with{" "}
+          <Link
+            href="https://github.com/strukturag/libheif"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
+          >
+            libheif
+          </Link>{" "}
+          (built for the web by libheif-js), which runs in your browser and
+          is loaded only in browsers that can&apos;t open HEIC themselves.
+          libheif is distributed under the GNU Lesser General Public License
+          (LGPL) and is served unmodified, as its own file;{" "}
+          <Link
+            href="/convert/libheif-LICENSE.txt"
+            className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
+          >
+            its licence
+          </Link>{" "}
+          is published alongside it.
+        </p>
+        <p className="mb-2">
           PDF files are processed using pdf-lib, a pure JavaScript PDF library
           that runs in your browser.
         </p>
