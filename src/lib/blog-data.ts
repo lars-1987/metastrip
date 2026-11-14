@@ -340,7 +340,7 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "FAQ",
-          body: "**Does MetaStrip convert my HEIC to JPEG?** No. That’s the main difference from most tools. You get back a `.heic` in the same format and quality as the original, just with the metadata removed.\n\n**Will I lose any image quality?** No. The photo’s image data is never touched or re-compressed; only the metadata bytes are removed. The output is byte-for-byte identical to the original except for the stripped data.\n\n**Does it work on Live Photos and burst shots?** Yes. Those pack multiple images into one HEIC file, and the tool cleans the metadata without disturbing any of the images.\n\n**Why doesn’t it show a preview of my photo?** No web browser can decode HEIC yet, so the tool shows the metadata it found (and any GPS location on a map) but can’t render a thumbnail. The stripping still works regardless.\n\n**What metadata does it remove?** EXIF (camera settings, device model, timestamps), GPS location data, and XMP: the same fields it removes from other image formats.",
+          body: "**Does MetaStrip convert my HEIC to JPEG?** No. That’s the main difference from most tools. You get back a `.heic` in the same format and quality as the original, just with the metadata removed. If you do want a JPG, the [HEIC to JPG converter](/heic-to-jpg) makes one in your browser, with the metadata removed.\n\n**Will I lose any image quality?** No. The photo’s image data is never touched or re-compressed; only the metadata bytes are removed. The output is byte-for-byte identical to the original except for the stripped data.\n\n**Does it work on Live Photos and burst shots?** Yes. Those pack multiple images into one HEIC file, and the tool cleans the metadata without disturbing any of the images.\n\n**Why doesn’t it show a preview of my photo?** No web browser can decode HEIC yet, so the tool shows the metadata it found (and any GPS location on a map) but can’t render a thumbnail. The stripping still works regardless.\n\n**What metadata does it remove?** EXIF (camera settings, device model, timestamps), GPS location data, and XMP: the same fields it removes from other image formats.",
         },
       ],
     },
@@ -348,7 +348,7 @@ export const ARTICLES: BlogArticle[] = [
       {
         question: "Does MetaStrip convert my HEIC to JPEG?",
         answer:
-          "No. That’s the main difference from most tools. You get back a .heic in the same format and quality as the original, just with the metadata removed.",
+          "No. That’s the main difference from most tools. You get back a .heic in the same format and quality as the original, just with the metadata removed. If you do want a JPG, MetaStrip’s HEIC to JPG converter makes one in your browser, with the metadata removed.",
       },
       {
         question: "Will I lose any image quality?",
