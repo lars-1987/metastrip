@@ -10,9 +10,11 @@ import { FAQS } from "@/components/shared/faq-data";
 import { OG_IMAGE } from "@/lib/og";
 
 export const metadata: Metadata = {
-  title: "MetaStrip, strip hidden metadata from files",
+  // MS-5: a test of whether a title that matches the search ("metadata remover")
+  // brings generic searches, not just people who know the name. Started Nov 2026.
+  title: "Free Metadata Remover for Photos, PDFs & Video | MetaStrip",
   description:
-    "Remove AI tags and C2PA Content Credentials, plus GPS, camera and author details, from photos, videos, PDFs and docs. Free; files never leave your device.",
+    "Remove hidden metadata from photos, videos, PDFs and Word files: GPS, camera, author, AI tags and C2PA. Free, and your files never leave your device.",
   alternates: { canonical: "https://metastrip.app" },
   openGraph: {
     title: "MetaStrip, strip hidden metadata from files",
