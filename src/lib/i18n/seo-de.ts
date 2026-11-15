@@ -286,7 +286,7 @@ export const SEO_DE: Record<TranslatedToolSlug, SEOPageConfig> = {
         "Jedes Foto, das du mit einem Smartphone machst, enthält eingebettete GPS-Koordinaten, die genau zeigen, wo es aufgenommen wurde, oft auf wenige Meter genau. Diese Daten stehen in den EXIF-Metadaten der Bilddatei und reisen mit, wenn du das Foto teilst.",
         "Große soziale Netzwerke wie Instagram und Facebook entfernen Standortdaten beim Hochladen, viele andere Wege des Teilens aber nicht. E-Mail-Anhänge, Messenger (beim Senden als Datei), Links zu Cloud-Speichern, Forenbeiträge und private Websites behalten GPS-Koordinaten standardmäßig bei.",
         "Für deine Privatsphäre hat das große Folgen. Ein Foto, das du zu Hause machst, verrät deine Wohnadresse. Fotos über längere Zeit verraten deinen Alltag: wo du arbeitest, isst, trainierst und Leute triffst. Für Personen des öffentlichen Lebens, Journalistinnen und Journalisten, Aktivistinnen und Aktivisten und Menschen, die häusliche Gewalt überlebt haben, können diese Daten wirklich gefährlich sein.",
-        "MetaStrip entfernt alle GPS- und Standortdaten aus deinen Fotos, bevor du sie teilst. Die Verarbeitung läuft komplett in deinem Browser; deine Fotos und Standortdaten werden nirgendwohin hochgeladen. Privater kannst du Standort-Metadaten nicht aus Bildern entfernen.",
+        "MetaStrip entfernt alle GPS- und Standortdaten aus deinen Fotos, bevor du sie teilst. Die Verarbeitung läuft komplett in deinem Browser; deine Fotos und Standortdaten werden nirgendwohin hochgeladen. Du brauchst kein Konto, und der Quellcode ist öffentlich auf GitHub, sodass du nachprüfen kannst, wie es funktioniert.",
       ],
     },
     supportedFormats: [

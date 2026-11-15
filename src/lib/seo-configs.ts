@@ -1448,7 +1448,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "Every photo taken with a smartphone contains embedded GPS coordinates that pinpoint exactly where the photo was taken, often accurate to within a few meters. This data is stored in the EXIF metadata of the image file and travels with the photo when you share it.",
         "While major social media platforms like Instagram and Facebook strip location data on upload, many other sharing methods do not. Email attachments, messaging apps (when sending as files), cloud storage links, forum posts, and personal websites all preserve GPS coordinates by default.",
         "The privacy implications are significant. A photo taken at home reveals your home address. Photos taken over time reveal your daily patterns: where you work, eat, exercise, and socialize. For public figures, journalists, activists, and domestic abuse survivors, this data can be genuinely dangerous.",
-        "MetaStrip removes all GPS and location data from your photos before you share them. Processing happens entirely in your browser; your photos and location data are never uploaded anywhere. It's the most private way to strip location metadata from images.",
+        "MetaStrip removes all GPS and location data from your photos before you share them. Processing happens entirely in your browser; your photos and location data are never uploaded anywhere. There's no account to create, and the source code is public on GitHub, so you can check how it works.",
       ],
     },
     supportedFormats: [
