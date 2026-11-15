@@ -313,6 +313,7 @@ export const ARTICLES: BlogArticle[] = [
       "MetaStrip now removes EXIF, GPS, and other metadata from iPhone HEIC photos without converting them to JPEG or re-compressing, so you get back the same file at the same quality, minus the hidden data.",
     category: "guides",
     date: "Jul 8, 2026",
+    updated: "Nov 15, 2026",
     readTime: "6 min read",
     featured: true,
     tags: ["HEIC", "iPhone", "EXIF", "GPS", "metadata"],
@@ -328,11 +329,11 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "How it works (the light version)",
-          body: "Here’s the genuinely interesting bit, if you like this sort of thing: **a HEIC photo is, structurally, almost the same thing as an MP4 video.** They’re built on the same underlying grammar, a tree of nested “boxes,” each holding a piece of data. Apple’s photo format is essentially a cousin of a video file.\n\nThat turned out to be lucky, because MetaStrip already knows how to walk that box structure; it’s how the tool strips metadata from video. Inside a HEIC, the photo itself is one item, the EXIF data is another item, the location data is another. The tool finds the exact byte ranges of the metadata items and zeroes them out, leaving the image bytes completely untouched. That last part matters for iPhone Live Photos and burst shots, which pack several images into one file: the tool cleans the metadata without disturbing any of the pictures.\n\nThe result is a file that’s byte-for-byte identical to what you dropped in, minus the metadata. Easy to verify, nothing else changed.",
+          body: "Here’s the genuinely interesting bit, if you like this sort of thing: **a HEIC photo is, structurally, almost the same thing as an MP4 video.** They’re built on the same underlying grammar, a tree of nested “boxes,” each holding a piece of data. Apple’s photo format is essentially a cousin of a video file.\n\nThat turned out to be lucky, because MetaStrip already knows how to walk that box structure; it’s how the tool strips metadata from video. Inside a HEIC, the photo itself is one item, the EXIF data is another item, the location data is another. The tool finds the exact byte ranges of the metadata items and zeroes them out, leaving the image bytes completely untouched. That matters because an iPhone HEIC usually holds more than one image: the photo, a small thumbnail, and often a depth map or an HDR gain map. The tool cleans the metadata without disturbing any of them.\n\nThe result is a file that’s byte-for-byte identical to what you dropped in, minus the metadata. Easy to verify, nothing else changed.",
         },
         {
           heading: "A couple of dev notes",
-          body: "For anyone who works with this stuff, two details from the build were fun enough to share.\n\nFirst, no browser can actually *decode* HEIC yet; Chrome, Firefox, Safari all refuse. So MetaStrip shows you the metadata it found (and plots any GPS location on a map) but can’t render a thumbnail of the photo itself. Slightly odd UX quirk that falls straight out of the format being ahead of browser support.\n\nSecond, browsers report an *empty* file type for HEIC: `file.type` comes back blank. So detecting an uploaded HEIC can’t rely on the usual MIME-type check; it falls back to the `.heic`/`.heif` file extension instead. Miss that, and every iPhone photo gets silently rejected at the door.\n\nAnd the part that ate an hour: to catalog the EXIF fields for the “here’s what we found” cards, the tool reuses the same EXIF library the JPEG path already uses, no new dependencies. But that library only reads JPEGs, and a HEIC’s EXIF is a raw block of a different shape. The workaround is to wrap the extracted data in a *minimal fake JPEG* in memory and feed it in. The catch: the library scans forward until it hits a specific “start of image data” marker and stops, so the fake JPEG has to end on *that* marker, not the technically-correct “end of file” one. A file that isn’t valid by the spec, but is exactly the shape the library wants to read. Deeply cursed, works perfectly.",
+          body: "For anyone who works with this stuff, two details from the build were fun enough to share.\n\nFirst, stripping a HEIC never needs to *decode* it. Only the metadata bytes change, so it works the same in every browser, including Chrome and Firefox, which still can’t open HEIC images themselves. (Safari can.)\n\nSecond, some browsers report an *empty* file type for HEIC: `file.type` comes back blank. So MetaStrip doesn’t trust the MIME type. It identifies every file from its first bytes, where a HEIC announces itself in its `ftyp` box, and only falls back to the `.heic`/`.heif` extension after that. Rely on the MIME type alone, and iPhone photos get silently rejected at the door.\n\nAnd the part that ate an hour at launch: to catalog the EXIF fields for the “here’s what we found” cards, the tool first borrowed the EXIF library the JPEG path used. That library only read JPEGs, so the workaround was to wrap a HEIC’s EXIF in a *minimal fake JPEG* in memory, ending on the “start of image data” marker the library stopped at rather than the technically correct “end of file” one. Deeply cursed, worked perfectly. Since October MetaStrip has its own EXIF reader, shared by every format, and the fake JPEG is retired.",
         },
         {
           heading: "Why bother stripping HEIC at all?",
@@ -340,7 +341,7 @@ export const ARTICLES: BlogArticle[] = [
         },
         {
           heading: "FAQ",
-          body: "**Does MetaStrip convert my HEIC to JPEG?** No. That’s the main difference from most tools. You get back a `.heic` in the same format and quality as the original, just with the metadata removed. If you do want a JPG, the [HEIC to JPG converter](/heic-to-jpg) makes one in your browser, with the metadata removed.\n\n**Will I lose any image quality?** No. The photo’s image data is never touched or re-compressed; only the metadata bytes are removed. The output is byte-for-byte identical to the original except for the stripped data.\n\n**Does it work on Live Photos and burst shots?** Yes. Those pack multiple images into one HEIC file, and the tool cleans the metadata without disturbing any of the images.\n\n**Why doesn’t it show a preview of my photo?** No web browser can decode HEIC yet, so the tool shows the metadata it found (and any GPS location on a map) but can’t render a thumbnail. The stripping still works regardless.\n\n**What metadata does it remove?** EXIF (camera settings, device model, timestamps), GPS location data, and XMP: the same fields it removes from other image formats.",
+          body: "**Does MetaStrip convert my HEIC to JPEG?** No. That’s the main difference from most tools. You get back a `.heic` in the same format and quality as the original, just with the metadata removed. If you do want a JPG, the [HEIC to JPG converter](/heic-to-jpg) makes one in your browser, with the metadata removed.\n\n**Will I lose any image quality?** No. The photo’s image data is never touched or re-compressed; only the metadata bytes are removed. The output is byte-for-byte identical to the original except for the stripped data.\n\n**Does it work on Live Photos and burst shots?** Yes. A Live Photo is a HEIC plus a short MOV video, and MetaStrip cleans both. Burst shots are separate photos, so each one is cleaned like any other.\n\n**Why doesn’t it show a preview of my photo?** MetaStrip shows what a file carries rather than the picture itself: the metadata it found, and any GPS location on a map. That’s the same for every format, HEIC included.\n\n**What metadata does it remove?** EXIF (camera settings, device model, timestamps), GPS location data, XMP and C2PA Content Credentials: the same fields it removes from other image formats.",
         },
       ],
     },
@@ -358,17 +359,17 @@ export const ARTICLES: BlogArticle[] = [
       {
         question: "Does it work on Live Photos and burst shots?",
         answer:
-          "Yes. Those pack multiple images into one HEIC file, and the tool cleans the metadata without disturbing any of the images.",
+          "Yes. A Live Photo is a HEIC plus a short MOV video, and MetaStrip cleans both. Burst shots are separate photos, so each one is cleaned like any other.",
       },
       {
         question: "Why doesn’t it show a preview of my photo?",
         answer:
-          "No web browser can decode HEIC yet, so the tool shows the metadata it found (and any GPS location on a map) but can’t render a thumbnail. The stripping still works regardless.",
+          "MetaStrip shows what a file carries rather than the picture itself: the metadata it found, and any GPS location on a map. That’s the same for every format, HEIC included.",
       },
       {
         question: "What metadata does it remove?",
         answer:
-          "EXIF (camera settings, device model, timestamps), GPS location data, and XMP: the same fields it removes from other image formats.",
+          "EXIF (camera settings, device model, timestamps), GPS location data, XMP and C2PA Content Credentials: the same fields it removes from other image formats.",
       },
     ],
   },
