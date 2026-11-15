@@ -7,7 +7,9 @@ import { SEO_DE } from "./seo-de";
 /** Keys, array lengths and the non-text fields that must not change. */
 function skeleton(value: unknown, key = ""): unknown {
   if (Array.isArray(value)) return value.map((v) => skeleton(v));
-  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, skeleton(v, k)]));
+  // Dates differ by language: a translation has its own publish and update days.
+  if (value && typeof value === "object")
+    return Object.fromEntries(Object.entries(value).filter(([k]) => k !== "updated").map(([k, v]) => [k, skeleton(v, k)]));
   return ["slug", "icon", "color", "category", "id", "ext"].includes(key) ? value : typeof value;
 }
 

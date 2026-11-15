@@ -42,6 +42,7 @@ export function ToolPageBody({ config, locale }: { config: SEOPageConfig; locale
     url: `https://metastrip.app${localePath(locale, `/${config.slug}`)}`,
     description: config.metaDescription,
     datePublished: config.datePublished,
+    dateModified: config.updated ?? config.datePublished,
     ...(locale !== "en" && { inLanguage: locale }),
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
