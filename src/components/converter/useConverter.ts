@@ -171,9 +171,13 @@ export function useConverter() {
           try {
             verify = await verifyCleaned(result.blob, outName, "image/jpeg", strip);
           } catch {
-            verify = { status: "unchecked", remaining: 0, leftoverCategories: [] };
+            verify = { status: "unchecked", remaining: 0, leftoverCategories: [], leftoverFields: [] };
           }
-          trackConverterVerified({ status: verify.status, leftover_categories: verify.leftoverCategories });
+          trackConverterVerified({
+            status: verify.status,
+            leftover_categories: verify.leftoverCategories,
+            ...(verify.leftoverFields.length > 0 && { leftover_fields: verify.leftoverFields }),
+          });
           update(item.id, { verify });
         } catch (err) {
           const failure: ConversionFailure = err instanceof ConversionError ? err.reason : "failed";

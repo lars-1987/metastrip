@@ -55,8 +55,10 @@ export function trackFileDownloaded(props: { file_type: string }) {
 }
 
 /** The verify-clean re-read after a strip. Categories only, never values. A
- *  "leftovers" status means a processor missed something: worth a look. */
-export function trackFileVerified(props: { file_type: string; status: string; leftover_categories: MetadataCategory[] }) {
+ *  "leftovers" status means a processor missed something: worth a look.
+ *  `leftover_fields` names which fields remained ("custom:Leftovers(Font:2)"),
+ *  from verify's leftoverField: keys and our own counts, never values. */
+export function trackFileVerified(props: { file_type: string; status: string; leftover_categories: MetadataCategory[]; leftover_fields?: string[] }) {
   posthog.capture("file_verified", props);
 }
 
@@ -179,7 +181,7 @@ export function trackConverterFailed(props: {
 }
 
 /** The re-read of a converted JPG, the same check the main tool runs. */
-export function trackConverterVerified(props: { status: string; leftover_categories: MetadataCategory[] }) {
+export function trackConverterVerified(props: { status: string; leftover_categories: MetadataCategory[]; leftover_fields?: string[] }) {
   posthog.capture("converter_verified", props);
 }
 

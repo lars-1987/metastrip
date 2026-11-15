@@ -221,13 +221,14 @@ export function useV3Tool() {
       try {
         verify = await verifyCleaned(e.cleanedBlob, e.file.name, e.file.type, e.options);
       } catch {
-        verify = { status: "unchecked", remaining: 0, leftoverCategories: [] };
+        verify = { status: "unchecked", remaining: 0, leftoverCategories: [], leftoverFields: [] };
       }
       if (runId.current !== run) return;
       trackFileVerified({
         file_type: e.file.type || "unknown",
         status: verify.status,
         leftover_categories: verify.leftoverCategories,
+        ...(verify.leftoverFields.length > 0 && { leftover_fields: verify.leftoverFields }),
       });
       setEntries((prev) => prev.map((x) => (x.id === e.id ? { ...x, verify } : x)));
     }

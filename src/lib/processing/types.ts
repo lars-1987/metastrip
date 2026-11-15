@@ -17,6 +17,10 @@ export interface MetadataField {
   label: string;
   value: string | number | Date | null;
   removable: boolean;
+  /** For telemetry only, never shown: our own words and counts about the
+   *  field, never text from the file. The PDF Leftovers field uses it for the
+   *  kinds of object it found. */
+  detail?: string;
 }
 
 export interface MetadataReport {

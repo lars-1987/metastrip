@@ -1,6 +1,6 @@
 import { processFile } from "./coordinator";
 import { BATCH_SIZE_WARN_BYTES } from "../constants";
-import type { MetadataCategory, StripOptions } from "./types";
+import type { MetadataCategory, MetadataField, StripOptions } from "./types";
 
 /**
  * "Verify clean": after a strip, re-read each cleaned file with every category
@@ -24,6 +24,18 @@ export interface VerifyResult {
   remaining: number;
   /** Categories asked to be removed that the re-read still found. */
   leftoverCategories: MetadataCategory[];
+  /** Which fields those were, as safe names for telemetry (see leftoverField). */
+  leftoverFields: string[];
+}
+
+/** A leftover field as a name telemetry can carry: the field's category and
+ *  key, never its value. Keys a file can name itself (a custom Info property,
+ *  anything odd) collapse to a fixed word, and the PDF Leftovers field adds
+ *  the kinds of object it found, in our own words. */
+export function leftoverField(f: MetadataField): string {
+  if (f.key === "Leftovers") return `${f.category}:Leftovers(${f.detail ?? "?"})`;
+  if (/^custom (property|field)/i.test(f.label)) return `${f.category}:custom_property`;
+  return `${f.category}:${/^[A-Za-z0-9:._-]{1,40}$/.test(f.key) ? f.key : "other"}`;
 }
 
 // Re-reading means a second full pass and a second copy in memory. Above the
@@ -41,11 +53,13 @@ export async function verifyCleaned(
   type: string,
   options: StripOptions
 ): Promise<VerifyResult> {
-  if (cleaned.size > VERIFY_MAX_BYTES) return { status: "skipped", remaining: 0, leftoverCategories: [] };
+  if (cleaned.size > VERIFY_MAX_BYTES) return { status: "skipped", remaining: 0, leftoverCategories: [], leftoverFields: [] };
   const r = await processFile(new File([cleaned], name, { type }), ALL_ON);
-  if (r.error) return { status: "unchecked", remaining: 0, leftoverCategories: [] };
+  if (r.error) return { status: "unchecked", remaining: 0, leftoverCategories: [], leftoverFields: [] };
   const found = r.report.fieldsFound;
-  const leftoverCategories = [...new Set(found.filter((f) => options[f.category]).map((f) => f.category))];
-  if (leftoverCategories.length) return { status: "leftovers", remaining: found.length, leftoverCategories };
-  return { status: found.length ? "kept" : "clean", remaining: found.length, leftoverCategories: [] };
+  const leftovers = found.filter((f) => options[f.category]);
+  const leftoverCategories = [...new Set(leftovers.map((f) => f.category))];
+  const leftoverFields = [...new Set(leftovers.map(leftoverField))].slice(0, 10);
+  if (leftoverCategories.length) return { status: "leftovers", remaining: found.length, leftoverCategories, leftoverFields };
+  return { status: found.length ? "kept" : "clean", remaining: found.length, leftoverCategories: [], leftoverFields: [] };
 }
