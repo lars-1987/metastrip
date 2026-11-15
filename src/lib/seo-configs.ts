@@ -46,6 +46,11 @@ export interface SEOPageConfig {
    *  the page body, and the only dates there are sample metadata values, so the
    *  C2PA page (shipped 26 Aug) was showing "28 Feb 2026" in search results. */
   datePublished: string;
+  /** The last real change to the page's text, when later than datePublished.
+   *  Bump it whenever the page's content changes: it feeds the sitemap's
+   *  lastmod and schema.org dateModified, and Google only trusts lastmod on
+   *  sites where it's accurate. */
+  updated?: string;
   keyword: string;
   title: string;
   subtitle: string;
@@ -66,6 +71,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-metadata-from-photos": {
     slug: "remove-metadata-from-photos",
     datePublished: "2026-03-04",
+    updated: "2026-11-15",
     keyword: "remove metadata from photos",
     title: "Remove Metadata from Photos",
     subtitle:
@@ -237,6 +243,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-author-from-pdf": {
     slug: "remove-author-from-pdf",
     datePublished: "2026-03-04",
+    updated: "2026-09-19",
     keyword: "remove author from PDF",
     title: "Remove Author from PDF",
     subtitle:
@@ -380,6 +387,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "strip-exif-data": {
     slug: "strip-exif-data",
     datePublished: "2026-03-04",
+    updated: "2026-11-15",
     keyword: "strip EXIF data online",
     title: "Strip EXIF Data Online",
     subtitle:
@@ -562,6 +570,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-c2pa-metadata": {
     slug: "remove-c2pa-metadata",
     datePublished: "2026-08-26",
+    updated: "2026-11-08",
     keyword: "remove C2PA metadata from images",
     title: "Remove C2PA Metadata",
     subtitle:
@@ -878,6 +887,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "check-pdf-metadata": {
     slug: "check-pdf-metadata",
     datePublished: "2026-09-03",
+    updated: "2026-09-19",
     keyword: "check PDF metadata",
     title: "Check PDF Metadata",
     subtitle:
@@ -1031,6 +1041,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-ai-metadata": {
     slug: "remove-ai-metadata",
     datePublished: "2026-03-04",
+    updated: "2026-11-08",
     keyword: "AI metadata remover",
     title: "Remove AI Metadata and AI Tags",
     subtitle:
@@ -1182,6 +1193,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "strip-metadata-from-word-document": {
     slug: "strip-metadata-from-word-document",
     datePublished: "2026-03-04",
+    updated: "2026-09-19",
     keyword: "strip metadata from Word document",
     title: "Strip Metadata from Word Documents",
     subtitle:
@@ -1325,6 +1337,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-gps-location-from-photos": {
     slug: "remove-gps-location-from-photos",
     datePublished: "2026-03-04",
+    updated: "2026-11-15",
     keyword: "remove GPS location from photos",
     title: "Remove GPS Location from Photos",
     subtitle:
@@ -1479,6 +1492,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
   "remove-metadata-before-sharing": {
     slug: "remove-metadata-before-sharing",
     datePublished: "2026-03-04",
+    updated: "2026-09-19",
     keyword: "remove metadata before sharing online",
     title: "Remove Metadata Before Sharing Online",
     subtitle:
