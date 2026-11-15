@@ -126,7 +126,7 @@ export const de: Messages = {
     by: "von",
     tagline: "MetaStrip · deine Dateien verlassen nie dein Gerät.",
     mitLicensed: "MIT-Lizenz",
-    tools: "Tools (auf Englisch)",
+    tools: "Tools",
     articles: "Artikel (auf Englisch)",
     site: "Seite",
     home: "Start",
@@ -136,6 +136,14 @@ export const de: Messages = {
     privacy: "Datenschutz & Bedingungen",
     terminal: "Lieber im Terminal?",
     email: "E-Mail",
+    toolLinks: {
+      "remove-metadata-from-photos": "Metadaten aus Fotos entfernen",
+      "remove-gps-location-from-photos": "GPS aus Fotos entfernen",
+      "strip-exif-data": "EXIF-Daten entfernen",
+      "remove-c2pa-metadata": "C2PA-Metadaten entfernen",
+      "remove-author-from-pdf": "Autor aus PDF entfernen",
+      "strip-metadata-from-word-document": "Word-Metadaten entfernen",
+    },
   },
 
   categories: {
@@ -242,6 +250,16 @@ export const de: Messages = {
     startOver: "Neu starten",
     tipJar: "Kaffeekasse",
     star: "GitHub-Stern",
+  },
+
+  seoDoc: {
+    whatsHidden: "Was in deinen Dateien steckt",
+    category: "Kategorie",
+    field: "Feld",
+    example: "Beispielwert",
+    formats: "Unterstützte Formate",
+    footer: "metastrip v3.0; Metadaten entfernen mit Datenschutz zuerst; alles wird in deinem Browser verarbeitet",
+    features: ["Metadaten im Browser entfernen", "Kein Datei-Upload nötig", "EXIF, IPTC und XMP entfernen", "GPS-Standort entfernen", "KI-Metadaten entfernen"],
   },
 
   errors: {
