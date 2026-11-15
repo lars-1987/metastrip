@@ -13,7 +13,7 @@ import { OG_IMAGE } from "@/lib/og";
 const PAGE_URL = "https://metastrip.app/heic-to-jpg";
 const TITLE = "HEIC to JPG Converter, Free and Private | MetaStrip";
 const DESCRIPTION =
-  "Convert iPhone HEIC photos to JPG in your browser, in bulk. Nothing is uploaded, and location, date and camera details are removed unless you keep them.";
+  "Convert iPhone HEIC photos, and PNG, WebP or AVIF images, to JPG in your browser, in bulk. Nothing is uploaded, and location and camera details are removed.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -104,7 +104,7 @@ export default function HeicToJpgPage() {
 
         <section className="px-6 pt-6 text-center md:pt-7">
           <p className="v3-mono text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-            HEIC TO JPG: FREE, NOTHING UPLOADED
+            HEIC, PNG AND WEBP TO JPG: FREE, NOTHING UPLOADED
           </p>
         </section>
 
@@ -126,7 +126,7 @@ export default function HeicToJpgPage() {
               className="mx-auto font-medium leading-[1.55] text-[var(--text-secondary)]"
               style={{ fontSize: "clamp(17px, 1.6vw, 20px)", maxWidth: 600 }}
             >
-              Turn iPhone photos into JPGs that open anywhere, a whole batch at once, without uploading them and without the location they were taken.
+              Turn iPhone photos into JPGs that open anywhere, a whole batch at once, without uploading them and without the location they were taken. PNG, WebP, AVIF and GIF images work too.
             </p>
           </div>
         </section>
@@ -136,7 +136,7 @@ export default function HeicToJpgPage() {
             <Section title="How to convert HEIC to JPG">
               <ol className="list-decimal space-y-2 pl-6">
                 <li>Choose whether to keep the location, date taken or camera details. By default, nothing is kept.</li>
-                <li>Drop your HEIC photos on the converter above, or tap Choose photos. On an iPhone you can pick straight from your library.</li>
+                <li>Drop your HEIC photos, or PNG, WebP, AVIF or GIF images, on the converter above, or tap Choose photos. On an iPhone you can pick straight from your library.</li>
                 <li>Each photo converts in turn, and is checked for leftover metadata as it finishes.</li>
                 <li>Download the JPG, or all of them as one zip. On a phone, Save or share puts them in Photos or sends them on.</li>
               </ol>
@@ -151,6 +151,18 @@ export default function HeicToJpgPage() {
               </p>
               <p>
                 To have your iPhone shoot JPGs from now on, go to Settings, Camera, Formats and choose Most Compatible. Photos you&apos;ve already taken stay HEIC, which is what the converter is for.
+              </p>
+            </Section>
+
+            <Section title="Other images to JPG">
+              <p>
+                The converter isn&apos;t only for iPhone photos. PNG, WebP, AVIF and GIF images become JPGs the same way, and so do JPGs themselves, if you just want a clean copy without the metadata.
+              </p>
+              <p>
+                WebP and AVIF are what many websites now serve, so an image saved from a browser often arrives in one of them, and plenty of apps and upload forms still won&apos;t take it. PNG opens almost everywhere, but a photo saved as PNG can be several times the size of the same photo as a JPG.
+              </p>
+              <p>
+                JPG has no transparency, so transparent areas of a PNG, WebP or GIF become white. An animated GIF or WebP gives its first frame. If you need the transparency, keep the PNG.
               </p>
             </Section>
 

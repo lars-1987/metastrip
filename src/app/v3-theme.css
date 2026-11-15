@@ -102,15 +102,19 @@ html:has(.v3-root) { background-color: #e3e2de; }
 html:has(.v3-root[data-theme="dark"]) { background-color: #1b1b21; }
 body:has(.v3-root) { background: transparent; }
 
-.v3-root[data-theme="dark"] .v3-card-row {
+.v3-root[data-theme="dark"] .v3-card-row,
+.v3-root[data-theme="dark"] .v3-tool-frame {
   /* Drop shadow only for lift. A full inset white hairline bloomed along the
      top edge against the dark page and read as a glowing band — dropped it;
      the card already separates from the page by contrast. */
   box-shadow: 0 28px 80px -40px rgba(0, 0, 0, 0.9);
 }
 
-/* ---- The tool: a super-dark panel. Dark tokens cascade to its cards. ---- */
-.v3-card-row {
+/* ---- The tool: a super-dark panel. Dark tokens cascade to its cards. ----
+   .v3-tool-frame is the same panel for the converter (/heic-to-jpg), without
+   the main tool's sliding card layout, so the two look like one product. */
+.v3-card-row,
+.v3-tool-frame {
   --bg: #0b0b0d; /* super dark */
   --surface: #131316;
   --card: #1a1a1e;
@@ -133,13 +137,17 @@ body:has(.v3-root) { background: transparent; }
 
   background: var(--bg);
   color: var(--text-body);
-
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.v3-tool-frame {
+  --text-secondary: var(--text-body);
+}
+.v3-card-row {
   display: flex;
   flex-direction: column;
   gap: 14px;
   width: 100%;
-  border-radius: var(--radius);
-  padding: 12px;
 }
 .v3-card-slot {
   width: 100%;

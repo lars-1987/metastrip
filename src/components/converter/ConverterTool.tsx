@@ -10,7 +10,8 @@ import { useConverter, KEEPABLE, FAILURE_TEXT, type ConvertItem, type Keepable }
 
 /* The HEIC to JPG converter: a dropzone, then one card that lists the batch
    as it converts and saves the JPGs. Its own component and hook, so the main
-   tool is untouched. */
+   tool is untouched, but it sits in the same super-dark panel
+   (.v3-tool-frame) so the two look like one product. */
 
 // image/heic in the list matters on iPhones: without it, Safari's picker hands
 // over its own JPEG copy instead of the original photo.
@@ -85,7 +86,10 @@ function Row({ item, kept, onDownload }: { item: ConvertItem; kept: string[]; on
           {item.status === "converting" && " · converting…"}
         </p>
         {check && (
-          <p className={`v3-mono mt-1 text-[12px] ${check.warn ? "text-[var(--danger)]" : "text-[var(--text-muted)]"}`}>{check.text}</p>
+          <p className={`v3-mono mt-1 text-[12px] ${check.warn ? "text-[var(--danger)]" : "text-[var(--text-muted)]"}`}>
+            {/* "· checked" kept whole, so a phone never leaves "checked" alone on a line. */}
+            {check.text.split(" · ").map((piece, i) => (i === 0 ? piece : <span key={i} className="whitespace-nowrap"> · {piece}</span>))}
+          </p>
         )}
         {item.status === "failed" && item.failure && (
           <p className="mt-1 text-[13px] leading-snug text-[var(--danger)]">{FAILURE_TEXT[item.failure]}</p>
@@ -117,11 +121,11 @@ export function ConverterTool() {
 
   if (t.phase === "drop") {
     return (
-      <div data-private className="flex flex-col gap-3">
+      <div data-private className="v3-tool-frame flex flex-col gap-3 md:min-h-[calc(100svh-272px)]">
         <div
           {...dragHandlers}
           onClick={() => inputRef.current?.click()}
-          className={`group relative flex min-h-[360px] flex-col items-center justify-center overflow-hidden
+          className={`group relative flex min-h-[360px] flex-1 flex-col items-center justify-center overflow-hidden
             rounded-[var(--radius)] px-8 py-16 text-center cursor-pointer transition-all duration-300
             ${isDragOver
               ? "bg-[color-mix(in_srgb,var(--primary)_10%,var(--surface))] shadow-[inset_0_0_0_2px_var(--border-strong)]"
@@ -190,56 +194,58 @@ export function ConverterTool() {
       : `${converted} converted`;
 
   return (
-    <div data-private className="flex flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-7">
-      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h3 className="v3-mono text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]" aria-live="polite">{heading}</h3>
-          <p className="mt-2 text-[15px] text-[var(--text-secondary)]">
-            {kept.length === 0 ? "All metadata removed from the JPGs." : `Kept ${list(kept)}; everything else removed.`}
-          </p>
+    <div data-private className="v3-tool-frame">
+      <div className="flex flex-col rounded-[var(--radius)] bg-[var(--surface)] p-4 md:p-7">
+        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
+            <h3 className="v3-mono text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]" aria-live="polite">{heading}</h3>
+            <p className="mt-2 text-[15px] text-[var(--text-secondary)]">
+              {kept.length === 0 ? "All metadata removed from the JPGs." : `Kept ${list(kept)}; everything else removed.`}
+            </p>
+          </div>
+          {!working && (
+            <div className="flex flex-wrap gap-3">
+              {converted > 0 && t.canShare && (
+                <Button variant="primary" onClick={t.share}>Save or share</Button>
+              )}
+              {converted > 0 && (
+                <Button variant={t.canShare ? "soft" : "primary"} onClick={t.downloadAll} disabled={t.zipping}>
+                  {t.zipping ? "Zipping…" : converted === 1 ? "Download JPG" : `Download ${converted} JPGs (zip)`}
+                </Button>
+              )}
+              <Button variant="ghost" onClick={t.reset}>Convert more</Button>
+            </div>
+          )}
         </div>
-        {!working && (
-          <div className="flex flex-wrap gap-3">
-            {converted > 0 && t.canShare && (
-              <Button variant="primary" onClick={t.share}>Save or share</Button>
-            )}
-            {converted > 0 && (
-              <Button variant={t.canShare ? "soft" : "primary"} onClick={t.downloadAll} disabled={t.zipping}>
-                {t.zipping ? "Zipping…" : converted === 1 ? "Download JPG" : `Download ${converted} JPGs (zip)`}
-              </Button>
-            )}
-            <Button variant="ghost" onClick={t.reset}>Convert more</Button>
+
+        {working && (
+          <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-[var(--card-elevated)]" aria-hidden>
+            <div
+              className="h-full rounded-full bg-[var(--primary)] transition-[width] duration-300"
+              style={{ width: `${total ? (finished / total) * 100 : 0}%` }}
+            />
           </div>
         )}
+
+        {t.saveError && <p className="mb-4 text-[14px] text-[var(--danger)]" role="alert">{t.saveError}</p>}
+        {t.skipped.length > 0 && (
+          <p role="status" className="mb-4 break-words text-[13px] leading-relaxed text-[var(--text-muted)]">
+            Skipped {t.skipped.length} {t.skipped.length === 1 ? "file" : "files"} that {t.skipped.length === 1 ? "isn't an image" : "aren't images"} the converter takes: {t.skipped.slice(0, 2).join(", ")}
+            {t.skipped.length > 2 ? ` and ${t.skipped.length - 2} more` : ""}.
+          </p>
+        )}
+
+        <ul className="max-h-[560px] space-y-2.5 overflow-y-auto pr-1 -mr-1">
+          {t.items.map((item) => (
+            <Row
+              key={item.id}
+              item={item}
+              kept={kept}
+              onDownload={!working && item.status === "done" && converted > 1 ? () => t.downloadOne(item.id) : undefined}
+            />
+          ))}
+        </ul>
       </div>
-
-      {working && (
-        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-[var(--card-elevated)]" aria-hidden>
-          <div
-            className="h-full rounded-full bg-[var(--primary)] transition-[width] duration-300"
-            style={{ width: `${total ? (finished / total) * 100 : 0}%` }}
-          />
-        </div>
-      )}
-
-      {t.saveError && <p className="mb-4 text-[14px] text-[var(--danger)]" role="alert">{t.saveError}</p>}
-      {t.skipped.length > 0 && (
-        <p role="status" className="mb-4 break-words text-[13px] leading-relaxed text-[var(--text-muted)]">
-          Skipped {t.skipped.length} {t.skipped.length === 1 ? "file" : "files"} that {t.skipped.length === 1 ? "isn't an image" : "aren't images"} the converter takes: {t.skipped.slice(0, 2).join(", ")}
-          {t.skipped.length > 2 ? ` and ${t.skipped.length - 2} more` : ""}.
-        </p>
-      )}
-
-      <ul className="max-h-[560px] space-y-2.5 overflow-y-auto pr-1 -mr-1">
-        {t.items.map((item) => (
-          <Row
-            key={item.id}
-            item={item}
-            kept={kept}
-            onDownload={!working && item.status === "done" && converted > 1 ? () => t.downloadOne(item.id) : undefined}
-          />
-        ))}
-      </ul>
     </div>
   );
 }
