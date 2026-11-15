@@ -246,6 +246,7 @@ describe("PDF", () => {
       const { result } = await run(await withOrphan(), name, PDF_MIME, ALL_ON);
       const field = result.report.fieldsFound.find((f) => f.key === "Leftovers");
       expect(field?.value).toBe("1 unused object, including old metadata");
+      expect(field?.detail).toBe("Metadata stream:1");
       expect(summary(result.report.fieldsRemoved)).toContain("custom:Leftovers");
       expect(await text(result)).not.toContain("Original Author Alice");
       const again = await reread(result, name, PDF_MIME);
@@ -256,6 +257,18 @@ describe("PDF", () => {
       const { result } = await run(await withOrphan(), name, PDF_MIME, allBut("custom"));
       expect(summary(result.report.fieldsRemoved)).toContain("custom:Leftovers");
       expect(await text(result)).not.toContain("Original Author Alice");
+    });
+
+    it("says what kinds of object they are, in its own words", async () => {
+      const doc = await PDFDocument.load(await buildPdf(), { updateMetadata: false });
+      doc.context.register(doc.context.obj({ Type: "Font", Subtype: "Type1", BaseFont: "Helvetica" }));
+      doc.context.register(doc.context.obj({ Type: "MadeUpSecretName", Note: PDFString.of("private") }));
+      doc.context.register(doc.context.obj({ Author: PDFString.of("Alice") }));
+      doc.context.register(doc.context.obj([1, 2]));
+      const { result } = await run(await doc.save({ useObjectStreams: false }), name, PDF_MIME, ALL_ON);
+      const detail = result.report.fieldsFound.find((f) => f.key === "Leftovers")?.detail;
+      expect(detail).toBe("array:1, Font:1, info dict:1, other:1");
+      expect(detail).not.toMatch(/MadeUp|Alice|private|Helvetica/);
     });
 
     it("finds none in an ordinary PDF", async () => {

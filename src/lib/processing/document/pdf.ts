@@ -286,6 +286,7 @@ function leftovers(pdfDoc: PDFDocument): { unreachable: [PDFRef, PDFObject][]; f
   return {
     unreachable,
     field: {
+      detail: objectKinds(content.map(([, o]) => o)),
       category: "custom",
       key: "Leftovers",
       label: "Leftovers from earlier edits",
@@ -295,4 +296,36 @@ function leftovers(pdfDoc: PDFDocument): { unreachable: [PDFRef, PDFObject][]; f
       removable: true,
     },
   };
+}
+
+/** /Type names a PDF uses for ordinary objects. Anything else reads "other",
+ *  so a name a file made up never reaches telemetry. */
+const KNOWN_TYPES = new Set([
+  "Action", "Annot", "Border", "Catalog", "CMap", "EmbeddedFile", "Encoding",
+  "ExtGState", "Filespec", "Font", "FontDescriptor", "Group", "Halftone",
+  "Mask", "Metadata", "OCG", "Outlines", "Page", "Pages", "Pattern", "Shading",
+  "Sig", "StructElem", "StructTreeRoot", "XObject",
+]);
+
+/** "Font:2, Metadata stream:1, dict:3": what kinds of object the leftovers
+ *  are, for telemetry. Allow-listed /Type names and pdf-lib's own classes,
+ *  never a value from the file. Sent with the verify event, so a leftover can
+ *  be told apart from something pdf-lib's save creates. */
+export function objectKinds(objects: PDFObject[]): string {
+  const counts = new Map<string, number>();
+  for (const o of objects) {
+    let kind = o instanceof PDFArray ? "array" : "other";
+    if (o instanceof PDFStream || o instanceof PDFDict) {
+      const d = o instanceof PDFStream ? o.dict : o;
+      const type = d.get(PDFName.of("Type"));
+      const name = type instanceof PDFName ? type.asString().slice(1) : "";
+      kind = [
+        name && (KNOWN_TYPES.has(name) ? name : "other"),
+        ["Author", "Title", "Creator", "Producer"].some((k) => d.has(PDFName.of(k))) && "info",
+        o instanceof PDFStream ? "stream" : !name && "dict",
+      ].filter(Boolean).join(" ");
+    }
+    counts.set(kind, (counts.get(kind) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, c]) => `${k}:${c}`).join(", ").slice(0, 120);
 }
