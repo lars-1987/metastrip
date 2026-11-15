@@ -286,7 +286,7 @@ export const SEO_ES: Record<TranslatedToolSlug, SEOPageConfig> = {
         "Cada foto hecha con un móvil contiene coordenadas GPS incrustadas que señalan exactamente dónde se hizo, a menudo con precisión de unos pocos metros. Estos datos se guardan en los metadatos EXIF del archivo de imagen y viajan con la foto cuando la compartes.",
         "Aunque las grandes redes sociales como Instagram y Facebook quitan los datos de ubicación al subir la foto, muchas otras formas de compartir no lo hacen. Los adjuntos de correo, las apps de mensajería (cuando envías archivos), los enlaces de almacenamiento en la nube, las publicaciones en foros y las webs personales conservan las coordenadas GPS por defecto.",
         "Las consecuencias para la privacidad son importantes. Una foto hecha en casa revela tu dirección. Las fotos hechas a lo largo del tiempo revelan tu rutina diaria: dónde trabajas, comes, haces ejercicio y quedas con gente. Para personas públicas, periodistas, activistas y supervivientes de violencia doméstica, estos datos pueden ser realmente peligrosos.",
-        "MetaStrip elimina todos los datos GPS y de ubicación de tus fotos antes de que las compartas. Todo se procesa en tu navegador; tus fotos y tus datos de ubicación nunca se suben a ningún sitio. Es la forma más privada de quitar los metadatos de ubicación de tus imágenes.",
+        "MetaStrip elimina todos los datos GPS y de ubicación de tus fotos antes de que las compartas. Todo se procesa en tu navegador; tus fotos y tus datos de ubicación nunca se suben a ningún sitio. No hace falta crear una cuenta, y el código fuente es público en GitHub, así que puedes comprobar cómo funciona.",
       ],
     },
     supportedFormats: [
