@@ -212,6 +212,21 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         desc: "EXIF, XMP embedded metadata",
         color: "#4ade80",
       },
+      {
+        ext: "HEIC",
+        desc: "EXIF, GPS, XMP and C2PA, cleaned in place",
+        color: "#f472b6",
+      },
+      {
+        ext: "AVIF",
+        desc: "EXIF, XMP and C2PA",
+        color: "#fbbf24",
+      },
+      {
+        ext: "TIFF",
+        desc: "EXIF, GPS, XMP and IPTC on every page",
+        color: "#94a3b8",
+      },
     ],
     metaTitle:
       "Remove Metadata from Photos Online: Free, No Upload | MetaStrip",
@@ -503,7 +518,7 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         "EXIF data is a metadata standard that stores technical and contextual information inside image files. Originally designed to help photographers organize their work, EXIF has become a significant privacy concern in the age of smartphone photography and social sharing.",
         "Every photo taken with a modern smartphone or digital camera contains EXIF data. This typically includes GPS coordinates accurate to a few meters, the exact date and time, camera make and model, serial numbers, lens information, and exposure settings. For edited photos, the software used and editing history may also be stored.",
         "While some social media platforms strip EXIF data on upload, many do not; and email, messaging apps, cloud storage, and websites often preserve metadata completely. Once a photo is shared with its EXIF intact, anyone who downloads it can extract your location, device identity, and personal information.",
-        "MetaStrip provides comprehensive EXIF removal for JPEG, PNG, and WebP files. All processing happens in your browser; your photos are never uploaded to any server, making MetaStrip the most private EXIF stripping tool available.",
+        "MetaStrip removes EXIF from JPEG, PNG, WebP, HEIC, AVIF and TIFF images. All processing happens in your browser; your photos are never uploaded to any server.",
       ],
     },
     supportedFormats: [
@@ -521,6 +536,21 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         ext: "WebP",
         desc: "EXIF, XMP embedded metadata",
         color: "#4ade80",
+      },
+      {
+        ext: "HEIC",
+        desc: "EXIF, GPS, XMP and C2PA, cleaned in place",
+        color: "#f472b6",
+      },
+      {
+        ext: "AVIF",
+        desc: "EXIF, XMP and C2PA",
+        color: "#fbbf24",
+      },
+      {
+        ext: "TIFF",
+        desc: "EXIF, GPS, XMP and IPTC on every page",
+        color: "#94a3b8",
       },
     ],
     metaTitle:
@@ -1423,6 +1453,21 @@ export const SEO_PAGE_CONFIGS: Record<string, SEOPageConfig> = {
         ext: "WebP",
         desc: "EXIF GPS data, XMP location metadata",
         color: "#4ade80",
+      },
+      {
+        ext: "HEIC",
+        desc: "EXIF, GPS, XMP and C2PA, cleaned in place",
+        color: "#f472b6",
+      },
+      {
+        ext: "AVIF",
+        desc: "EXIF, XMP and C2PA",
+        color: "#fbbf24",
+      },
+      {
+        ext: "TIFF",
+        desc: "EXIF, GPS, XMP and IPTC on every page",
+        color: "#94a3b8",
       },
     ],
     metaTitle:

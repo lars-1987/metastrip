@@ -152,6 +152,21 @@ export const SEO_DE: Record<TranslatedToolSlug, SEOPageConfig> = {
         desc: "Eingebettete EXIF- und XMP-Metadaten",
         color: "#4ade80",
       },
+      {
+        ext: "HEIC",
+        desc: "EXIF, GPS, XMP und C2PA, ohne Umwandlung",
+        color: "#f472b6",
+      },
+      {
+        ext: "AVIF",
+        desc: "EXIF, XMP und C2PA",
+        color: "#fbbf24",
+      },
+      {
+        ext: "TIFF",
+        desc: "EXIF, GPS, XMP und IPTC auf jeder Seite",
+        color: "#94a3b8",
+      },
     ],
     metaTitle: "Metadaten aus Fotos entfernen: online & gratis | MetaStrip",
     metaDescription:
@@ -289,6 +304,21 @@ export const SEO_DE: Record<TranslatedToolSlug, SEOPageConfig> = {
         ext: "WebP",
         desc: "EXIF-GPS-Daten, XMP-Standortmetadaten",
         color: "#4ade80",
+      },
+      {
+        ext: "HEIC",
+        desc: "EXIF, GPS, XMP und C2PA, ohne Umwandlung",
+        color: "#f472b6",
+      },
+      {
+        ext: "AVIF",
+        desc: "EXIF, XMP und C2PA",
+        color: "#fbbf24",
+      },
+      {
+        ext: "TIFF",
+        desc: "EXIF, GPS, XMP und IPTC auf jeder Seite",
+        color: "#94a3b8",
       },
     ],
     metaTitle: "Standort aus Fotos entfernen: gratis & privat | MetaStrip",
@@ -437,7 +467,7 @@ export const SEO_DE: Record<TranslatedToolSlug, SEOPageConfig> = {
         "EXIF ist ein Metadatenstandard, der technische Angaben und Kontextinformationen in Bilddateien speichert. Ursprünglich sollte er Fotografen helfen, ihre Arbeit zu ordnen; im Zeitalter von Smartphone-Fotos und sozialen Netzwerken ist EXIF zu einem ernsten Datenschutzproblem geworden.",
         "Jedes Foto von einem modernen Smartphone oder einer Digitalkamera enthält EXIF-Daten. Typischerweise gehören dazu GPS-Koordinaten, die auf wenige Meter genau sind, das genaue Datum und die Uhrzeit, Kamerahersteller und Modell, Seriennummern, Objektivdaten und Belichtungseinstellungen. Bei bearbeiteten Fotos können auch die verwendete Software und der Bearbeitungsverlauf gespeichert sein.",
         "Manche sozialen Netzwerke entfernen EXIF-Daten beim Hochladen, viele aber nicht; und E-Mail, Messenger, Cloud-Speicher und Websites behalten Metadaten oft vollständig bei. Sobald ein Foto mit intakten EXIF-Daten geteilt ist, kann jeder, der es herunterlädt, deinen Standort, die Identität deines Geräts und persönliche Angaben auslesen.",
-        "MetaStrip entfernt EXIF-Daten gründlich aus JPEG-, PNG- und WebP-Dateien. Die gesamte Verarbeitung läuft in deinem Browser; deine Fotos werden nie auf einen Server hochgeladen. Damit ist MetaStrip das privateste Tool zum Entfernen von EXIF-Daten, das es gibt.",
+        "MetaStrip entfernt EXIF-Daten aus JPEG-, PNG-, WebP-, HEIC-, AVIF- und TIFF-Bildern. Die gesamte Verarbeitung läuft in deinem Browser; deine Fotos werden nie auf einen Server hochgeladen.",
       ],
     },
     supportedFormats: [
@@ -455,6 +485,21 @@ export const SEO_DE: Record<TranslatedToolSlug, SEOPageConfig> = {
         ext: "WebP",
         desc: "Eingebettete EXIF- und XMP-Metadaten",
         color: "#4ade80",
+      },
+      {
+        ext: "HEIC",
+        desc: "EXIF, GPS, XMP und C2PA, ohne Umwandlung",
+        color: "#f472b6",
+      },
+      {
+        ext: "AVIF",
+        desc: "EXIF, XMP und C2PA",
+        color: "#fbbf24",
+      },
+      {
+        ext: "TIFF",
+        desc: "EXIF, GPS, XMP und IPTC auf jeder Seite",
+        color: "#94a3b8",
       },
     ],
     metaTitle: "EXIF-Daten entfernen: online ansehen & löschen | MetaStrip",
