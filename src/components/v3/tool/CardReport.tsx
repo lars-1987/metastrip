@@ -10,8 +10,9 @@ import type { ToolEntry } from "./useV3Tool";
 import type { VerifyResult } from "@/lib/processing/verify";
 import { KOFI_URL, GITHUB_REPO_URL } from "@/lib/constants";
 import { trackCtaClicked } from "@/lib/analytics";
-import { useMessages } from "@/components/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/components/i18n/LocaleProvider";
 import type { Messages } from "@/lib/i18n";
+import { fieldLabel } from "@/lib/i18n/fields";
 
 type ReportText = Messages["report"];
 
@@ -129,6 +130,7 @@ function VerifyDetail({ verify, msgs }: { verify: VerifyResult; msgs: Messages }
 }
 
 export function CardReport({ entries, onDownload, onReset, downloadError, canShare = false, onShare }: Props) {
+  const locale = useLocale();
   const msgs = useMessages();
   const m = msgs.report;
   // Desktop opens the first file's list; phones start with every list closed,
@@ -295,7 +297,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
                               <ul className="v3-mono space-y-1">
                                 {fields.map((f, i) => (
                                   <li key={i} className="flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 text-[12px]">
-                                    <span className="max-w-full shrink-0 text-[var(--text-muted)]">{f.label}:</span>
+                                    <span className="max-w-full shrink-0 text-[var(--text-muted)]">{fieldLabel(f.label, locale)}:</span>
                                     <span className="min-w-0 break-words text-[var(--text-body)]">{valueToString(f.value)}</span>
                                   </li>
                                 ))}

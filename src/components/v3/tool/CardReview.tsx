@@ -6,6 +6,7 @@ import { trackFailureReportClicked, trackUnlockLinkClicked } from "@/lib/analyti
 import { CATEGORY_CONFIG, CONTACT_EMAIL, SANCTUMPDF_UNLOCK_URL } from "@/lib/constants";
 import { useLocale, useMessages } from "@/components/i18n/LocaleProvider";
 import type { Locale, Messages } from "@/lib/i18n";
+import { fieldLabel } from "@/lib/i18n/fields";
 import { extractGpsCoordinates } from "@/lib/gps";
 import { isUnexplained, lockKindOf } from "@/lib/processing/coordinator";
 import type { MetadataCategory } from "@/lib/processing/types";
@@ -66,11 +67,11 @@ export function CardReview({
     for (const f of entry.scan.fieldsFound) {
       if (!visibleCategories.includes(f.category)) continue;
       const arr = map.get(f.category) ?? [];
-      arr.push({ label: f.label, value: valueToString(f.value) });
+      arr.push({ label: fieldLabel(f.label, locale), value: valueToString(f.value) });
       map.set(f.category, arr);
     }
     return map;
-  }, [entry, visibleCategories]);
+  }, [entry, visibleCategories, locale]);
 
   const allOn = visibleCategories.every((c) => options[c]);
   const selectedCount = visibleCategories.filter((c) => options[c]).length;
