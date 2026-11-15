@@ -3,9 +3,7 @@
 import { formatLatLng, type LatLng } from "@/lib/gps";
 import { WORLD_VIEWBOX, WORLD_LAND_PATH } from "./world-land";
 import { InfoTip } from "../ui/InfoTip";
-
-const LOCATION_INFO =
-  "This map is drawn in your browser from a built-in world map; your coordinates are never sent anywhere to render it. Nothing about your location leaves your device.";
+import { useMessages } from "@/components/i18n/LocaleProvider";
 
 /**
  * Offline location map. Plots a decoded GPS fix on a real world map rendered
@@ -22,6 +20,7 @@ const H = 500;
 export function V3LocationMap({ coords }: { coords: LatLng }) {
   const x = ((coords.lng + 180) / 360) * W;
   const y = ((90 - coords.lat) / 180) * H;
+  const m = useMessages().review;
   const hemisphere = `${coords.lat >= 0 ? "N" : "S"} · ${coords.lng >= 0 ? "E" : "W"}`;
 
   return (
@@ -37,18 +36,18 @@ export function V3LocationMap({ coords }: { coords: LatLng }) {
             </svg>
           </span>
           <div className="min-w-0">
-            <p className="text-[15px] text-[var(--text)]">Location</p>
+            <p className="text-[15px] text-[var(--text)]">{m.location}</p>
             <p className="v3-mono text-[12px] text-[var(--danger)]">{formatLatLng(coords)}</p>
           </div>
         </div>
-        <InfoTip text={LOCATION_INFO} />
+        <InfoTip text={m.locationInfo} label={m.whatIsThis} />
       </div>
 
       <div className="aspect-[2/1] w-full overflow-hidden rounded-[10px] bg-[var(--bg)]">
         <svg
           viewBox={WORLD_VIEWBOX}
           role="img"
-          aria-label={`Map showing the photo's location at ${formatLatLng(coords)}`}
+          aria-label={m.mapLabel(formatLatLng(coords))}
           preserveAspectRatio="xMidYMid meet"
           className="block h-full w-full"
         >
@@ -68,7 +67,7 @@ export function V3LocationMap({ coords }: { coords: LatLng }) {
       </div>
 
       <p className="v3-mono mt-2 text-right text-[11px] text-[var(--text-muted)]">
-        {hemisphere} · embedded in file
+        {hemisphere} · {m.embeddedInFile}
       </p>
     </figure>
   );

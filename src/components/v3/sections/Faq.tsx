@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { FAQS } from "@/components/shared/faq-data";
+import { messagesFor, type Locale } from "@/lib/i18n";
 import { EmailButton } from "../ui/EmailButton";
 
 /** Recycled from V2 — single-open accordion, dark cards, grid-rows animation. */
-export function Faq() {
+export function Faq({ locale = "en" }: { locale?: Locale }) {
+  const m = messagesFor(locale).faq;
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
@@ -13,18 +14,18 @@ export function Faq() {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-14 lg:mb-16" data-reveal>
           <div className="text-[12px] font-bold uppercase tracking-[0.18em] mb-4" style={{ color: "var(--accent-strong)" }}>
-            FAQ
+            {m.eyebrow}
           </div>
           <h2 className="font-extrabold tracking-[-0.025em] leading-[1.05] mb-5" style={{ color: "var(--text)", fontSize: "clamp(36px, 5vw, 60px)" }}>
-            Questions? Answers.
+            {m.title}
           </h2>
           <p className="leading-[1.55] max-w-xl mx-auto" style={{ color: "var(--text-secondary)", fontSize: "clamp(16px, 1.5vw, 18px)" }}>
-            Everything people usually ask about how the tool works, what it does to your files, and what happens to your data.
+            {m.intro}
           </p>
         </div>
 
         <div className="space-y-3" data-reveal-group>
-          {FAQS.map((item, i) => {
+          {m.items.map((item, i) => {
             const isOpen = openIdx === i;
             return (
               <div
@@ -73,7 +74,7 @@ export function Faq() {
         </div>
 
         <div className="mt-14 flex justify-center">
-          <EmailButton />
+          <EmailButton label={m.emailUs} />
         </div>
       </div>
     </section>

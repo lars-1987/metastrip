@@ -1,4 +1,4 @@
-import { BATCH_LIMIT } from "@/lib/constants";
+import { BATCH_LIMIT } from "../../lib/constants";
 export interface FAQItem {
   question: string;
   answer: string;

@@ -16,7 +16,7 @@ const MailIcon = (
 const USER = "hello";
 const DOMAIN = "metastrip.app";
 
-export function EmailButton({ variant = "soft", size = "lg" }: { variant?: "primary" | "soft"; size?: "md" | "lg" }) {
+export function EmailButton({ variant = "soft", size = "lg", label = "Email us" }: { variant?: "primary" | "soft"; size?: "md" | "lg"; label?: string }) {
   const [addr, setAddr] = useState(`${USER} [at] ${DOMAIN}`);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function EmailButton({ variant = "soft", size = "lg" }: { variant?: "prim
       variant={variant}
       size={size}
       hoverIcon={MailIcon}
-      aria-label="Email us"
+      aria-label={label}
       onClick={() => {
         window.location.href = `mailto:${USER}@${DOMAIN}`;
       }}

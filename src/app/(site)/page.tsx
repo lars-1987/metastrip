@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { TopNav } from "@/components/v3/ui/TopNav";
-import { Footer } from "@/components/v3/ui/Footer";
-import { Hero } from "@/components/v3/sections/Hero";
-import { HeroIntro } from "@/components/v3/sections/HeroIntro";
-import { HowItWorks } from "@/components/v3/sections/HowItWorks";
-import { Faq } from "@/components/v3/sections/Faq";
-import { ScrollReveals } from "@/components/v3/ScrollReveals";
+import { HomeMain } from "@/components/home/HomeMain";
 import { FAQS } from "@/components/shared/faq-data";
 import { OG_IMAGE } from "@/lib/og";
+import { languageAlternates } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   // MS-5: a test of whether a title that matches the search ("metadata remover")
@@ -15,7 +10,8 @@ export const metadata: Metadata = {
   title: "Free Metadata Remover for Photos, PDFs & Video | MetaStrip",
   description:
     "Remove hidden metadata from photos, videos, PDFs and Word files: GPS, camera, author, AI tags and C2PA. Free, and your files never leave your device.",
-  alternates: { canonical: "https://metastrip.app" },
+  // MS-6: the Spanish and German homepages, so Google offers the right one.
+  alternates: { canonical: "https://metastrip.app", languages: languageAlternates("/") },
   openGraph: {
     title: "MetaStrip, strip hidden metadata from files",
     description:
@@ -58,21 +54,5 @@ const faqLd = {
 };
 
 export default function HomePage() {
-  return (
-    <main className="relative min-h-screen bg-[var(--bg)]">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <ScrollReveals />
-      {/* Content lifts off the footer as you scroll; the shadow on its bottom
-          edge casts onto the footer being revealed underneath. */}
-      <div className="relative z-10 bg-[var(--bg)] shadow-[0_40px_70px_-30px_rgba(0,0,0,0.45)]">
-        <TopNav />
-        <Hero />
-        <HeroIntro />
-        <HowItWorks />
-        <Faq />
-      </div>
-      <Footer />
-    </main>
-  );
+  return <HomeMain locale="en" jsonLd={[webAppLd, faqLd]} />;
 }

@@ -5,6 +5,7 @@ import { useDropZone } from "@/hooks/useDropZone";
 import { ACCEPT_ATTRIBUTE, SUPPORTED_FORMATS, categoryOf } from "@/lib/processing/formats";
 import type { FileCategory } from "@/lib/processing/types";
 import { Button } from "../ui/Button";
+import { useMessages } from "@/components/i18n/LocaleProvider";
 
 interface Props {
   /** Every dropped or picked file; the tool identifies them and reports any it can't take. */
@@ -91,6 +92,7 @@ function FormatChip({ ext, kind }: { ext: string; kind: Kind }) {
 export function CardDropzone({ onFiles, busy, error }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { isDragOver, dragHandlers } = useDropZone({ onFiles });
+  const m = useMessages().dropzone;
 
   return (
     <div
@@ -127,11 +129,7 @@ export function CardDropzone({ onFiles, busy, error }: Props) {
       </div>
 
       <p className="max-w-[460px] text-[clamp(17px,1.9vw,22px)] leading-[1.45] text-[var(--text)]">
-        {busy
-          ? "Reading your files…"
-          : isDragOver
-            ? "Drop them right here."
-            : "Drag & drop your files, or click to browse. Everything is processed in your browser. No uploads to external servers."}
+        {busy ? m.reading : isDragOver ? m.dropHere : m.prompt}
       </p>
 
       <div className="mt-8">
@@ -145,7 +143,7 @@ export function CardDropzone({ onFiles, busy, error }: Props) {
             </svg>
           }
         >
-          Choose files
+          {m.choose}
         </Button>
       </div>
 

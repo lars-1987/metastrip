@@ -3,6 +3,8 @@
 import { formatBytes } from "@/lib/file-utils";
 import { labelOf } from "@/lib/processing/formats";
 import type { ToolEntry } from "./useV3Tool";
+import { useMessages } from "@/components/i18n/LocaleProvider";
+import type { Messages } from "@/lib/i18n";
 
 interface Props {
   entries: ToolEntry[];
@@ -17,19 +19,15 @@ interface Props {
   skipped?: string[];
 }
 
-function skippedLine(names: string[]): string {
-  const shown = names.slice(0, 2).join(", ");
-  const more = names.length > 2 ? ` and ${names.length - 2} more` : "";
-  return `Skipped ${names.length} ${names.length === 1 ? "file" : "files"} MetaStrip can't read yet: ${shown}${more}.`;
+type FilesText = Messages["files"];
+
+function Spinner({ m }: { m: FilesText }) {
+  return <span className="h-5 w-5 shrink-0 rounded-full border-2 border-[var(--border-strong)] border-t-[var(--text)] animate-spin" aria-label={m.processing} />;
 }
 
-function Spinner() {
-  return <span className="h-5 w-5 shrink-0 rounded-full border-2 border-[var(--border-strong)] border-t-[var(--text)] animate-spin" aria-label="Processing" />;
-}
-
-function Tick() {
+function Tick({ m }: { m: FilesText }) {
   return (
-    <span className="v3-tick-pop grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--success)_28%,transparent)]" aria-label="Done">
+    <span className="v3-tick-pop grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--success)_28%,transparent)]" aria-label={m.done}>
       <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
         <path d="M2 6.2l2.6 2.6L10 3.2" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -39,9 +37,9 @@ function Tick() {
 
 /** Stands in for the tick on a file that could not be read: nothing happened to
  *  it, so it must not get the same green mark as a cleaned one. */
-function NotRead() {
+function NotRead({ m }: { m: FilesText }) {
   return (
-    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--card-elevated)]" aria-label="Not read">
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--card-elevated)]" aria-label={m.notReadLabel}>
       <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
         <path d="M2.5 6h7" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
       </svg>
@@ -54,18 +52,17 @@ function NotRead() {
  *  spinner that flips to a tick, one after another. */
 export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, running, tickedIds = [], scanProgress, skipped = [] }: Props) {
   const selectable = !running && !!onSelect && entries.length > 1;
+  const m = useMessages().files;
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-7">
       <h3 className="v3-mono mb-5 text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-        {scanProgress
-          ? `reading ${scanProgress.done} of ${scanProgress.total}…${scanProgress.large ? " large batch, this takes a moment" : ""}`
-          : `${entries.length} ${entries.length === 1 ? "file" : "files"}`}
-        {selectable && !scanProgress && <span className="ml-2 normal-case tracking-normal text-[var(--text-muted)]">· tap to review each</span>}
+        {scanProgress ? m.reading(scanProgress.done, scanProgress.total, scanProgress.large) : m.count(entries.length)}
+        {selectable && !scanProgress && <span className="ml-2 normal-case tracking-normal text-[var(--text-muted)]">{m.tapToReview}</span>}
       </h3>
       {skipped.length > 0 && (
         <p role="status" className="mb-4 break-words text-[13px] leading-relaxed text-[var(--text-muted)]">
-          {skippedLine(skipped)}
+          {m.skipped(skipped)}
         </p>
       )}
       <ul className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 -mr-1">
@@ -90,16 +87,16 @@ export function FilesCard({ entries, selectedId, onSelect, onRemoveEntry, runnin
                   <p className="truncate text-[15px] text-[var(--text)]">{e.file.name}</p>
                   <p className="v3-mono mt-1 text-[12px] text-[var(--text-muted)]">
                     {labelOf(e.format)} · {formatBytes(e.file.size)}
-                    {e.error && " · not read"}
+                    {e.error && m.notRead}
                   </p>
                 </div>
                 {running ? (
-                  tickedIds.includes(e.id) ? (e.error ? <NotRead /> : <Tick />) : <Spinner />
+                  tickedIds.includes(e.id) ? (e.error ? <NotRead m={m} /> : <Tick m={m} />) : <Spinner m={m} />
                 ) : (
                   onRemoveEntry && (
                     <button
                       onClick={(ev) => { ev.stopPropagation(); onRemoveEntry(e.id); }}
-                      aria-label={`Remove ${e.file.name}`}
+                      aria-label={m.remove(e.file.name)}
                       className="-m-2.5 shrink-0 p-2.5 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors text-lg leading-none"
                     >
                       ×

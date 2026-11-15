@@ -4,6 +4,8 @@ import { useMemo } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { trackFailureReportClicked, trackUnlockLinkClicked } from "@/lib/analytics";
 import { CATEGORY_CONFIG, CONTACT_EMAIL, SANCTUMPDF_UNLOCK_URL } from "@/lib/constants";
+import { useLocale, useMessages } from "@/components/i18n/LocaleProvider";
+import type { Locale, Messages } from "@/lib/i18n";
 import { extractGpsCoordinates } from "@/lib/gps";
 import { isUnexplained, lockKindOf } from "@/lib/processing/coordinator";
 import type { MetadataCategory } from "@/lib/processing/types";
@@ -14,18 +16,18 @@ import { InfoTip } from "../ui/InfoTip";
 import { V3LocationMap } from "./V3LocationMap";
 import type { ToolEntry } from "./useV3Tool";
 
-/** Plain-English explanations shown in the per-card "?" tooltip. */
-const CATEGORY_INFO: Record<MetadataCategory, string> = {
-  gps: "The exact spot the photo or video was taken, often accurate to a few metres. Enough to pinpoint your home, workplace, or wherever you were.",
-  device: "The make, model, and serial of the device that made the file. Acts as a fingerprint that links all your files back to one device.",
-  dates: "When the file was created and last edited, often down to the second and timezone, which can reveal your routine and rough location.",
-  author: "Names, usernames, or creator credits embedded by your device or editing software.",
-  software: "Which app and version processed the file. Fingerprints the tools and operating system you use.",
-  ai: "Provenance markers (like C2PA) that flag the file as AI-generated and name the tool that produced it.",
-  copyright: "Copyright notices and rights information stored inside the file.",
-  comments: "Comments, tracked changes, and revision notes left behind in the document.",
-  custom: "Other embedded fields: resolution, camera settings, thumbnails, app-specific tags, and assorted technical leftovers.",
-};
+/** Why the file couldn't be read, in the page's language. English shows the
+ *  processor's own message; other languages say it by kind (locked, the
+ *  browser couldn't open it, or possibly damaged). */
+function failureText(locale: Locale, m: Messages, error: string, reason: string | undefined): string {
+  if (locale === "en") return error;
+  const lock = lockKindOf(reason);
+  if (lock === "password") return m.errors.lockedPassword;
+  if (lock === "permissions") return m.errors.lockedPermissions;
+  if (lock) return m.errors.lockedUnknown;
+  if (reason && /^crash: (NotFoundError|NotReadableError)/.test(reason)) return m.errors.browser;
+  return m.errors.damaged;
+}
 
 interface Props {
   entry: ToolEntry;                 // the active file
@@ -54,6 +56,9 @@ export function CardReview({
   onToggle, onToggleAll, onRun, allFailed = false, nothingToRemove = false, onCheckAnother,
 }: Props) {
   const options = entry.options;
+  const locale = useLocale();
+  const msgs = useMessages();
+  const m = msgs.review;
   const coords = useMemo(() => extractGpsCoordinates(entry.scan.fieldsFound), [entry]);
 
   const grouped = useMemo(() => {
@@ -76,16 +81,17 @@ export function CardReview({
   const failed = Boolean(entry.error);
   // Some parser errors end without a full stop ("Invalid PNG file"), which ran
   // straight into the sentence after it.
-  const reason = entry.error && !/[.!?]$/.test(entry.error) ? `${entry.error}.` : entry.error;
+  const shown = entry.error ? failureText(locale, msgs, entry.error, entry.reason) : entry.error;
+  const reason = shown && !/[.!?]$/.test(shown) ? `${shown}.` : shown;
   const lock = lockKindOf(entry.reason);
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
       <div className="mb-5 flex items-end justify-between gap-4">
         <h3 className="v3-mono min-w-0 truncate text-[12px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-          Found in <span className="text-[var(--text-body)]">{entry.file.name}</span>
+          {m.foundIn} <span className="text-[var(--text-body)]">{entry.file.name}</span>
         </h3>
-        {!nothingFound && !failed && <Checkbox checked={allOn} onChange={onToggleAll} label="Remove all" />}
+        {!nothingFound && !failed && <Checkbox checked={allOn} onChange={onToggleAll} label={m.removeAll} />}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1 -mr-1">
@@ -95,18 +101,17 @@ export function CardReview({
             className="rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--card)] p-6"
           >
             <p className="mb-2 text-[15px] font-medium text-[var(--text)]">
-              {lock ? "This file is locked." : "This file could not be read."}
+              {lock ? m.locked : m.unreadable}
             </p>
             <p className="text-[14px] leading-relaxed text-[var(--text-body)]">
-              {reason} Nothing was changed, and we cannot tell you whether it
-              carries metadata, so treat it as unchecked rather than clean.
+              {reason} {m.unchecked}
             </p>
             {/* SanctumPDF's unlock takes the password for a file that needs one
                 to open, and a blank one for a file that only restricts edits.
                 A lock we couldn't classify gets no link: we can't say which. */}
             {(lock === "password" || lock === "permissions") && entry.format === "pdf" && (
               <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-body)]">
-                {lock === "password" ? "Know the password? " : ""}
+                {lock === "password" ? m.knowPassword : ""}
                 <a
                   href={SANCTUMPDF_UNLOCK_URL}
                   target="_blank"
@@ -114,16 +119,14 @@ export function CardReview({
                   onClick={() => trackUnlockLinkClicked({ lock })}
                   className="underline"
                 >
-                  Unlock it with SanctumPDF
+                  {m.unlockLink}
                 </a>
-                {lock === "permissions" ? ", leaving the password blank. It's" : ", which is"} a free tool from the maker of
-                MetaStrip that also runs in your browser, so the file
-                {lock === "password" ? " and password stay" : " stays"} on your device.
+                {lock === "permissions" ? m.unlockRestPermissions : m.unlockRestPassword}
               </p>
             )}
             {entry.reason && isUnexplained(entry.reason) && (
               <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-body)]">
-                Want us to look into it?{" "}
+                {m.lookInto}{" "}
                 <a
                   href={failureReportHref({
                     reason: entry.reason,
@@ -136,15 +139,15 @@ export function CardReview({
                   }
                   className="underline"
                 >
-                  Email {CONTACT_EMAIL}
+                  {m.emailLink(CONTACT_EMAIL)}
                 </a>
-                . We fill in the error details, and you don&apos;t need to attach the file.
+                {m.emailRest}
               </p>
             )}
           </div>
         ) : nothingFound ? (
           <div className="rounded-[var(--radius-sm)] bg-[var(--card)] p-6 text-[15px] text-[var(--text-body)]">
-            No removable metadata found. This file is already clean, so you can share the original as it is.
+            {m.clean}
           </div>
         ) : (
           <div className="grid min-w-0 gap-3 lg:grid-cols-2 [grid-auto-flow:row_dense]">
@@ -166,14 +169,12 @@ export function CardReview({
                         <Icon name={cfg.icon} size={18} weight="duotone" color="var(--text)" />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[15px] text-[var(--text)]">{cfg.label}</p>
-                        <p className="v3-mono text-[12px] text-[var(--text-muted)]">
-                          {fields.length} field{fields.length !== 1 ? "s" : ""}
-                        </p>
+                        <p className="text-[15px] text-[var(--text)]">{msgs.categories[cat].label}</p>
+                        <p className="v3-mono text-[12px] text-[var(--text-muted)]">{m.fieldCount(fields.length)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2.5 shrink-0">
-                      <InfoTip text={CATEGORY_INFO[cat]} />
+                      <InfoTip text={msgs.categories[cat].info} label={m.whatIsThis} />
                       <Checkbox checked={on} onChange={(v) => onToggle(cat, v)} label="" />
                     </div>
                   </div>
@@ -186,7 +187,7 @@ export function CardReview({
                           <span className="min-w-0 break-words text-[var(--text-body)]">{f.value || "—"}</span>
                         </li>
                       ))}
-                      {fields.length > 6 && <li className="text-[12px] text-[var(--text-muted)]">+{fields.length - 6} more</li>}
+                      {fields.length > 6 && <li className="text-[12px] text-[var(--text-muted)]">{m.more(fields.length - 6)}</li>}
                     </ul>
                   )}
                 </div>
@@ -198,7 +199,7 @@ export function CardReview({
 
       <div className="mt-6 flex items-center justify-between gap-4">
         <span className="v3-mono hidden text-[12px] text-[var(--text-muted)] sm:block">
-          {fileCount > 1 ? "applies your selection across all files" : ""}
+          {fileCount > 1 ? m.acrossAll : ""}
         </span>
         <Button
           size="lg"
@@ -214,7 +215,7 @@ export function CardReview({
             )
           }
         >
-          {busy ? "Removing…" : nothingToRemove ? (allFailed ? "Try another file" : "Check another file") : allFilesAllOn ? "Remove all metadata" : `Remove selected${fileCount > 1 ? ` · ${fileCount} files` : ` (${selectedCount})`}`}
+          {busy ? m.removing : nothingToRemove ? (allFailed ? m.tryAnother : m.checkAnother) : allFilesAllOn ? m.removeAllMetadata : m.removeSelected(fileCount, selectedCount)}
         </Button>
       </div>
     </div>

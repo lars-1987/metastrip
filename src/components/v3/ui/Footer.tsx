@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ARTICLES } from "@/lib/blog-data";
 import { MetaStripIcon } from "@/components/shared/Logo";
+import { useLocale, useMessages } from "@/components/i18n/LocaleProvider";
+import { localePath } from "@/lib/i18n";
 
 /** Recycled from V2 — brand + link columns + badges, with the blur fade-in. */
 
@@ -21,16 +23,19 @@ const TOOLS = [
   { label: "Remove metadata before sharing", href: "/remove-metadata-before-sharing" },
 ];
 
-const SITE = [
-  { label: "Home", href: "/" },
-  { label: "Blog", href: "/blog" },
-  { label: "About", href: "/about" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Privacy & Terms", href: "/privacy" },
-  { label: "Prefer the terminal?", href: "/terminal" },
+type FooterText = ReturnType<typeof useMessages>["footer"];
+const site = (m: FooterText, home: string) => [
+  { label: m.home, href: home },
+  { label: m.blog, href: "/blog" },
+  { label: m.about, href: "/about" },
+  { label: m.pricing, href: "/pricing" },
+  { label: m.privacy, href: "/privacy" },
+  { label: m.terminal, href: "/terminal" },
 ];
 
 export function Footer() {
+  const m = useMessages().footer;
+  const home = localePath(useLocale(), "/");
   const ref = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(false);
 
@@ -51,31 +56,31 @@ export function Footer() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
             {/* Brand block */}
             <FadeIn revealed={revealed} delay={0} className="sm:col-span-2 lg:col-span-4">
-              <Link href="/" className="inline-flex items-center gap-2.5 no-underline mb-5">
+              <Link href={home} className="inline-flex items-center gap-2.5 no-underline mb-5">
                 <MetaStripIcon size={32} />
                 <span className="font-extrabold text-[20px] tracking-[-0.02em]" style={{ color: "var(--text)" }}>
                   MetaStrip
                 </span>
               </Link>
               <p className="text-[14px] leading-[1.65] mb-6 max-w-xs" style={{ color: "var(--text-secondary)" }}>
-                Hidden metadata in your files: GPS, EXIF, AI tags, author names, gone in seconds. 100% in your browser. Free, open source.
+                {m.brand}
               </p>
               <div className="flex gap-2">
                 <IconButton href="https://github.com/lars-1987/metastrip" label="GitHub"><GitHubIcon /></IconButton>
                 <IconButton href="https://x.com/larsitodev" label="X / Twitter"><XIcon /></IconButton>
                 {/* mailto assembled on click so the address never sits in the static HTML */}
-                <IconButton label="Email" onClick={() => { window.location.href = `mailto:${["hello", "metastrip.app"].join("@")}`; }}><MailIcon /></IconButton>
+                <IconButton label={m.email} onClick={() => { window.location.href = `mailto:${["hello", "metastrip.app"].join("@")}`; }}><MailIcon /></IconButton>
               </div>
             </FadeIn>
 
             <FadeIn revealed={revealed} delay={0.1} className="lg:col-span-3">
-              <LinkColumn label="Tools" links={TOOLS} />
+              <LinkColumn label={m.tools} links={TOOLS} />
             </FadeIn>
             <FadeIn revealed={revealed} delay={0.2} className="lg:col-span-3">
-              <LinkColumn label="Articles" links={ARTICLES.slice(0, 6).map((a) => ({ label: a.title, href: `/blog/${a.slug}` }))} />
+              <LinkColumn label={m.articles} links={ARTICLES.slice(0, 6).map((a) => ({ label: a.title, href: `/blog/${a.slug}` }))} />
             </FadeIn>
             <FadeIn revealed={revealed} delay={0.3} className="lg:col-span-2">
-              <LinkColumn label="Site" links={SITE} />
+              <LinkColumn label={m.site} links={site(m, home)} />
             </FadeIn>
           </div>
 
@@ -85,14 +90,14 @@ export function Footer() {
             className="flex flex-col md:flex-row items-center justify-between gap-3 pt-6 text-[12px]"
             style={{ borderTop: "1px solid var(--border)" }}
           >
-            <p style={{ color: "var(--text-muted)" }}>MetaStrip · your files never leave your device.</p>
+            <p style={{ color: "var(--text-muted)" }}>{m.tagline}</p>
             <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1" style={{ color: "var(--text-muted)" }}>
               <span className="inline-flex items-center gap-1.5">
-                Built with <CoffeeIcon /> in Melbourne
+                {m.builtWith} <CoffeeIcon /> {m.inMelbourne}
               </span>
               <span aria-hidden="true">·</span>
               <span>
-                by{" "}
+                {m.by}{" "}
                 <a
                   href="https://larsh.dev"
                   target="_blank"
@@ -104,7 +109,7 @@ export function Footer() {
                 </a>
               </span>
               <span aria-hidden="true">·</span>
-              <span>MIT licensed</span>
+              <span>{m.mitLicensed}</span>
             </p>
           </FadeIn>
         </div>

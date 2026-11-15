@@ -1,6 +1,7 @@
 import { V3Tool } from "../tool/V3Tool";
+import { messagesFor, type Locale } from "@/lib/i18n";
 
-export function Hero() {
+export function Hero({ locale = "en" }: { locale?: Locale }) {
   return (
     <section className="relative px-5 pt-5 md:px-[116px] md:pt-8 md:min-h-[calc(100svh-84px)]">
       {/* ambient wash, pure CSS */}
@@ -13,7 +14,7 @@ export function Hero() {
 
       {/* scroll hint floats in the bottom margin band without breaking the frame */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2" aria-hidden>
-        <span className="v3-mono text-[12px] text-[var(--text-muted)]">scroll ↓</span>
+        <span className="v3-mono text-[12px] text-[var(--text-muted)]">{messagesFor(locale).hero.scroll}</span>
       </div>
     </section>
   );
