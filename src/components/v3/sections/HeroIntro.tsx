@@ -1,19 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { messagesFor, type Locale } from "@/lib/i18n";
 
 /** Recycled from V2: the metadata token cycles inside the H1 with a redact
  *  swap; reads as a declassified-document marker. */
-const METADATA_ITEMS = [
-  "GPS coordinate",
-  "device fingerprint",
-  "author name",
-  "AI generation tag",
-  "creation timestamp",
-  "camera serial",
-];
-
-function RedactedSlot() {
+function RedactedSlot({ items: METADATA_ITEMS }: { items: string[] }) {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -21,7 +13,7 @@ function RedactedSlot() {
     if (paused) return;
     const id = setInterval(() => setIdx((i) => (i + 1) % METADATA_ITEMS.length), 2800);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, METADATA_ITEMS.length]);
 
   return (
     <span
@@ -74,7 +66,8 @@ function AnimatedUnderline() {
 }
 
 /** The V2 hero statement, recycled to sit directly under the tool. */
-export function HeroIntro() {
+export function HeroIntro({ locale = "en" }: { locale?: Locale }) {
+  const m = messagesFor(locale).hero;
   return (
     <section className="px-6 lg:px-8 pt-24 lg:pt-32 pb-8">
       <div className="max-w-4xl mx-auto text-center" data-reveal>
@@ -82,19 +75,18 @@ export function HeroIntro() {
           className="font-extrabold leading-[1.02] tracking-[-0.04em] mb-7"
           style={{ color: "var(--text)", fontSize: "clamp(52px, 9vw, 100px)" }}
         >
-          Hidden in every <RedactedSlot />
+          {m.before}<RedactedSlot items={m.items} />
           <br />
           <span className="relative inline-block">
             <AnimatedUnderline />
-            <span className="relative">you share.</span>
+            <span className="relative">{m.after}</span>
           </span>
         </h1>
         <p
           className="mx-auto leading-[1.5] font-medium"
           style={{ color: "var(--text-secondary)", fontSize: "clamp(18px, 1.8vw, 22px)", maxWidth: 660 }}
         >
-          GPS, EXIF, AI tags, author names, gone in seconds. 100% in your browser.
-          Try it above{" "}
+          {`${m.intro} ${m.tryAbove} `}
           <span
             className="inline-block align-middle ml-1 animate-bounce-down"
             style={{ color: "var(--accent-strong)" }}

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import { MetaStripIcon } from "@/components/shared/Logo";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLocale, useMessages } from "@/components/i18n/LocaleProvider";
+import { localePath, type Messages } from "@/lib/i18n";
 
 function LogoMark() {
   return <MetaStripIcon size={35} />;
@@ -20,11 +23,11 @@ const ArrowUpRight = (
   </svg>
 );
 
-const LINKS = [
-  { href: "/blog", label: "Blog" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
-  { href: "https://github.com/lars-1987/metastrip", label: "GitHub", external: true },
+const links = (m: Messages["nav"]) => [
+  { href: "/blog", label: m.blog },
+  { href: "/pricing", label: m.pricing },
+  { href: "/about", label: m.about },
+  { href: "https://github.com/lars-1987/metastrip", label: m.github, external: true },
 ];
 
 function NavPill({ href, label, external }: { href: string; label: string; external?: boolean }) {
@@ -43,6 +46,8 @@ function NavPill({ href, label, external }: { href: string; label: string; exter
 }
 
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const m = useMessages().nav;
+  const LINKS = links(m);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -61,7 +66,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           <LogoMark />
           <span className="text-[20px] font-semibold tracking-[-0.01em] text-[var(--text)]">MetaStrip</span>
         </span>
-        <button onClick={onClose} aria-label="Close menu" className="grid h-11 w-11 place-items-center text-[var(--text)]">
+        <button onClick={onClose} aria-label={m.closeMenu} className="grid h-11 w-11 place-items-center text-[var(--text)]">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
             <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
@@ -92,7 +97,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
       <div className="flex items-center gap-2.5">
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#5b8f6a" }} />
-        <span className="v3-mono text-[13px] uppercase tracking-[0.14em] text-[var(--text-muted)]">Nothing ever leaves your browser</span>
+        <span className="v3-mono text-[13px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{m.tagline}</span>
       </div>
     </div>
   );
@@ -100,16 +105,20 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 export function TopNav() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const locale = useLocale();
+  const m = useMessages().nav;
+  const LINKS = links(m);
 
   return (
     <header className="sticky top-0 z-50 px-4 pt-4">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-[var(--radius-pill)] bg-[color-mix(in_srgb,var(--surface)_72%,transparent)] px-5 py-3 backdrop-blur-xl">
-        <Link href="/" className="flex items-center gap-3 no-underline">
+        <Link href={localePath(locale, "/")} className="flex items-center gap-3 no-underline">
           <LogoMark />
           <span className="text-[21px] font-semibold tracking-[-0.01em] text-[var(--text)]">MetaStrip</span>
         </Link>
 
         <div className="flex items-center gap-1.5">
+          <LanguageSwitcher />
           <ThemeToggle />
 
           {/* desktop pills */}
@@ -122,7 +131,7 @@ export function TopNav() {
           {/* mobile hamburger */}
           <button
             onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
+            aria-label={m.openMenu}
             className="grid h-10 w-10 place-items-center rounded-[var(--radius-pill)] bg-[var(--card-elevated)] text-[var(--text)] sm:hidden"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">

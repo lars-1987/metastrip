@@ -4,7 +4,8 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { processFile, failureReason, batchByteCap } from "@/lib/processing/coordinator";
 import { verifyCleaned, type VerifyResult } from "@/lib/processing/verify";
 import { formatBytes } from "@/lib/file-utils";
-import { identify, notSupportedYet, categoryOf, extensionOf, type Identity, type SupportedFormat } from "@/lib/processing/formats";
+import { identify, categoryOf, extensionOf, labelOf, type Identity, type SupportedFormat } from "@/lib/processing/formats";
+import { useMessages } from "@/components/i18n/LocaleProvider";
 import { BATCH_LIMIT, BATCH_SIZE_WARN_BYTES, RELEVANT_CATEGORIES_BY_FILE_CATEGORY } from "@/lib/constants";
 import type { StripOptions, MetadataCategory, MetadataReport } from "@/lib/processing/types";
 import { trackFileAdded, trackFileStripped, trackFileDownloaded, trackFileShared, trackFileFailed, trackFileClean, trackFileVerified, categoriesOf } from "@/lib/analytics";
@@ -45,7 +46,19 @@ function optionsAllOn(o: StripOptions): boolean {
   return CATEGORY_ORDER.every((c) => o[c]);
 }
 
+/** The format names to list when every refused file is a format MetaStrip
+ *  knows by name, else null: what notSupportedYet says, in any language. */
+function refusedLabels(turnedAway: readonly Identity[]): string[] | null {
+  const labels = new Set<string>();
+  for (const id of turnedAway) {
+    if (id.status !== "recognised") return null;
+    labels.add(labelOf(id.format));
+  }
+  return labels.size ? [...labels] : null;
+}
+
 export function useV3Tool() {
+  const t = useMessages().tool;
   const [phase, setPhase] = useState<Phase>("drop");
   const [entries, setEntries] = useState<ToolEntry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -91,7 +104,7 @@ export function useV3Tool() {
       });
     });
 
-    if (supported.length === 0) { setAddError(notSupportedYet(turnedAway)); return; }
+    if (supported.length === 0) { setAddError(t.unsupported(refusedLabels(turnedAway))); return; }
     if (supported.length > BATCH_LIMIT) {
       trackFileFailed({
         file_type: supported.map((s) => s.file.type).join(","),
@@ -99,7 +112,7 @@ export function useV3Tool() {
         stage: "add",
         reason: "batch_limit",
       });
-      setAddError(`Up to ${BATCH_LIMIT} files at a time.`);
+      setAddError(t.batchLimit);
       return;
     }
 
@@ -119,10 +132,10 @@ export function useV3Tool() {
       const computerCap = batchByteCap(formats);
       setAddError(
         supported.length === 1 && totalBytes <= computerCap
-          ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} on a phone; on a computer, videos can be up to ${formatBytes(computerCap)}.`
+          ? t.tooBigPhone(formatBytes(totalBytes), formatBytes(byteCap), formatBytes(computerCap))
           : supported.length === 1
-          ? `That file is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} at a time.`
-          : `That batch is ${formatBytes(totalBytes)}. Up to ${formatBytes(byteCap)} at a time, so try fewer files at once.`
+          ? t.tooBigFile(formatBytes(totalBytes), formatBytes(byteCap))
+          : t.tooBigBatch(formatBytes(totalBytes), formatBytes(byteCap))
       );
       return;
     }
@@ -180,7 +193,7 @@ export function useV3Tool() {
       setScanProgress(null);
       setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   const removeEntry = useCallback((id: string) => {
     setEntries((prev) => {
@@ -343,9 +356,9 @@ export function useV3Tool() {
     } catch {
       // Its own state, shown on the report card: the add error only renders in
       // the dropzone, which is not on screen once the report is.
-      setDownloadError("Download failed; please reload and try again.");
+      setDownloadError(t.downloadFailed);
     }
-  }, [entries]);
+  }, [entries, t]);
 
   // The cleaned files as File objects, built once per result so the tap can
   // call navigator.share straight away: iOS drops the user gesture across an
@@ -369,10 +382,10 @@ export function useV3Tool() {
       (err: unknown) => {
         // Closing the sheet without picking anything rejects with AbortError.
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setDownloadError("Sharing didn't work here; use Download instead.");
+        setDownloadError(t.shareFailed);
       }
     );
-  }, [shareFiles]);
+  }, [shareFiles, t]);
 
   const activeEntry = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? entries[0] ?? null,

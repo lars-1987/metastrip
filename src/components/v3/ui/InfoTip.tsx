@@ -2,12 +2,12 @@
 
 /** A small "?" that reveals a plain-English explanation on hover/focus.
  *  Solid fill, no stroke. */
-export function InfoTip({ text, align = "right" }: { text: string; align?: "left" | "right" }) {
+export function InfoTip({ text, align = "right", label = "What is this?" }: { text: string; align?: "left" | "right"; label?: string }) {
   return (
     <span className="group/tip relative inline-flex shrink-0">
       <button
         type="button"
-        aria-label="What is this?"
+        aria-label={label}
         onClick={(e) => e.stopPropagation()}
         className="relative grid h-5 w-5 place-items-center rounded-full before:absolute before:-inset-2 before:rounded-full before:content-[''] bg-[var(--card-elevated)] text-[11px] font-semibold text-[var(--text-muted)] transition-colors hover:bg-[var(--primary)] hover:text-[var(--on-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
       >

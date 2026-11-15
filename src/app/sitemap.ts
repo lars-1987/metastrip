@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { SEO_SLUGS } from "@/lib/seo-configs";
 import { ARTICLES } from "@/lib/blog-data";
+import { languageAlternates } from "@/lib/i18n";
 
 export const dynamic = "force-static";
 
@@ -26,7 +27,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: BUILD_DATE,
       changeFrequency: "weekly",
       priority: 1.0,
+      alternates: { languages: languageAlternates("/") },
     },
+    // MS-6: the Spanish and German homepages, each pointing at the others.
+    ...(["es", "de"] as const).map((l) => ({
+      url: `${baseUrl}/${l}`,
+      lastModified: new Date("2026-11-15"),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+      alternates: { languages: languageAlternates("/") },
+    })),
     {
       url: `${baseUrl}/about`,
       lastModified: BUILD_DATE,

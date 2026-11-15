@@ -10,6 +10,10 @@ import type { ToolEntry } from "./useV3Tool";
 import type { VerifyResult } from "@/lib/processing/verify";
 import { KOFI_URL, GITHUB_REPO_URL } from "@/lib/constants";
 import { trackCtaClicked } from "@/lib/analytics";
+import { useMessages } from "@/components/i18n/LocaleProvider";
+import type { Messages } from "@/lib/i18n";
+
+type ReportText = Messages["report"];
 
 interface Props {
   entries: ToolEntry[];
@@ -42,45 +46,38 @@ function groupByCategory(fields: MetadataField[]): [MetadataCategory, MetadataFi
   return CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => [c, map.get(c)!]);
 }
 
-function listOf(items: string[]): string {
-  return items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-}
-
 /** The verify-clean line under the headline. Results arrive one file at a
  *  time (see useV3Tool.verifyAll), so it reads "re-checking" until all are in. */
-function verifySummary(readable: ToolEntry[]): { text: string; color: string } | null {
+function verifySummary(readable: ToolEntry[], m: ReportText): { text: string; color: string } | null {
   if (readable.length === 0) return null;
   const one = readable.length === 1;
   if (readable.some((e) => !e.verify)) {
-    return { text: `Re-checking the cleaned ${one ? "file" : "files"}…`, color: "var(--text-muted)" };
+    return { text: m.rechecking(one), color: "var(--text-muted)" };
   }
   const leftovers = readable.filter((e) => e.verify!.status === "leftovers").length;
   if (leftovers > 0) {
     return {
-      text: one
-        ? "Re-checking found metadata still in the cleaned file. Details below."
-        : `Re-checking found metadata still in ${leftovers} of the files. Details below.`,
+      text: one ? m.leftoversOne : m.leftoversMany(leftovers),
       color: "var(--danger)",
     };
   }
   const checked = readable.filter((e) => e.verify!.status === "clean" || e.verify!.status === "kept");
   if (checked.length === 0) {
-    return { text: `The cleaned ${one ? "file" : "files"} couldn't be re-checked.`, color: "var(--text-muted)" };
+    return { text: m.couldntRecheck(one), color: "var(--text-muted)" };
   }
-  const what = checked.some((e) => e.verify!.status === "kept") ? "only what you chose to keep is left" : "no metadata left";
-  const scope = one ? "the cleaned file" : checked.length === readable.length ? `all ${readable.length} files` : `${checked.length} of ${readable.length} files`;
-  return { text: `Re-checked ${scope}: ${what}.`, color: "var(--success)" };
+  const kept = checked.some((e) => e.verify!.status === "kept");
+  return { text: m.recheckedSummary(one, checked.length, readable.length, kept), color: "var(--success)" };
 }
 
 /** Beside a file's removed count. Nothing for one that wasn't re-checked: the
  *  open row says why. */
-function VerifyMark({ verify }: { verify?: VerifyResult }) {
+function VerifyMark({ verify, m }: { verify?: VerifyResult; m: ReportText }) {
   if (!verify) {
-    return <span role="img" aria-label="Re-checking" title="Re-checking" className="h-2 w-2 rounded-full bg-[var(--text-muted)] motion-safe:animate-pulse" />;
+    return <span role="img" aria-label={m.markRechecking} title={m.markRechecking} className="h-2 w-2 rounded-full bg-[var(--text-muted)] motion-safe:animate-pulse" />;
   }
   if (verify.status === "leftovers") {
     return (
-      <span role="img" aria-label="Metadata still found" title="Metadata still found" className="grid">
+      <span role="img" aria-label={m.markLeftovers} title={m.markLeftovers} className="grid">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="8" cy="8" r="6.5" stroke="var(--danger)" strokeWidth="1.5" />
           <path d="M8 4.6v4.2" stroke="var(--danger)" strokeWidth="1.7" strokeLinecap="round" />
@@ -91,7 +88,7 @@ function VerifyMark({ verify }: { verify?: VerifyResult }) {
   }
   if (verify.status === "clean" || verify.status === "kept") {
     return (
-      <span role="img" aria-label="Re-checked" title="Re-checked" className="grid">
+      <span role="img" aria-label={m.markRechecked} title={m.markRechecked} className="grid">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="8" cy="8" r="6.5" stroke="var(--success)" strokeWidth="1.5" />
           <path d="M5.2 8.2l1.9 1.9 3.7-4" stroke="var(--success)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -103,36 +100,37 @@ function VerifyMark({ verify }: { verify?: VerifyResult }) {
 }
 
 /** The first line inside an open row. */
-function VerifyDetail({ verify }: { verify: VerifyResult }) {
+function VerifyDetail({ verify, msgs }: { verify: VerifyResult; msgs: Messages }) {
   const n = verify.remaining;
+  const m = msgs.report;
   switch (verify.status) {
     case "clean":
-      return <p className="text-[13px] text-[var(--success)]">Re-checked the cleaned file: no metadata left.</p>;
+      return <p className="text-[13px] text-[var(--success)]">{m.detailClean}</p>;
     case "kept":
       return (
-        <p className="text-[13px] text-[var(--success)]">
-          Re-checked the cleaned file: only the {n} field{n !== 1 ? "s" : ""} you chose to keep {n !== 1 ? "are" : "is"} left.
-        </p>
+        <p className="text-[13px] text-[var(--success)]">{m.detailKept(n)}</p>
       );
     case "leftovers":
       return (
         <p className="text-[13px] text-[var(--danger)]">
-          Re-checking the cleaned file still found {listOf(verify.leftoverCategories.map((c) => CATEGORY_CONFIG[c].label))}.
-          {" "}Don&apos;t rely on it yet. This is a MetaStrip bug, and{" "}
+          {m.detailLeftovers(verify.leftoverCategories.map((c) => msgs.categories[c].label))}
+          {m.detailLeftoversBug}
           <a href={`${GITHUB_REPO_URL}/issues`} target="_blank" rel="noopener noreferrer" className="underline">
-            a GitHub issue
-          </a>{" "}
-          helps us fix it.
+            {m.detailLeftoversIssue}
+          </a>
+          {m.detailLeftoversEnd}
         </p>
       );
     case "skipped":
-      return <p className="text-[13px] text-[var(--text-muted)]">This file is too large to re-check automatically.</p>;
+      return <p className="text-[13px] text-[var(--text-muted)]">{m.detailSkipped}</p>;
     case "unchecked":
-      return <p className="text-[13px] text-[var(--text-muted)]">The cleaned file couldn&apos;t be re-read to double-check it.</p>;
+      return <p className="text-[13px] text-[var(--text-muted)]">{m.detailUnchecked}</p>;
   }
 }
 
 export function CardReport({ entries, onDownload, onReset, downloadError, canShare = false, onShare }: Props) {
+  const msgs = useMessages();
+  const m = msgs.report;
   // Desktop opens the first file's list; phones start with every list closed,
   // since an open one pushed the download a screen further down.
   const [openId, setOpenId] = useState<string | null>(() =>
@@ -162,8 +160,8 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
   // this showed a green tick and "Nothing left to remove", which reads as "all
   // clean" about files we never opened.
   const nothingCleaned = cleanedCount === 0;
-  const downloadLabel = `Download clean ${entries.length > 1 ? "files (.zip)" : "file"}`;
-  const verifyLine = nothingCleaned ? null : verifySummary(entries.filter((e) => !e.error));
+  const downloadLabel = m.download(entries.length > 1);
+  const verifyLine = nothingCleaned ? null : verifySummary(entries.filter((e) => !e.error), m);
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius)] bg-[var(--surface)] p-6 md:p-8">
@@ -183,16 +181,15 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
         )}
         <div>
           <h3 className="text-[clamp(20px,2.4vw,28px)] font-semibold text-[var(--text)] leading-tight">
-            {nothingCleaned ? "Nothing was cleaned" : stats.removed > 0 ? "Metadata removed" : "Nothing left to remove"}
+            {nothingCleaned ? m.nothingCleaned : stats.removed > 0 ? m.removed : m.nothingLeft}
           </h3>
           <p className="text-[14px] text-[var(--text-body)]">
             {nothingCleaned ? (
-              `${failedCount === 1 ? "This file" : `All ${failedCount} files`} could not be read, so nothing was changed.`
+              m.allFailed(failedCount)
             ) : (
               <>
-                {cleanedCount} file{cleanedCount !== 1 ? "s" : ""} cleaned, in your browser.
-                {failedCount > 0 &&
-                  ` ${failedCount} could not be read and ${failedCount === 1 ? "was" : "were"} left unchanged.`}
+                {m.cleaned(cleanedCount)}
+                {failedCount > 0 && m.someFailed(failedCount)}
               </>
             )}
           </p>
@@ -219,7 +216,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
                   <path d="M12 3v12m0-12l-4 4m4-4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M7 10H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
-                Save or share
+                {m.saveOrShare}
               </Button>
               <Button size="lg" variant="soft" className="w-full" onClick={onDownload}>
                 {downloadLabel}
@@ -235,9 +232,9 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: "Fields removed", value: stats.removed, accent: "var(--success)" },
-          { label: "Fields kept", value: stats.kept, accent: "var(--text-muted)" },
-          { label: "Size saved", value: formatBytes(stats.saved), accent: "var(--text)" },
+          { label: m.fieldsRemoved, value: stats.removed, accent: "var(--success)" },
+          { label: m.fieldsKept, value: stats.kept, accent: "var(--text-muted)" },
+          { label: m.sizeSaved, value: formatBytes(stats.saved), accent: "var(--text)" },
         ].map((s) => (
           <div key={s.label} className="rounded-[var(--radius-sm)] bg-[var(--card)] p-4">
             <p className="v3-mono text-[12px] uppercase tracking-[0.12em] text-[var(--text-muted)]">{s.label}</p>
@@ -269,9 +266,9 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
                       className="v3-mono text-[12px]"
                       style={{ color: e.error ? "var(--text-muted)" : "var(--success)" }}
                     >
-                      {e.error ? "not read" : `−${r.fieldsRemoved.length} removed`}
+                      {e.error ? m.notRead : m.removedCount(r.fieldsRemoved.length)}
                     </span>
-                    {!e.error && <VerifyMark verify={e.verify} />}
+                    {!e.error && <VerifyMark verify={e.verify} m={m} />}
                     <span className="transition-transform duration-200" style={{ transform: isOpen ? "rotate(180deg)" : "none", color: "var(--text-muted)" }}>
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                         <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -283,9 +280,9 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
                 <div className="grid transition-[grid-template-rows] duration-300 ease-out" style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}>
                   <div className="overflow-hidden">
                     <div className="px-4 pb-4 space-y-4">
-                      {!e.error && e.verify && <VerifyDetail verify={e.verify} />}
+                      {!e.error && e.verify && <VerifyDetail verify={e.verify} msgs={msgs} />}
                       {grouped.length === 0 ? (
-                        <p className="text-[13px] text-[var(--text-muted)]">No fields were removed from this file.</p>
+                        <p className="text-[13px] text-[var(--text-muted)]">{m.noneRemoved}</p>
                       ) : (
                         grouped.map(([cat, fields]) => {
                           const cfg = CATEGORY_CONFIG[cat];
@@ -293,7 +290,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
                             <div key={cat}>
                               <div className="mb-2 flex items-center gap-2">
                                 <Icon name={cfg.icon} size={14} weight="duotone" color="var(--text-muted)" />
-                                <span className="v3-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{cfg.label}</span>
+                                <span className="v3-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{msgs.categories[cat].label}</span>
                               </div>
                               <ul className="v3-mono space-y-1">
                                 {fields.map((f, i) => (
@@ -332,7 +329,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
             </svg>
           }
         >
-          Start over
+          {m.startOver}
         </Button>
         {/* On phones the download sits at the top of the card instead. */}
         <div className="hidden md:contents">
@@ -372,7 +369,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
             </svg>
           }
         >
-          Tip jar
+          {m.tipJar}
         </Button>
         <Button
           variant="soft"
@@ -385,7 +382,7 @@ export function CardReport({ entries, onDownload, onReset, downloadError, canSha
           <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
             <path d="M12 2.6l2.9 5.88 6.49.95-4.7 4.58 1.11 6.46L12 17.42l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.95L12 2.6z" />
           </svg>
-          Star on GitHub
+          {m.star}
         </Button>
         </div>
         )}

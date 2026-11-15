@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMessages } from "@/components/i18n/LocaleProvider";
 
 const Moon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -15,6 +16,7 @@ const Sun = (
 );
 
 export function ThemeToggle() {
+  const m = useMessages().nav;
   const [dark, setDark] = useState(false);
 
   // The server can't know the saved theme, so read it after hydration.
@@ -38,7 +40,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={dark ? m.lightMode : m.darkMode}
       className="grid h-10 w-10 place-items-center rounded-[var(--radius-pill)] bg-[var(--card-elevated)] text-[var(--text)] transition-colors hover:bg-[var(--primary)] hover:text-[var(--on-primary)]"
     >
       {dark ? Sun : Moon}
