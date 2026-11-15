@@ -17,8 +17,20 @@ export function messagesFor(locale: Locale): Messages {
   return MESSAGES[locale];
 }
 
+/** Tool pages (seo-configs slugs) that exist in Spanish and German. They
+ *  keep their English slug: /es/strip-exif-data. */
+export const TRANSLATED_TOOL_SLUGS = [
+  "remove-metadata-from-photos",
+  "remove-gps-location-from-photos",
+  "strip-exif-data",
+  "remove-c2pa-metadata",
+  "remove-author-from-pdf",
+  "strip-metadata-from-word-document",
+] as const;
+export type TranslatedToolSlug = (typeof TRANSLATED_TOOL_SLUGS)[number];
+
 /** English paths that have a Spanish and a German version. */
-export const TRANSLATED_PATHS: readonly string[] = ["/"];
+export const TRANSLATED_PATHS: readonly string[] = ["/", ...TRANSLATED_TOOL_SLUGS.map((s) => `/${s}`)];
 
 const ORIGIN = "https://metastrip.app";
 

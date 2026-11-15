@@ -101,6 +101,15 @@ export const en = {
     privacy: "Privacy & Terms",
     terminal: "Prefer the terminal?",
     email: "Email",
+    /** Footer names for the translated tool pages (MS-6 part 2). */
+    toolLinks: {
+      "remove-metadata-from-photos": "Remove metadata from photos",
+      "remove-gps-location-from-photos": "Remove GPS from photos",
+      "strip-exif-data": "Strip EXIF data",
+      "remove-c2pa-metadata": "Remove C2PA metadata",
+      "remove-author-from-pdf": "Remove author from PDF",
+      "strip-metadata-from-word-document": "Strip Word document metadata",
+    },
   },
 
   categories: {
@@ -208,6 +217,17 @@ export const en = {
     startOver: "Start over",
     tipJar: "Tip jar",
     star: "Star on GitHub",
+  },
+
+  /** Fixed text on the tool landing pages (SEOMarkdownDoc and its schema). */
+  seoDoc: {
+    whatsHidden: "What's hidden in your files",
+    category: "Category",
+    field: "Field",
+    example: "Example value",
+    formats: "Supported formats",
+    footer: "metastrip v3.0; privacy-first metadata removal; all processing happens in your browser",
+    features: ["Client-side metadata removal", "No file upload required", "EXIF, IPTC, XMP removal", "GPS location stripping", "AI metadata removal"],
   },
 
   /** Why a file couldn't be read, by kind. English shows the processor's own

@@ -1,12 +1,14 @@
 "use client";
 
 import type { SEOPageConfig } from "@/lib/seo-configs";
+import { useMessages } from "@/components/i18n/LocaleProvider";
 
 interface SEOMarkdownDocProps {
   config: SEOPageConfig;
 }
 
 export function SEOMarkdownDoc({ config }: SEOMarkdownDocProps) {
+  const m = useMessages().seoDoc;
   return (
     <div className="rounded-xl border border-[var(--border-strong)] bg-[#0c0c0e] overflow-hidden shadow-2xl">
       {/* Title bar — looks like a file header */}
@@ -71,15 +73,15 @@ export function SEOMarkdownDoc({ config }: SEOMarkdownDocProps) {
         {/* Metadata categories as a table */}
         <h3 className="text-base font-semibold text-[color:var(--text)] mb-3">
           <span className="text-[color:var(--accent-2)] mr-2">##</span>
-          What&apos;s hidden in your files
+          {m.whatsHidden}
         </h3>
         <div className="overflow-x-auto mb-6">
           <table className="w-full text-[12px]">
             <thead>
               <tr className="border-b border-[var(--border-strong)]">
-                <th className="text-left py-2 text-[color:var(--text-secondary)] font-medium">Category</th>
-                <th className="text-left py-2 text-[color:var(--text-secondary)] font-medium">Field</th>
-                <th className="text-left py-2 text-[color:var(--text-secondary)] font-medium">Example value</th>
+                <th className="text-left py-2 text-[color:var(--text-secondary)] font-medium">{m.category}</th>
+                <th className="text-left py-2 text-[color:var(--text-secondary)] font-medium">{m.field}</th>
+                <th className="text-left py-2 text-[color:var(--text-secondary)] font-medium">{m.example}</th>
               </tr>
             </thead>
             <tbody>
@@ -109,7 +111,7 @@ export function SEOMarkdownDoc({ config }: SEOMarkdownDocProps) {
         {/* Supported formats */}
         <h3 className="text-base font-semibold text-[color:var(--text)] mb-3">
           <span className="text-[color:var(--accent-2)] mr-2">##</span>
-          Supported formats
+          {m.formats}
         </h3>
         <div className="flex flex-wrap gap-2 mb-6">
           {config.supportedFormats.map((fmt) => (
@@ -143,7 +145,7 @@ export function SEOMarkdownDoc({ config }: SEOMarkdownDocProps) {
         {/* Footer */}
         <hr className="border-[var(--border)] my-6" />
         <div className="text-[11px] text-[color:var(--text-muted)] text-center">
-          metastrip v3.0; privacy-first metadata removal; all processing happens in your browser
+          {m.footer}
         </div>
       </div>
     </div>

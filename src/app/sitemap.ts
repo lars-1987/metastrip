@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { SEO_SLUGS } from "@/lib/seo-configs";
 import { ARTICLES } from "@/lib/blog-data";
-import { languageAlternates } from "@/lib/i18n";
+import { TRANSLATED_TOOL_SLUGS, languageAlternates } from "@/lib/i18n";
 
 export const dynamic = "force-static";
 
@@ -75,12 +75,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  const translated = new Set<string>(TRANSLATED_TOOL_SLUGS);
   const seoPages: MetadataRoute.Sitemap = SEO_SLUGS.map((slug) => ({
     url: `${baseUrl}/${slug}`,
     lastModified: BUILD_DATE,
     changeFrequency: "monthly" as const,
     priority: 0.9,
+    ...(translated.has(slug) && { alternates: { languages: languageAlternates(`/${slug}`) } }),
   }));
+
+  // MS-6: the Spanish and German tool pages, each listing the others.
+  const localizedSeoPages: MetadataRoute.Sitemap = TRANSLATED_TOOL_SLUGS.flatMap((slug) =>
+    (["es", "de"] as const).map((l) => ({
+      url: `${baseUrl}/${l}/${slug}`,
+      lastModified: new Date("2026-11-15"),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+      alternates: { languages: languageAlternates(`/${slug}`) },
+    }))
+  );
 
   const blogPages: MetadataRoute.Sitemap = ARTICLES.map((article) => ({
     url: `${baseUrl}/blog/${article.slug}`,
@@ -89,5 +102,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: article.featured ? 0.8 : 0.7,
   }));
 
-  return [...staticPages, ...seoPages, ...blogPages];
+  return [...staticPages, ...seoPages, ...localizedSeoPages, ...blogPages];
 }

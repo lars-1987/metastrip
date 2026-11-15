@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ARTICLES } from "@/lib/blog-data";
 import { MetaStripIcon } from "@/components/shared/Logo";
 import { useLocale, useMessages } from "@/components/i18n/LocaleProvider";
-import { localePath } from "@/lib/i18n";
+import { TRANSLATED_TOOL_SLUGS, localePath } from "@/lib/i18n";
 
 /** Recycled from V2 — brand + link columns + badges, with the blur fade-in. */
 
@@ -35,7 +35,8 @@ const site = (m: FooterText, home: string) => [
 
 export function Footer() {
   const m = useMessages().footer;
-  const home = localePath(useLocale(), "/");
+  const locale = useLocale();
+  const home = localePath(locale, "/");
   const ref = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(false);
 
@@ -74,7 +75,10 @@ export function Footer() {
             </FadeIn>
 
             <FadeIn revealed={revealed} delay={0.1} className="lg:col-span-3">
-              <LinkColumn label={m.tools} links={TOOLS} />
+              <LinkColumn
+                label={m.tools}
+                links={locale === "en" ? TOOLS : TRANSLATED_TOOL_SLUGS.map((s) => ({ label: m.toolLinks[s], href: localePath(locale, `/${s}`) }))}
+              />
             </FadeIn>
             <FadeIn revealed={revealed} delay={0.2} className="lg:col-span-3">
               <LinkColumn label={m.articles} links={ARTICLES.slice(0, 6).map((a) => ({ label: a.title, href: `/blog/${a.slug}` }))} />
