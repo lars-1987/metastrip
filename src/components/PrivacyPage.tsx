@@ -67,9 +67,9 @@ function PrivacyPolicyContent() {
         <p className="text-sm text-[color:var(--text-secondary)] font-[family-name:var(--font-outfit)] leading-[1.7]">
           Your files are processed entirely in your browser. We never see,
           store, or transmit your files or the metadata in them. We collect
-          anonymous usage analytics and record some visits as masked session
-          replays to find bugs; neither includes your filenames or file
-          contents. MetaStrip is completely free with no accounts required.
+          anonymous usage analytics, which never include your filenames or
+          file contents, and we don&apos;t record your visits. MetaStrip is
+          completely free with no accounts required.
         </p>
       </div>
 
@@ -116,11 +116,9 @@ function PrivacyPolicyContent() {
           visitors.
         </p>
         <p className="mb-3">
-          <span className="font-semibold">Session replays:</span>{" "}
-          Some visits are recorded as session replays so we can find and fix
-          bugs. Text inside the tool, including your filenames and the metadata
-          it shows you, is masked in your browser before anything is sent, and
-          the location map is left out of recordings entirely.
+          <span className="font-semibold">No session recordings:</span>{" "}
+          We don&apos;t record visits as session replays, so nothing you see
+          or do on the page is captured as a recording.
         </p>
         <p>
           <span className="font-semibold">
@@ -597,7 +595,7 @@ export function PrivacyPage() {
           >
             <span>Effective: March 1, 2026</span>
             <span style={{ opacity: 0.4 }}>·</span>
-            <span>Last updated: October 25, 2026</span>
+            <span>Last updated: November 22, 2026</span>
           </div>
 
           {/* Content — dark card */}

@@ -15,8 +15,8 @@ export const dynamic = "force-static";
 /** Pages outside the configs, by the date their content last changed. */
 const PAGE_UPDATED = {
   home: "2026-11-15", // MS-5 title test; Spanish and German alternates
-  about: "2026-10-17",
-  privacy: "2026-11-15", // libheif credit
+  about: "2026-11-22", // session replay turned off
+  privacy: "2026-11-22", // session replay turned off
   pricing: "2026-09-15",
   author: "2026-07-09",
   converter: "2026-11-15", // /heic-to-jpg, new

@@ -47,7 +47,7 @@ const PRIVACY_SECTIONS = [
     lines: [
       "No cookies. PostHog keeps an anonymous ID in localStorage.",
       "PostHog configured: localStorage mode, Do Not Track respected.",
-      "Session replays mask the tool's text in your browser before sending.",
+      "No session replays: visits are never recorded.",
     ],
   },
   {
@@ -201,7 +201,7 @@ export function PrivacyTab() {
             # {activeDoc === "privacy" ? "Privacy Policy" : "Terms of Service"}
           </div>
           <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] mt-1">
-            Effective: 2026-03-01 | Last updated: 2026-03-01
+            Effective: 2026-03-01 | Last updated: 2026-11-22
           </div>
         </div>
 
