@@ -24,8 +24,9 @@ export function V3LocationMap({ coords }: { coords: LatLng }) {
   const hemisphere = `${coords.lat >= 0 ? "N" : "S"} · ${coords.lng >= 0 ? "E" : "W"}`;
 
   return (
-    // ph-no-capture blocks the map from session replay entirely: masking its
-    // labels would still leave the pin showing where the file was made.
+    // ph-no-capture keeps the map out of PostHog autocapture, and out of
+    // session replay if that's ever turned back on: masking its labels would
+    // still leave the pin showing where the file was made.
     <figure className="ph-no-capture m-0 rounded-[var(--radius-sm)] bg-[var(--card)] p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">

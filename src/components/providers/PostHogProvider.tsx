@@ -65,17 +65,14 @@ export function PostHogProviderWrapper({
       mask_all_element_attributes: true,
       persistence: "localStorage", // No cookies — privacy-first
       respect_dnt: true,
-      // Session replay records ordinary page text unless told not to, which
-      // put every filename and every metadata value shown in the review (GPS,
-      // author names, prompts, usernames) into recordings. The files never
-      // left the device; what they carried did. Text inside anything marked
-      // data-private (the tool, the terminal) is masked in the browser before
-      // sending, so replays keep the layout and clicks for debugging. The map
-      // carries ph-no-capture, which blocks it outright: its pin gives the
-      // location away even with every label masked.
-      session_recording: {
-        maskTextSelector: "[data-private], [data-private] *",
-      },
+      // No session replay (22 Nov 2026): at 100+ visitors a day the monthly
+      // recording quota ran out early and nobody could watch them all, so
+      // analytics events are enough. The recorder script isn't loaded either.
+      // If replay ever comes back, mask everything marked data-private (the
+      // tool, the terminal) with maskTextSelector: "[data-private],
+      // [data-private] *". Unmasked, replays recorded every filename and
+      // metadata value the review shows. The map's ph-no-capture keeps it out.
+      disable_session_recording: true,
     });
   }, []);
 

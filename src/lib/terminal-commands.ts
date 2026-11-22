@@ -210,7 +210,7 @@ export function executeCommand(input: string): CommandResult {
           "we never see, store, or transmit them.",
           "we collect anonymous analytics (posthog, cookieless):",
           "file types and metadata categories, never filenames.",
-          "session replays mask the tool's text before sending.",
+          "no session replays: visits are never recorded.",
           "no accounts. no ads. ever.",
           "contact: hello@metastrip.app",
           "",

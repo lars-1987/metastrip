@@ -97,7 +97,7 @@ export function AboutTab() {
             },
             {
               title: "No accounts, no cookies, no profiles",
-              detail: "PostHog analytics: cookieless, Do Not Track respected, tool text masked in replays.",
+              detail: "PostHog analytics: cookieless, Do Not Track respected, no session replays.",
               tag: "PRIVACY",
             },
             {

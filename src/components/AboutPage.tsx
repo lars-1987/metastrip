@@ -21,7 +21,7 @@ const principles: { icon: IconName; title: string; body: string; tech: string }[
   {
     icon: "Ghost",
     title: "No accounts, no cookies, no profiles",
-    body: "We don't ask for your name, email, or any identifying information, and there are no accounts or sign-ups. The site uses PostHog for anonymous usage analytics: which file types get cleaned and which kinds of metadata they carried, never filenames, contents or metadata values. Some visits are recorded as session replays to find bugs; text inside the tool is masked in your browser before anything is sent.",
+    body: "We don't ask for your name, email, or any identifying information, and there are no accounts or sign-ups. The site uses PostHog for anonymous usage analytics: which file types get cleaned and which kinds of metadata they carried, never filenames, contents or metadata values. Visits aren't recorded as session replays.",
     tech: "PostHog Analytics: cookieless, Do Not Track respected",
   },
   {

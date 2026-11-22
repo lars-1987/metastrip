@@ -131,7 +131,8 @@ export function TerminalApp() {
   return (
     // translate="no" + notranslate: browser auto-translation rewrites text nodes
     // in place, which makes React's DOM updates throw inside this constantly
-    // changing surface. data-private keeps it out of session replay.
+    // changing surface. data-private marks it for masking if session replay
+    // is ever turned back on (it's off; see PostHogProvider).
     <div className="notranslate min-h-dvh bg-[#0f0b1f]" translate="no" data-private>
       <Wallpaper />
       <MenuBar
