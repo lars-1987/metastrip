@@ -1,0 +1,20 @@
+// Cloudflare Workers static assets: serves the `next build` export in out/.
+// No Worker script: every request is a static asset, a _redirects rule or the 404 page.
+// Deployed by .github/workflows/cloudflare.yml. Until the cut-over (MS-12),
+// metastrip.app stays on GitHub Pages and this serves only the workers.dev preview.
+{
+  "$schema": "https://unpkg.com/wrangler@4.158.0/config-schema.json",
+  "name": "metastrip",
+  // Not secret; account-owned API tokens need it set explicitly.
+  "account_id": "53aeba06c4587c3050c840f1ed63f684",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./out",
+    // /foo serves out/foo.html; /foo.html and /foo/ redirect to /foo.
+    "html_handling": "auto-trailing-slash",
+    // Unknown paths get out/404.html with a 404 status.
+    "not_found_handling": "404-page"
+  }
+}

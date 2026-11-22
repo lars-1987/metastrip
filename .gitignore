@@ -49,3 +49,6 @@ next-env.d.ts
 
 # image converter worker + libheif, built by scripts/build-converter.mjs
 /public/convert/
+
+# wrangler local state
+.wrangler/
