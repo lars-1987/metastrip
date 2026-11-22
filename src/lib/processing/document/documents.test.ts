@@ -275,6 +275,50 @@ describe("PDF", () => {
       const { result } = await run(await buildPdf(), name, PDF_MIME, ALL_ON);
       expect(result.report.fieldsFound.some((f) => f.key === "Leftovers")).toBe(false);
     });
+
+    // Many writers keep a stream's length in its own object (/Length 5 0 R).
+    // pdf-lib writes every length inline when it saves, so that object was
+    // left in the output with nothing pointing at it, and the verify re-read
+    // reported "Leftovers (other:N)" on a file the strip had just cleaned
+    // (1 PDF, 15 to 21 Nov 2026). pdf-lib can't write such a file itself, so
+    // this one is built by hand.
+    function separateLengths(withInfo: boolean): Uint8Array {
+      const objects = [
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R >>",
+        "<< /Length 5 0 R >>\nstream\nBT ET\nendstream",
+        "5",
+        ...(withInfo ? ["<< /Author (Alice Example) /Producer (Hand Writer 1.0) >>"] : []),
+      ];
+      let pdf = "%PDF-1.4\n";
+      const offsets: number[] = [];
+      objects.forEach((body, i) => {
+        offsets.push(pdf.length);
+        pdf += `${i + 1} 0 obj\n${body}\nendobj\n`;
+      });
+      const xref = pdf.length;
+      pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+      pdf += offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("");
+      pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R${withInfo ? " /Info 6 0 R" : ""} >>\nstartxref\n${xref}\n%%EOF\n`;
+      return new TextEncoder().encode(pdf);
+    }
+
+    it("leaves no stream length behind when lengths are separate objects", async () => {
+      const { result } = await run(separateLengths(true), name, PDF_MIME, ALL_ON);
+      expect(result.report.fieldsFound.some((f) => f.key === "Leftovers")).toBe(false);
+      expect(summary(result.report.fieldsRemoved)).toContain("author:Author");
+      const again = await reread(result, name, PDF_MIME);
+      expect(summary(again.result.report.fieldsFound)).toEqual([]);
+      expect(await text(again.result)).toContain("BT ET");
+    });
+
+    it("leaves none behind either when the file has nothing else to remove", async () => {
+      const { result } = await run(separateLengths(false), name, PDF_MIME, ALL_ON);
+      const again = await reread(result, name, PDF_MIME);
+      expect(again.result.report.fieldsFound.some((f) => f.key === "Leftovers")).toBe(false);
+      expect(await text(again.result)).toContain("BT ET");
+    });
   });
 
   // pdf-lib refuses to load an encrypted PDF, and that refusal used to be

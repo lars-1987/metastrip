@@ -226,12 +226,35 @@ export async function stripPdf(bytes: Uint8Array, options: StripOptions, at: Mar
     fieldsFound.push(leftover.field);
     if (Object.values(options).some(Boolean)) fieldsRemoved.push(leftover.field);
   }
-  if (fieldsRemoved.length > 0) {
-    for (const [ref] of leftovers(pdfDoc).unreachable) pdfDoc.context.delete(ref);
+  // pdf-lib writes every stream's /Length inline when it saves. A length the
+  // file kept as its own object (/Length 5 0 R, common in other writers) would
+  // then be saved with nothing pointing at it, and the verify re-read reported
+  // it as a leftover (15 to 21 Nov 2026). Inline them first, so the sweep sees
+  // those objects as unused and drops them, even when nothing else goes.
+  const lengths = inlineStreamLengths(pdfDoc);
+  const unused = leftovers(pdfDoc).unreachable;
+  for (const [ref] of unused) {
+    if (fieldsRemoved.length > 0 || lengths.has(ref.tag)) pdfDoc.context.delete(ref);
   }
 
   at("save");
   return { cleaned: await pdfDoc.save(), fieldsFound, fieldsRemoved };
+}
+
+/** Replaces each stream's indirect /Length with the number it points to, as
+ *  pdf-lib's save would, and returns the tags of the objects that held them. */
+function inlineStreamLengths(pdfDoc: PDFDocument): Set<string> {
+  const tags = new Set<string>();
+  for (const [, obj] of pdfDoc.context.enumerateIndirectObjects()) {
+    if (!(obj instanceof PDFStream)) continue;
+    const length = obj.dict.get(PDFName.of("Length"));
+    if (!(length instanceof PDFRef)) continue;
+    const value = pdfDoc.context.lookup(length);
+    if (!(value instanceof PDFNumber)) continue;
+    obj.dict.set(PDFName.of("Length"), PDFNumber.of(value.asNumber()));
+    tags.add(length.tag);
+  }
+  return tags;
 }
 
 /** Every indirect object the document can't reach from its trailer (the
