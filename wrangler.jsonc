@@ -10,6 +10,8 @@
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "preview_urls": false,
+  // Off on purpose: the privacy page says we don't use Cloudflare's request logs.
+  "observability": { "enabled": false },
   "assets": {
     "directory": "./out",
     // /foo serves out/foo.html; /foo.html and /foo/ redirect to /foo.
