@@ -56,7 +56,7 @@ const PRIVACY_SECTIONS = [
     lines: [
       "Ko-fi         → optional tips     → ko-fi.com/privacy",
       "PostHog       → product analytics → posthog.com/privacy",
-      "GitHub Pages  → static hosting    → docs.github.com/site-policy",
+      "Cloudflare    → static hosting    → cloudflare.com/privacypolicy",
     ],
   },
   {
@@ -201,7 +201,7 @@ export function PrivacyTab() {
             # {activeDoc === "privacy" ? "Privacy Policy" : "Terms of Service"}
           </div>
           <div className="text-xs text-white/40 font-[family-name:var(--font-mono)] mt-1">
-            Effective: 2026-03-01 | Last updated: 2026-11-22
+            Effective: 2026-03-01 | Last updated: 2026-12-14
           </div>
         </div>
 

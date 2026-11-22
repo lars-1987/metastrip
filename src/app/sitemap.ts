@@ -16,7 +16,7 @@ export const dynamic = "force-static";
 const PAGE_UPDATED = {
   home: "2026-11-15", // MS-5 title test; Spanish and German alternates
   about: "2026-11-22", // session replay turned off
-  privacy: "2026-11-22", // session replay turned off
+  privacy: "2026-12-14", // Cloudflare named as the host (MS-12)
   pricing: "2026-09-15",
   author: "2026-07-09",
   converter: "2026-11-15", // /heic-to-jpg, new

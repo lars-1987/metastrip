@@ -91,7 +91,7 @@ Steganographic watermarks (e.g. Google's SynthID) are pixel-level and not addres
 - A small dictionary-based i18n layer (`src/lib/i18n/`) for the Spanish and German pages, including a table of translated metadata field names
 - Files are identified by their leading bytes rather than their extension, so a JPEG saved as `.png` is still stripped correctly instead of rejected
 - [PostHog](https://posthog.com) for cookieless, DNT-respecting analytics
-- Hosted on GitHub Pages (deployed via Actions)
+- Hosted on Cloudflare Workers static assets, deployed from GitHub Actions with wrangler (`wrangler.jsonc`); `_headers` sets long caching for hashed files and `_redirects` sends real 301s
 
 No server. No tracking cookies. No accounts.
 

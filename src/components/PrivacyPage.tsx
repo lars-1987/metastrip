@@ -237,17 +237,19 @@ function PrivacyPolicyContent() {
           .
         </p>
         <p>
-          <span className="font-semibold">GitHub Pages</span> hosts
-          MetaStrip&apos;s website as static files. GitHub may collect
-          standard server access logs (IP address, user agent) when serving
-          the site. See{" "}
+          <span className="font-semibold">Cloudflare</span> hosts
+          MetaStrip&apos;s website as static files and delivers it through
+          its network. To serve the site and protect it from attacks,
+          Cloudflare processes request details such as your IP address and
+          user agent. Your files are never sent to Cloudflare, and we
+          don&apos;t use Cloudflare&apos;s request logs or analytics. See{" "}
           <Link
-            href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+            href="https://www.cloudflare.com/privacypolicy/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[color:var(--accent-strong)] hover:text-[color:var(--text-secondary)] transition-colors duration-200 underline decoration-[color:var(--accent-strong)]/40 underline-offset-2"
           >
-            GitHub&apos;s privacy statement
+            Cloudflare&apos;s privacy policy
           </Link>
           .
         </p>
@@ -353,7 +355,7 @@ function TermsContent() {
           and audio files (MP3, M4A, FLAC, WAV). All file processing occurs
           in your web browser using client-side JavaScript. Files are not
           uploaded to any server; MetaStrip&apos;s site is served as static
-          files from GitHub Pages and has no backend.
+          files from Cloudflare and has no backend.
         </p>
         <p>
           The Service is completely free with support for batch processing of up
@@ -595,7 +597,7 @@ export function PrivacyPage() {
           >
             <span>Effective: March 1, 2026</span>
             <span style={{ opacity: 0.4 }}>·</span>
-            <span>Last updated: November 22, 2026</span>
+            <span>Last updated: December 14, 2026</span>
           </div>
 
           {/* Content — dark card */}
