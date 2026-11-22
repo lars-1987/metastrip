@@ -1,0 +1,57 @@
+name: Speed check (GitHub Pages vs Cloudflare)
+
+# Run by hand from the Actions tab. Times metastrip.app (GitHub Pages) against
+# the Cloudflare preview from a GitHub-hosted runner (US), to decide the
+# cut-over (MS-12). Read-only: it only sends GET requests.
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: Requests per URL
+        default: "15"
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Measure time to first byte
+        env:
+          RUNS: ${{ inputs.runs }}
+        run: |
+          set -euo pipefail
+          GH=https://metastrip.app
+          CF=https://metastrip.larsholmstrom.workers.dev
+          # A hashed script file, the same on both hosts.
+          ASSET=$(curl -fsS "$GH/" | grep -o '/_next/static/chunks/[^"]*\.js' | head -1)
+          PATHS="/ /remove-c2pa-metadata /blog/remove-c2pa-content-credentials-from-image $ASSET"
+
+          median() { sort -n | awk '{a[NR]=$1} END {print (NR%2 ? a[(NR+1)/2] : (a[NR/2]+a[NR/2+1])/2)}'; }
+
+          echo "Cloudflare serves this runner from: $(curl -fsS "$CF/cdn-cgi/trace" | grep -E '^(colo|loc)=' | tr '\n' ' ')"
+          echo "GitHub Pages serves it from: $(curl -fsSI "$GH/" | grep -i '^x-served-by' | tr -d '\r')"
+
+          {
+            echo "### Time to first byte from a GitHub runner (median of $RUNS, ms)"
+            echo
+            echo "| Path | GitHub Pages | Cloudflare | Cloudflare colo |"
+            echo "|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for p in $PATHS; do
+            for host in "$GH" "$CF"; do
+              curl -fsS -o /dev/null "$host$p"   # warm-up, not counted
+              for i in $(seq "$RUNS"); do
+                curl -fsS -o /dev/null -w '%{time_starttransfer}\n' "$host$p"
+              done | awk '{printf "%.0f\n", $1 * 1000}' | median > "/tmp/m_$(echo "$host" | md5sum | cut -c1-8)"
+            done
+            g=$(cat "/tmp/m_$(echo "$GH" | md5sum | cut -c1-8)")
+            c=$(cat "/tmp/m_$(echo "$CF" | md5sum | cut -c1-8)")
+            colo=$(curl -fsSI "$CF$p" | grep -i '^cf-ray' | tr -d '\r' | sed 's/.*-//')
+            echo "$p  GitHub ${g} ms  Cloudflare ${c} ms  ($colo)"
+            echo "| \`$p\` | $g | $c | $colo |" >> "$GITHUB_STEP_SUMMARY"
+          done
