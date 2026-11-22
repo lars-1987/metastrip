@@ -1,6 +1,10 @@
 // GitHub Pages can't send 301s, so each old or mistyped URL gets a static page
 // that redirects instantly. Google treats a zero-delay meta refresh as a
 // permanent redirect and moves the URL's signals to the target.
+//
+// Cloudflare reads out/_redirects instead and sends real 301s, from the same
+// list. GitHub Pages ignores that file. The meta-refresh pages go when GitHub
+// Pages does (MS-12).
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -45,4 +49,11 @@ for (const [from, to] of Object.entries(REDIRECTS)) {
   writeFileSync(file, page(to));
 }
 
-console.log(`Wrote ${Object.keys(REDIRECTS).length} redirect pages`);
+writeFileSync(
+  join(OUT, "_redirects"),
+  Object.entries(REDIRECTS)
+    .map(([from, to]) => `${from} ${to} 301`)
+    .join("\n") + "\n",
+);
+
+console.log(`Wrote ${Object.keys(REDIRECTS).length} redirect pages and _redirects`);

@@ -1,0 +1,16 @@
+# Response headers on Cloudflare (Workers static assets). GitHub Pages ignores
+# this file. Pages without a rule keep Cloudflare's default, which revalidates
+# every request: right for HTML and for /convert/*, whose names aren't hashed.
+
+# Next puts a content hash in every file name here, so a file never changes.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
+# The preview must never be indexed. Preview URLs get noindex from Cloudflare.
+https://metastrip.larsholmstrom.workers.dev/*
+  X-Robots-Tag: noindex

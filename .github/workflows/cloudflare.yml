@@ -1,0 +1,42 @@
+name: Deploy to Cloudflare
+
+# Publishes the same static export as deploy.yml to the Cloudflare Worker
+# "metastrip". Until the cut-over (MS-12) that's only the workers.dev preview;
+# metastrip.app is still served by GitHub Pages, so a failure here doesn't
+# affect the live site.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+
+      # Pinned, and run with npx so wrangler isn't a dependency of every CI build.
+      - name: Deploy with wrangler
+        run: npx --yes wrangler@4.158.0 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
